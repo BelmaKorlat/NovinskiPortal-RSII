@@ -39,8 +39,7 @@ namespace NovinskiPortal.Services.Services
         public async Task<CategoryResponse?> ToggleCategoryStatusAsync(int id)
         {
             var category = await _context.Categories.FindAsync(id);
-            if (category == null)
-                return null;
+            if (category is null)  return null;
 
             category.Active = !category.Active;
 

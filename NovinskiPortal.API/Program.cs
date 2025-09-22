@@ -9,9 +9,11 @@ using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.IServices;
 using NovinskiPortal.Services.Services;
+using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.JwtService;
 using NovinskiPortal.Services.Services.PasswordService;
+using NovinskiPortal.Services.Services.UserService;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -97,6 +99,8 @@ builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminUserService, AdminUserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 

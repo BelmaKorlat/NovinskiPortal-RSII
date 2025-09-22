@@ -35,10 +35,8 @@ namespace NovinskiPortal.Services.Services
             return MapToResponse(entity);
         }
 
-        protected virtual async Task BeforeInsert(TEntity entity, TInsert request)
-        {
-
-        }
+        protected virtual Task BeforeInsert(TEntity entity, TInsert request)
+       => Task.CompletedTask;
         protected virtual TEntity MapToEntityInsert(TEntity entity, TInsert request)
         {
             return _mapper.Map(request, entity);
@@ -58,10 +56,8 @@ namespace NovinskiPortal.Services.Services
             return MapToResponse(entity);
         }
 
-        protected virtual async Task BeforeUpdate(TEntity entity, TUpdate request)
-        {
-
-        }
+        protected virtual Task BeforeUpdate(TEntity entity, TUpdate request)
+     => Task.CompletedTask;
         protected virtual void MapToEntityUpdate(TEntity entity, TUpdate request)
         {
             _mapper.Map(request, entity);
@@ -80,11 +76,8 @@ namespace NovinskiPortal.Services.Services
             return true;
         }
 
-        protected virtual async Task BeforeDelete(TEntity entity)
-        {
-
-        }
-
+        protected virtual Task BeforeDelete(TEntity entity)
+            => Task.CompletedTask;
     }
 
 }
