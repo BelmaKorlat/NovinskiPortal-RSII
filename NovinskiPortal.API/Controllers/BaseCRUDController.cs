@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.Model.SearchObjects;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.BaseCRUDService;
 
 namespace NovinskiPortal.API.Controllers
 {

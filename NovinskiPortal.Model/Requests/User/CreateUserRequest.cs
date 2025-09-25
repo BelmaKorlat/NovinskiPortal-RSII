@@ -19,7 +19,7 @@ namespace NovinskiPortal.Model.Requests.User
         [Required, MinLength(6)] 
         public string Password { get; set; } = default!;
         [Required] 
-        public int Role { get; set; }  // 1/2
+        public int RoleId { get; set; }  // 1/2
         public bool Active { get; set; } = true;
     }
 }

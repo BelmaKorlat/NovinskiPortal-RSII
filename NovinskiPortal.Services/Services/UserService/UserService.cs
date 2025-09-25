@@ -2,10 +2,10 @@
 
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using NovinskiPortal.Commom.PasswordService;
 using NovinskiPortal.Model.Requests.User;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
-using NovinskiPortal.Services.Services.PasswordService;
 
 namespace NovinskiPortal.Services.Services.UserService
 {

@@ -2,7 +2,7 @@
 
 using System.Security.Cryptography;
 
-namespace NovinskiPortal.Services.Services.PasswordService
+namespace NovinskiPortal.Commom.PasswordService
 {
     public class PasswordService : IPasswordService
     {

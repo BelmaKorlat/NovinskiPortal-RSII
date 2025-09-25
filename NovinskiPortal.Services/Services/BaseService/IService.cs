@@ -1,7 +1,7 @@
 ﻿using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
 
-namespace NovinskiPortal.Services.IServices
+namespace NovinskiPortal.Services.Services.BaseService
 {
     public interface IService<T, TSearch> 
         where T : class 

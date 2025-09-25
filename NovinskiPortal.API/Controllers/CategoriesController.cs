@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿
 using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.Model.Requests.Category;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 
 namespace NovinskiPortal.API.Controllers
 {

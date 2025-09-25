@@ -4,7 +4,9 @@ namespace NovinskiPortal.Model.SearchObjects
 {
     public class UserSearchObject : BaseSearchObject
     {
-        public int? Role { get; set; }
+        public int? RoleId { get; set; }
         public bool? Active { get; set; }
+        public bool IncludeDeleted { get; set; }
+
     }
 }

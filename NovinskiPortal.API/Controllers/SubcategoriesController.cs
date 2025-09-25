@@ -2,7 +2,7 @@
 using NovinskiPortal.Model.Requests.Subcategory;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 
 namespace NovinskiPortal.API.Controllers
 {

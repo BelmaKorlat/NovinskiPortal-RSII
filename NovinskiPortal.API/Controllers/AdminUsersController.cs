@@ -10,7 +10,7 @@ namespace NovinskiPortal.API.Controllers
 {
     [Route("api/admin/users")]
     [ApiController]
-    [Authorize(Roles = "1")] // admin
+    [Authorize(Roles = "Admin")] 
     public class AdminUsersController : BaseCRUDController<UserAdminResponse, UserSearchObject, CreateUserRequest, UpdateUserRequest>
     {
         private readonly IAdminUserService _adminService;
@@ -19,6 +19,21 @@ namespace NovinskiPortal.API.Controllers
         {
             _adminService = service;
         }
+
+        [HttpDelete("{id}/soft-delete")]
+        public async Task<IActionResult> SoftDelete(int id)
+        {
+            var ok = await _adminService.SoftDeleteAsync(id);
+            return ok ? NoContent() : NotFound();
+        }
+
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> Restore(int id)
+        {
+            var ok = await _adminService.RestoreAsync(id);
+            return ok ? NoContent() : NotFound();
+        }
+
 
         [HttpPatch("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] int role)

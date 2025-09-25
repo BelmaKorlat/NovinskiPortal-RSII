@@ -4,15 +4,15 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using NovinskiPortal.Commom.PasswordService;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
-using NovinskiPortal.Services.IServices;
-using NovinskiPortal.Services.Services;
 using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.AuthService;
+using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 using NovinskiPortal.Services.Services.JwtService;
-using NovinskiPortal.Services.Services.PasswordService;
+using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
 using System.Text.Json.Serialization;
 
@@ -93,6 +93,11 @@ builder.Services.AddScoped<IMapper, ServiceMapper>();
 // In your application startup (e.g., Program.cs or a dedicated config class):
 TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
     .Map(dest => dest.CategoryName, src => src.Category.Name);
+TypeAdapterConfig<User, UserAdminResponse>.NewConfig()
+    .Map(dest => dest.RoleName, src => src.Role.Name);
+TypeAdapterConfig<User, UserResponse>.NewConfig()
+    .Map(dest => dest.RoleName, src => src.Role.Name);
+
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();

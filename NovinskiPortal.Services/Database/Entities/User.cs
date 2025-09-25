@@ -10,8 +10,11 @@
         public string Email { get; set; } = default!;
         public string PasswordHash { get; set; } = default!;
         public string PasswordSalt { get; set; } = default!;
-        public int Role { get; set; }
+        public Role Role { get; set; } = null!;
+        public int RoleId { get; set; }
         public bool Active { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? LastLoginAt { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.BaseService;
 
 namespace NovinskiPortal.API.Controllers
 {

@@ -5,9 +5,9 @@ using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.BaseCRUDService;
 
-namespace NovinskiPortal.Services.Services
+namespace NovinskiPortal.Services.Services.CategoryService.CategoryService
 {
     public class CategoryService : BaseCRUDService<CategoryResponse, CategorySearchObject, Category, CreateCategoryRequest, UpdateCategoryRequest>, ICategoryService
     {

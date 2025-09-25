@@ -35,7 +35,7 @@ namespace NovinskiPortal.Services.Services.JwtService
             new Claim(JwtRegisteredClaimNames.Name, user.FirstName + ' ' + user.LastName),
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
-            new(ClaimTypes.Role, user.Role.ToString()),          // << BITNO za [Authorize(Roles="1")]
+            new(ClaimTypes.Role, user.Role.Name),          // << BITNO za [Authorize(Roles="Admin")]
             new("active", user.Active ? "true" : "false"),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };

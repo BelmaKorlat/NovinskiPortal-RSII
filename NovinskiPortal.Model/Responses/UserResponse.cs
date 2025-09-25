@@ -7,6 +7,7 @@ namespace NovinskiPortal.Model.Responses
         public string FirstName { get; set; } = default!;
         public string LastName { get; set; } = default!;
         public string Username { get; set; } = default!;
-        public int Role { get; set; }
+        public int RoleId { get; set; }
+        public string RoleName { get; set; } = default!;
     }
 }

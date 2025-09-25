@@ -2,12 +2,13 @@
 
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
+using NovinskiPortal.Commom.PasswordService;
 using NovinskiPortal.Model.Requests.User;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
-using NovinskiPortal.Services.Services.PasswordService;
+using NovinskiPortal.Services.Services.BaseCRUDService;
 
 namespace NovinskiPortal.Services.Services.AdminService
 {
@@ -24,14 +25,20 @@ namespace NovinskiPortal.Services.Services.AdminService
 
         protected override IQueryable<User> ApplyFilter(IQueryable<User> query, UserSearchObject search)
         {
+            query = query.Include(u => u.Role).AsNoTracking();
+
+            // Ako admin želi da vidi i obrisane, skloni globalni filter
+            if (search.IncludeDeleted)
+                query = query.IgnoreQueryFilters();
+
             if (search.Active.HasValue)
             {
                 query = query.Where(u => u.Active == search.Active.Value);
             }
 
-            if (search.Role.HasValue)
+            if (search.RoleId.HasValue)
             {
-                query = query.Where(u => u.Role == search.Role.Value);
+                query = query.Where(u => u.RoleId == search.RoleId.Value);
             }
 
             if (!string.IsNullOrEmpty(search.FTS))
@@ -70,7 +77,7 @@ namespace NovinskiPortal.Services.Services.AdminService
             entity.Nick = (request.Nick ?? string.Empty).Trim();
             entity.Username = request.Username.Trim();
             entity.Email = request.Email.Trim();
-            entity.Role = request.Role;
+            entity.RoleId = request.RoleId;
             entity.Active = request.Active;
             return entity;
         }
@@ -100,15 +107,50 @@ namespace NovinskiPortal.Services.Services.AdminService
             entity.Nick = (updateUserRequest.Nick ?? string.Empty).Trim();
             entity.Username = updateUserRequest.Username.Trim();
             entity.Email = updateUserRequest.Email.Trim();
-            entity.Role = updateUserRequest.Role;
+            entity.RoleId = updateUserRequest.RoleId;
             entity.Active = updateUserRequest.Active;
+        }
+
+        public async Task<bool> SoftDeleteAsync(int id)
+        {
+            // Globalni filter krije samo IsDeleted = true, a mi tražimo aktivnog (nije obrisan)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user is null) return false;
+
+            if (user.IsDeleted) return true; // već “obrisan” – idempotentno
+
+            user.IsDeleted = true;
+            // (opciono) korisnik više nije aktivan ako je soft-deleted
+            user.Active = false;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RestoreAsync(int id)
+        {
+            // Pošto je obrisan korisnik sakriven globalnim filterom, moraš ga ignorisati da bi ga našla
+            var user = await _context.Users
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user is null) return false;
+
+            if (!user.IsDeleted) return true; // već “aktivan” – idempotentno
+
+            user.IsDeleted = false;
+            // (opciono) ne diraj Active, ili ga postavi kako želiš:
+            // user.Active = true;
+
+            await _context.SaveChangesAsync();
+            return true;
         }
         public async Task<bool> ChangeRoleAsync(int id, int role)
         {
             var user = await _context.Users.FindAsync(id);
             if (user is null) return false;
 
-            user.Role = role;
+            user.RoleId = role;
 
             await _context.SaveChangesAsync();
             return true;

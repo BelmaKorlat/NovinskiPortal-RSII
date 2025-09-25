@@ -1,13 +1,12 @@
-﻿
-
-using Mapster;
+﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
+using NovinskiPortal.Commom.PasswordService;
 using NovinskiPortal.Model.Requests.Authentication;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
+using NovinskiPortal.Services.Enumerations;
 using NovinskiPortal.Services.Services.JwtService;
-using NovinskiPortal.Services.Services.PasswordService;
 
 namespace NovinskiPortal.Services.Services.AuthService
 {
@@ -27,7 +26,7 @@ namespace NovinskiPortal.Services.Services.AuthService
         {
             var input = loginRequest.EmailOrUsername.Trim().ToLowerInvariant();
             var user = await _context.Users
-                .AsNoTracking()
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync
                     (u => u.Username.ToLower() == input || 
                     u.Email.ToLower() == input);
@@ -39,7 +38,12 @@ namespace NovinskiPortal.Services.Services.AuthService
             var isValid = _passwordService.VerifyPassword(loginRequest.Password, user.PasswordSalt, user.PasswordHash);
             if (!isValid) return null;
 
+            user.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
             var token = _jwtService.GenerateToken(user);
+
+            //await _usersService.SetLastLoginAt(user.Id, DateTime.UtcNow);
 
             var authResponse = new AuthResponse
             {
@@ -56,11 +60,18 @@ namespace NovinskiPortal.Services.Services.AuthService
             var username = registerRequest.Username.Trim();
             var email = registerRequest.Email.Trim();
 
+            // Ako želiš zabraniti registraciju istog username/email čak i kad je korisnik soft-deleted,
+            // ova provjera je dovoljna. (Ako želiš dozvoliti – onda dodaj u where: && !u.IsDeleted)
             var existUser = await _context.Users
                 .AnyAsync(u => u.Username.ToLower() == username.ToLower() ||
                     u.Email.ToLower() == email.ToLower());
 
             if (existUser) return null;
+
+            var defaultRoleId = await _context.Roles
+                .Where(r => r.Name == nameof(Roles.User))
+                .Select(r => r.Id)
+                .SingleAsync();
 
             var salt = _passwordService.GenerateSalt();
             var hash = _passwordService.HashPassword(registerRequest.Password, salt);
@@ -70,16 +81,19 @@ namespace NovinskiPortal.Services.Services.AuthService
                 FirstName = registerRequest.FirstName,
                 LastName = registerRequest.LastName,
                 Nick = registerRequest.Nick ?? string.Empty,
-                Username = registerRequest.Username,
-                Email = registerRequest.Email,
+                Username = username,
+                Email = email,
                 PasswordSalt = salt,
                 PasswordHash = hash,
-                Role = 2,
-                Active = true
+                RoleId = defaultRoleId,
+                CreatedAt = DateTime.UtcNow,
+                Active = true,
+                IsDeleted = false
             };
 
             _context.Add(newUser);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); 
+            await _context.Entry(newUser).Reference(u => u.Role).LoadAsync();
 
             var token = _jwtService.GenerateToken(newUser);
 

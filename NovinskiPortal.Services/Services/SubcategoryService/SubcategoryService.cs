@@ -5,10 +5,9 @@ using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
-using NovinskiPortal.Services.IServices;
-using System;
+using NovinskiPortal.Services.Services.BaseCRUDService;
 
-namespace NovinskiPortal.Services.Services
+namespace NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService
 {
     public class SubcategoryService : BaseCRUDService<SubcategoryResponse, SubcategorySearchObject, Subcategory, CreateSubcategoryRequest, UpdateSubcategoryRequest>, ISubcategoryService
     {

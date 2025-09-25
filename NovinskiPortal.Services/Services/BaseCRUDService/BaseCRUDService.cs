@@ -1,9 +1,9 @@
 ﻿using MapsterMapper;
 using NovinskiPortal.Model.SearchObjects;
 using NovinskiPortal.Services.Database;
-using NovinskiPortal.Services.IServices;
+using NovinskiPortal.Services.Services.BaseService;
 
-namespace NovinskiPortal.Services.Services
+namespace NovinskiPortal.Services.Services.BaseCRUDService
 {
     public abstract class BaseCRUDService<T, TSearch, TEntity, TInsert, TUpdate> :
          BaseService<T, TSearch, TEntity>,

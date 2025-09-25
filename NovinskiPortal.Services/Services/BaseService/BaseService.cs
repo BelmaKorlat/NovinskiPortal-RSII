@@ -3,10 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
 using NovinskiPortal.Services.Database;
-using NovinskiPortal.Services.IServices;
 
 
-namespace NovinskiPortal.Services.Services
+namespace NovinskiPortal.Services.Services.BaseService
 {
     public class BaseService<T, TSearch, TEntity> : IService<T, TSearch>
         where T : class

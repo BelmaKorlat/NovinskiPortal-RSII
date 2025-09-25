@@ -1,6 +1,6 @@
 ﻿
 
-namespace NovinskiPortal.Services.Services.PasswordService
+namespace NovinskiPortal.Commom.PasswordService
 {
     public interface IPasswordService
     {
