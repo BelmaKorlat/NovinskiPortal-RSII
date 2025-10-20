@@ -36,7 +36,7 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
         }
 
         protected virtual Task BeforeInsert(TEntity entity, TInsert request)
-       => Task.CompletedTask;
+            => Task.CompletedTask;
         protected virtual TEntity MapToEntityInsert(TEntity entity, TInsert request)
         {
             return _mapper.Map(request, entity);
@@ -57,7 +57,7 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
         }
 
         protected virtual Task BeforeUpdate(TEntity entity, TUpdate request)
-     => Task.CompletedTask;
+            => Task.CompletedTask;
         protected virtual void MapToEntityUpdate(TEntity entity, TUpdate request)
         {
             _mapper.Map(request, entity);

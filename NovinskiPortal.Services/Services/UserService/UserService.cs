@@ -1,5 +1,4 @@
 ﻿
-
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using NovinskiPortal.Commom.PasswordService;
@@ -20,12 +19,12 @@ namespace NovinskiPortal.Services.Services.UserService
             _passwordService = passwordService;
         }
 
-        public async Task<ProfileResponse?> GetMeAsync(int userId)
+        public async Task<ProfileResponse?> GetByIdAsync(int userId)
         {
             var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
             return user.Adapt<ProfileResponse>();
         }
-        public async Task<ProfileResponse?> UpdateMeAsync(int userId, UpdateProfileRequest updateProfileRequest)
+        public async Task<ProfileResponse?> UpdateAsync(int userId, UpdateProfileRequest updateProfileRequest)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user is null) return null;
@@ -37,8 +36,10 @@ namespace NovinskiPortal.Services.Services.UserService
             await _context.SaveChangesAsync();
             return user.Adapt<ProfileResponse>();
         }
-        public async Task<bool> ChangeMyPasswordAsync(int userId, ChangePasswordRequest changePasswordRequest)
+        public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest changePasswordRequest)
         {
+            if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return false;
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
             if (user is null) return false;
 
@@ -50,8 +51,6 @@ namespace NovinskiPortal.Services.Services.UserService
             var salt = _passwordService.GenerateSalt();
             user.PasswordSalt = salt;
             user.PasswordHash = _passwordService.HashPassword(changePasswordRequest.NewPassword, salt);
-
-            if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return false;
 
             await _context.SaveChangesAsync();
             return true;

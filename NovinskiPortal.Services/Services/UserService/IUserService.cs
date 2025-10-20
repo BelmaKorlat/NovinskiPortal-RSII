@@ -7,8 +7,8 @@ namespace NovinskiPortal.Services.Services.UserService
 {
     public interface IUserService
     {
-        Task<ProfileResponse?> GetMeAsync(int userId);
-        Task<ProfileResponse?> UpdateMeAsync(int userId, UpdateProfileRequest updateProfileRequest);
-        Task<bool> ChangeMyPasswordAsync(int userId, ChangePasswordRequest changePasswordRequest);
+        Task<ProfileResponse?> GetByIdAsync(int userId);
+        Task<ProfileResponse?> UpdateAsync(int userId, UpdateProfileRequest updateProfileRequest);
+        Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest changePasswordRequest);
     }
 }

@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace NovinskiPortal.API.Controllers
 {
     [ApiController]
-    [Route("api/users")]
+    [Route("api/Users")]
     [Authorize]
     public class UsersController : ControllerBase
     {
@@ -26,19 +26,19 @@ namespace NovinskiPortal.API.Controllers
             return int.Parse(id!);
         }
 
-        [HttpGet("me")]
-        public async Task<IActionResult> Me()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByIdAsync()
         {
-            var me = await _userService.GetMeAsync(GetUserId());
+            var me = await _userService.GetByIdAsync(GetUserId());
 
             if (me is null) return NotFound();
             return Ok(me);
         }
 
-        [HttpPut("me")]
-        public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequest updateProfileRequest)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync([FromBody] UpdateProfileRequest updateProfileRequest)
         {
-            var updated = await _userService.UpdateMeAsync(GetUserId(), updateProfileRequest);
+            var updated = await _userService.UpdateAsync(GetUserId(), updateProfileRequest);
 
             if (updated is null)
                 return NotFound();
@@ -46,10 +46,10 @@ namespace NovinskiPortal.API.Controllers
             return Ok(updated);
         }
 
-        [HttpPut("me/password")]
+        [HttpPut("password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest changePasswordRequest)
         {
-            var updatedPassword = await _userService.ChangeMyPasswordAsync(GetUserId(), changePasswordRequest);
+            var updatedPassword = await _userService.ChangePasswordAsync(GetUserId(), changePasswordRequest);
             if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return BadRequest();
             if (!updatedPassword) return BadRequest();
             return NoContent();
