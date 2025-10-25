@@ -4,7 +4,7 @@ namespace NovinskiPortal.Model.Requests.Category
 {
     public class UpdateCategoryRequest
     {
-        public int Id { get; set; } = default!;
+        //public int Id { get; set; } = default!;
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Category name is required.")]
         [MinLength(1, ErrorMessage = "Category name min lenght is 1.")]

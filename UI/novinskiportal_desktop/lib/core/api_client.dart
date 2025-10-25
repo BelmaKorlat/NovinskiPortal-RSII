@@ -2,6 +2,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart'; // OVO je bitno
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -36,9 +37,18 @@ class ApiClient {
 
     dio.interceptors.add(
       InterceptorsWrapper(
+        // onRequest: (options, handler) async {
+        //   // Token će dodati provider kad ga sačuva u SharedPreferences
+        //   // Ako želiš odmah, dodaj čitanje SharedPreferences ovdje.
+        //   handler.next(options);
+        // },
+        // novo provjeriti zasto je ovako sad a ne ovako kako je zakomentarisano
         onRequest: (options, handler) async {
-          // Token će dodati provider kad ga sačuva u SharedPreferences
-          // Ako želiš odmah, dodaj čitanje SharedPreferences ovdje.
+          final p = await SharedPreferences.getInstance();
+          final token = p.getString('jwt');
+          if (token != null && token.isNotEmpty) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
           handler.next(options);
         },
         onResponse: (response, handler) => handler.next(response),

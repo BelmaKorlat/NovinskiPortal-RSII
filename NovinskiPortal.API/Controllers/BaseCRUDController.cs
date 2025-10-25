@@ -29,7 +29,7 @@ namespace NovinskiPortal.API.Controllers
         {
             return await _crudService.UpdateAsync(id, request);
         }
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public virtual async Task<bool> Delete(int id)
         {
             return await _crudService.DeleteAsync(id);

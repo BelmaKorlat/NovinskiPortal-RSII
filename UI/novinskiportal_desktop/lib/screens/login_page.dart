@@ -2,14 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'home_page.dart';
 
 void showToastTopRight(
   BuildContext context,
   String message, {
   int seconds = 3,
 }) {
-  final overlay = Overlay.of(context); // nenull u sklopu MaterialApp/Scaffold
+  final overlay = Overlay.of(context);
 
   final topSafe = MediaQuery.of(context).viewPadding.top;
 
@@ -74,13 +73,11 @@ class _LoginPageState extends State<LoginPage> {
 
       showToastTopRight(context, 'Login uspješan', seconds: 3);
 
-      Navigator.of(
-        context,
-      ).pushReplacement(MaterialPageRoute(builder: (_) => const HomePage()));
+      Navigator.pushNamedAndRemoveUntil(context, '/admin', (_) => false);
     } catch (e) {
       if (!mounted) return;
       final msg = e.toString().replaceFirst('Exception: ', '');
-      showToastTopRight(context, msg); // greška gore desno
+      showToastTopRight(context, msg);
     }
   }
 

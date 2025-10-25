@@ -25,7 +25,7 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
 
         public virtual async Task<T> CreateAsync(TInsert request)
         {
-            var entity = new TEntity();
+              var entity = new TEntity();
             MapToEntityInsert(entity, request);
             _context.Set<TEntity>().Add(entity);
 
