@@ -20,7 +20,7 @@ ThemeData buildLightTheme() {
       ),
       hintStyle: TextStyle(
         fontSize: 14,
-        color: base.colorScheme.onSurfaceVariant.withOpacity(0.8),
+        color: base.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
       ),
 
       // Borderi
@@ -123,7 +123,7 @@ ThemeData buildDarkTheme() {
       ),
       hintStyle: TextStyle(
         fontSize: 14,
-        color: base.colorScheme.onSurfaceVariant.withOpacity(0.9),
+        color: base.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
       ),
 
       border: OutlineInputBorder(

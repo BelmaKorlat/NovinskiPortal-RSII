@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/category_provider.dart';
 import '../models/category_models.dart';
 import '../utils/color_utils.dart';
+//import '../widgets/pagination_bar.dart';
 //import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class CategoriesPage extends StatefulWidget {
@@ -245,7 +246,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<bool?>(
-                  value: vm.active,
+                  initialValue: vm.active,
                   decoration: const InputDecoration(labelText: 'Status'),
                   onChanged: (v) {
                     vm.active = v;
@@ -296,9 +297,23 @@ class _CategoriesPageState extends State<CategoriesPage> {
               : _CategoryTable(
                   items: vm.items,
                   onToggle: (id) => vm.toggle(id),
+                  // onDelete: (id) async {
+                  //   final ok = await _confirm(context, 'Obrisati kategoriju?');
+                  //   if (ok) vm.remove(id);
+                  // },
                   onDelete: (id) async {
                     final ok = await _confirm(context, 'Obrisati kategoriju?');
-                    if (ok) vm.remove(id);
+                    if (!ok) return;
+                    try {
+                      await vm.remove(id); // zove API i ažurira listu
+                    } catch (e) {
+                      // prikaži snackbar ili dialog sa porukom
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Brisanje nije uspjelo: $e')),
+                        );
+                      }
+                    }
                   },
                   //onEdit: (c) => _openEditDialog(context, c),
                   onEdit: (c) {
@@ -346,6 +361,18 @@ class _CategoriesPageState extends State<CategoriesPage> {
             ],
           ),
         ),
+        // Padding(
+        //   padding: const EdgeInsets.only(top: 12),
+        //   child: PaginationBar(
+        //     page: vm.page,
+        //     pageSize: vm.pageSize,
+        //     totalCount: vm.totalCount,
+        //     visibleCount: vm.items.length, // isto kao prije
+        //     onPrev: vm.prevPage,
+        //     onNext: vm.nextPage,
+        //     onPageSize: (v) => vm.setPageSize(v),
+        //   ),
+        // ),
       ],
     );
   }
@@ -539,18 +566,42 @@ class _CategoriesPageState extends State<CategoriesPage> {
   //   }
   // }
 
+  //   Future<bool> _confirm(BuildContext context, String msg) async {
+  //     final ok = await showDialog<bool>(
+  //       context: context,
+  //       builder: (_) => AlertDialog(
+  //         content: Text(msg),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context, false),
+  //             child: const Text('Ne'),
+  //           ),
+  //           FilledButton(
+  //             onPressed: () => Navigator.pop(context, true),
+  //             child: const Text('Da'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //     return ok == true;
+  //   }
+  // }
+
+  // Malo ospirnije tj ako API padne da dodje ispis da brisanje nije uspjelo
   Future<bool> _confirm(BuildContext context, String msg) async {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Potvrda'),
         content: Text(msg),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.pop(ctx, false),
             child: const Text('Ne'),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Da'),
           ),
         ],
@@ -581,7 +632,7 @@ class _CategoryTable extends StatelessWidget {
         scrollDirection: Axis.vertical,
         child: DataTable(
           columns: const [
-            DataColumn(label: Text('R.br.')),
+            DataColumn(label: Text('Redni broj')),
             DataColumn(label: Text('Naziv')),
             DataColumn(label: Text('Boja')),
             DataColumn(label: Text('Aktivna?')),
@@ -654,22 +705,18 @@ class _CategoryTable extends StatelessWidget {
 // }
 class _ColorDot extends StatelessWidget {
   final String hex;
-  final double size;
-  final bool showTooltip;
-  const _ColorDot({
-    super.key,
-    required this.hex,
-    this.size = 16,
-    this.showTooltip = true,
-  });
+  const _ColorDot({required this.hex});
+
+  static const double _size = 16;
+  static const bool _showTooltip = true;
 
   @override
   Widget build(BuildContext context) {
     final col = tryParseHexColor(hex) ?? Theme.of(context).colorScheme.primary;
 
     final dot = Container(
-      width: size,
-      height: size,
+      width: _size,
+      height: _size,
       decoration: BoxDecoration(
         color: col,
         shape: BoxShape.circle,
@@ -677,7 +724,7 @@ class _ColorDot extends StatelessWidget {
       ),
     );
 
-    return showTooltip ? Tooltip(message: hex, child: dot) : dot;
+    return _showTooltip ? Tooltip(message: hex, child: dot) : dot;
   }
 }
 

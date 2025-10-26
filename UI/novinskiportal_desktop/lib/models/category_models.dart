@@ -1,4 +1,6 @@
 // lib/models/category_models.dart
+import '../core/base_search.dart';
+
 class CategoryDto {
   final int id;
   final String name;
@@ -23,51 +25,23 @@ class CategoryDto {
   );
 }
 
-class PagedResult<T> {
-  final List<T> items;
-  final int? totalCount;
-  PagedResult({required this.items, this.totalCount});
-}
-
 // druga paginacija:
-class CategorySearch {
+class CategorySearch extends BaseSearch {
   final bool? active;
-  final String? fts;
 
-  // paging
-  final int page; // 0-based
-  final int pageSize;
-  final bool includeTotalCount;
-
-  // opcionalno: kad je true, server ignoriše paging i vraća sve
-  final bool retrieveAll;
-
-  CategorySearch({
+  const CategorySearch({
     this.active,
-    this.fts,
-    this.page = 0,
-    this.pageSize = 10,
-    this.includeTotalCount = true,
-    this.retrieveAll = false, // default: koristimo paginaciju
+    super.fts,
+    super.page = 0,
+    super.pageSize = 10,
+    super.includeTotalCount = true,
+    super.retrieveAll = false,
   });
 
+  @override
   Map<String, dynamic> toQuery() {
-    final q = <String, dynamic>{};
-
-    if (retrieveAll) {
-      // tražimo sve: backend neće paginirati
-      q['RetrieveAll'] = 'true';
-      // (Page/PageSize možeš i ne slati – svejedno ih backend ignoriše)
-    } else {
-      // normalna paginacija
-      q['Page'] = page.toString();
-      q['PageSize'] = pageSize.toString();
-      q['IncludeTotalCount'] = includeTotalCount.toString();
-    }
-
+    final q = super.toQuery();
     if (active != null) q['Active'] = active.toString();
-    if (fts != null && fts!.isNotEmpty) q['FTS'] = fts;
-
     return q;
   }
 }

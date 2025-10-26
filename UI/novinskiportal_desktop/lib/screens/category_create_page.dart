@@ -147,14 +147,15 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
                                       context,
                                       _color.text,
                                     );
-                                    if (picked != null)
+                                    if (picked != null) {
                                       setState(() => _color.text = picked);
+                                    }
                                   },
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
-                            // kompaktan checkbox kao u Angularu
+                            // checkbox
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [

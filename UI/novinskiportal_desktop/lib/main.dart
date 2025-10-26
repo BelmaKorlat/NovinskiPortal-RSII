@@ -8,7 +8,7 @@ import 'core/api_client.dart';
 import 'core/app_theme.dart';
 import 'screens/login_page.dart';
 import 'screens/admin_layout.dart';
-import 'screens/category_create_page.dart'; // nova stranica
+import 'screens/category_create_page.dart';
 import 'screens/category_edit_page.dart';
 
 void main() {
@@ -45,7 +45,6 @@ class App extends StatelessWidget {
           child: Center(child: Text('Početna')),
         ),
 
-        // privremeni placeholderi da sidebar radi bez greške
         '/categories': (_) =>
             const AdminLayout(currentIndex: 1, child: CategoriesPage()),
         '/categories/new': (_) =>
@@ -56,6 +55,7 @@ class App extends StatelessWidget {
           currentIndex: 2,
           child: Center(child: Text('Potkategorije')),
         ),
+        // privremeni placeholderi da sidebar radi bez greške
         '/articles': (_) => const AdminLayout(
           currentIndex: 3,
           child: Center(child: Text('Članci')),
