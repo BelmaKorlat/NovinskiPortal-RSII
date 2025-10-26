@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
-import 'package:novinskiportal_desktop/screens/categories_page.dart';
+import 'package:novinskiportal_desktop/screens/category/category_list_page.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
@@ -8,8 +8,8 @@ import 'core/api_client.dart';
 import 'core/app_theme.dart';
 import 'screens/login_page.dart';
 import 'screens/admin_layout.dart';
-import 'screens/category_create_page.dart';
-import 'screens/category_edit_page.dart';
+import 'screens/category/category_create_page.dart';
+import 'screens/category/category_edit_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,7 +46,7 @@ class App extends StatelessWidget {
         ),
 
         '/categories': (_) =>
-            const AdminLayout(currentIndex: 1, child: CategoriesPage()),
+            const AdminLayout(currentIndex: 1, child: CategoryListPage()),
         '/categories/new': (_) =>
             const AdminLayout(currentIndex: 1, child: CreateCategoryPage()),
         '/categories/edit': (_) =>

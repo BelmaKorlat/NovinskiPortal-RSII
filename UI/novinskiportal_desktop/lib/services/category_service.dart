@@ -17,7 +17,7 @@ class CategoryService {
       final items = list
           .whereType<Map<String, dynamic>>()
           .map(CategoryDto.fromJson)
-          .toList(growable: false);
+          .toList();
       final total = readTotalCount(data) ?? items.length;
       return PagedResult(items: items, totalCount: total);
     }

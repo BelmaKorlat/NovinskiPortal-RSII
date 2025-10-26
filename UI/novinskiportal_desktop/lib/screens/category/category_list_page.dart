@@ -1,26 +1,30 @@
 // lib/screens/categories_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/category_provider.dart';
-import '../models/category_models.dart';
-import '../utils/color_utils.dart';
-//import '../widgets/pagination_bar.dart';
+import '../../providers/category_provider.dart';
+import '../../models/category_models.dart';
+import '../../utils/color_utils.dart';
+import 'package:data_table_2/data_table_2.dart';
+import '../../widgets/pagination_bar.dart';
+import '../../widgets/status_chip.dart';
 //import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
-class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+class CategoryListPage extends StatefulWidget {
+  const CategoryListPage({super.key});
   @override
-  State<CategoriesPage> createState() => _CategoriesPageState();
+  State<CategoryListPage> createState() => CategoryListPageState();
 }
 
-class _CategoriesPageState extends State<CategoriesPage> {
+class CategoryListPageState extends State<CategoryListPage> {
   final _fts = TextEditingController();
-
+  bool? _active;
   @override
   void initState() {
     super.initState();
     // inicijalno učitaj sve
     final provider = context.read<CategoryProvider>();
+    _fts.text = provider.fts;
+    _active = provider.active;
     Future.microtask(() => provider.load());
   }
 
@@ -60,6 +64,14 @@ class _CategoriesPageState extends State<CategoriesPage> {
   //   if (ok == true) return colorToHex6(selected);
   //   return null;
   // }
+
+  void _applyFilters() {
+    final vm = context.read<CategoryProvider>();
+    vm.page = 0; // reset paginacije na prvu stranicu
+    vm.fts = _fts.text.trim();
+    vm.active = _active;
+    vm.load();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,13 +218,64 @@ class _CategoriesPageState extends State<CategoriesPage> {
         // const SizedBox(height: 12),
 
         // NASLOV
+        // Padding(
+        //   padding: const EdgeInsets.only(bottom: 8),
+        //   child: SizedBox(
+        //     width: double.infinity,
+        //   )
+        //   child: Row(
+        //     mainAxisSize: MainAxisSize.max,
+        //     crossAxisAlignment: CrossAxisAlignment.center,
+        //     children: [
+        //       // Naslov
+        //       Flexible(
+        //         child: Text(
+        //           'Kategorije',
+        //           style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        //             fontSize: 22,
+        //             fontWeight: FontWeight.w700,
+        //           ),
+        //         ),
+        //       ),
+
+        //       const Spacer(),
+
+        //       OutlinedButton.icon(
+        //         icon: const Icon(Icons.add),
+        //         label: const Text('Nova kategorija'),
+        //         onPressed: () =>
+        //             Navigator.pushNamed(context, '/categories/new'),
+        //       ),
+        //     ],
+        //   ),
+        // ),
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'Kategorije',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontSize: 22,
-              fontWeight: FontWeight.w700,
+          child: SizedBox(
+            width: double.infinity, // Row zauzima punu širinu sadržaja
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // naslov popunjava lijevu stranu
+                Expanded(
+                  child: Text(
+                    'Kategorije',
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+
+                // dugme ide skroz desno
+                OutlinedButton.icon(
+                  icon: const Icon(Icons.add),
+                  label: const Text('Nova kategorija'),
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/categories/new'),
+                ),
+              ],
             ),
           ),
         ),
@@ -233,10 +296,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       labelText: 'Pretraga po nazivu',
                       prefixIcon: Icon(Icons.search),
                     ),
-                    onSubmitted: (_) {
-                      vm.fts = _fts.text;
-                      vm.load();
-                    },
+                    // onSubmitted: (_) {
+                    //   vm.fts = _fts.text;
+                    //   vm.load();
+                    // },
                   ),
                 ),
               ),
@@ -246,27 +309,30 @@ class _CategoriesPageState extends State<CategoriesPage> {
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<bool?>(
-                  initialValue: vm.active,
+                  //initialValue: vm.active,
+                  initialValue: _active,
                   decoration: const InputDecoration(labelText: 'Status'),
-                  onChanged: (v) {
-                    vm.active = v;
-                    vm.load();
-                  },
+                  // onChanged: (v) {
+                  //   vm.active = v;
+                  //   vm.load();
+                  // },
                   items: const [
                     DropdownMenuItem(value: null, child: Text('Sve')),
                     DropdownMenuItem(value: true, child: Text('Aktivne')),
                     DropdownMenuItem(value: false, child: Text('Neaktivne')),
                   ],
+                  onChanged: (v) => setState(() => _active = v),
                 ),
               ),
               const SizedBox(width: 12),
 
               // Traži
               FilledButton.icon(
-                onPressed: () {
-                  vm.fts = _fts.text;
-                  vm.load();
-                },
+                // onPressed: () {
+                //   vm.fts = _fts.text;
+                //   vm.load();
+                // },
+                onPressed: _applyFilters,
                 icon: const Icon(Icons.search),
                 label: const Text('Traži'),
               ),
@@ -275,16 +341,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
         ),
 
         const SizedBox(height: 8),
-
-        // Nova kategorija – desno, bez okvira oko reda
-        Align(
-          alignment: Alignment.centerRight,
-          child: OutlinedButton.icon(
-            icon: const Icon(Icons.add),
-            label: const Text('Nova kategorija'),
-            onPressed: () => Navigator.pushNamed(context, '/categories/new'),
-          ),
-        ),
 
         const SizedBox(height: 8),
 
@@ -325,42 +381,64 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   },
                 ),
         ),
+        // moja paginacija
+        // Padding(
+        //   padding: const EdgeInsets.only(top: 12),
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.end,
+        //     children: [
+        //       Text(
+        //         'Prikaz ${vm.totalCount == 0 ? 0 : vm.page * vm.pageSize + 1}'
+        //         '–${vm.page * vm.pageSize + vm.items.length} od ${vm.totalCount}',
+        //       ),
+        //       const SizedBox(width: 16),
+        //       IconButton(
+        //         tooltip: 'Prethodna',
+        //         onPressed: vm.page > 0 ? vm.prevPage : null,
+        //         icon: const Icon(Icons.chevron_left),
+        //       ),
+        //       Text('${vm.page + 1}/${vm.lastPage + 1}'),
+        //       IconButton(
+        //         tooltip: 'Sljedeća',
+        //         onPressed: (vm.page < vm.lastPage) ? vm.nextPage : null,
+        //         icon: const Icon(Icons.chevron_right),
+        //       ),
+        //       const SizedBox(width: 16),
+        //       DropdownButton<int>(
+        //         value: vm.pageSize,
+        //         items: const [
+        //           DropdownMenuItem(value: 10, child: Text('10')),
+        //           DropdownMenuItem(value: 20, child: Text('20')),
+        //           DropdownMenuItem(value: 50, child: Text('50')),
+        //         ],
+        //         onChanged: (v) {
+        //           if (v != null) vm.setPageSize(v);
+        //         },
+        //       ),
+        //     ],
+        //   ),
+        // ),
+        // novo
+        // pri dnu build-a, umjesto tvog Row s gumbima:
         Padding(
           padding: const EdgeInsets.only(top: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Text(
-                'Prikaz ${vm.totalCount == 0 ? 0 : vm.page * vm.pageSize + 1}'
-                '–${vm.page * vm.pageSize + vm.items.length} od ${vm.totalCount}',
-              ),
-              const SizedBox(width: 16),
-              IconButton(
-                tooltip: 'Prethodna',
-                onPressed: vm.page > 0 ? vm.prevPage : null,
-                icon: const Icon(Icons.chevron_left),
-              ),
-              Text('${vm.page + 1}/${vm.lastPage + 1}'),
-              IconButton(
-                tooltip: 'Sljedeća',
-                onPressed: (vm.page < vm.lastPage) ? vm.nextPage : null,
-                icon: const Icon(Icons.chevron_right),
-              ),
-              const SizedBox(width: 16),
-              DropdownButton<int>(
-                value: vm.pageSize,
-                items: const [
-                  DropdownMenuItem(value: 10, child: Text('10')),
-                  DropdownMenuItem(value: 20, child: Text('20')),
-                  DropdownMenuItem(value: 50, child: Text('50')),
-                ],
-                onChanged: (v) {
-                  if (v != null) vm.setPageSize(v);
-                },
-              ),
-            ],
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: PaginationBar(
+              page: vm.page,
+              pageSize: vm.pageSize,
+              totalCount: vm.totalCount,
+              onPageChanged: (p) {
+                vm.page = p;
+                vm.load(); // fetch nove stranice
+              },
+              onPageSizeChanged: (size) {
+                vm.setPageSize(size); // već resetira page=0 i load()
+              },
+            ),
           ),
         ),
+
         // Padding(
         //   padding: const EdgeInsets.only(top: 12),
         //   child: PaginationBar(
@@ -610,7 +688,76 @@ class _CategoriesPageState extends State<CategoriesPage> {
     return ok == true;
   }
 }
+// Sa DataTable
+// class _CategoryTable extends StatelessWidget {
+//   final List<CategoryDto> items;
+//   final void Function(int id) onToggle;
+//   final void Function(int id) onDelete;
+//   final void Function(CategoryDto c) onEdit;
 
+//   const _CategoryTable({
+//     required this.items,
+//     required this.onToggle,
+//     required this.onDelete,
+//     required this.onEdit,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Card(
+//       clipBehavior: Clip.antiAlias,
+//       child: SingleChildScrollView(
+//         scrollDirection: Axis.vertical,
+//         child: DataTable(
+//           columns: const [
+//             DataColumn(label: Text('Redni broj')),
+//             DataColumn(label: Text('Naziv')),
+//             DataColumn(label: Text('Boja')),
+//             DataColumn(label: Text('Aktivna?')),
+//             DataColumn(label: Text('Akcije')),
+//           ],
+//           rows: items.map((c) {
+//             return DataRow(
+//               cells: [
+//                 DataCell(Text(c.ordinalNumber.toString())),
+//                 DataCell(Text(c.name)),
+//                 DataCell(_ColorDot(hex: c.color)),
+//                 DataCell(_ActiveChip(active: c.active)),
+//                 DataCell(
+//                   Row(
+//                     children: [
+//                       IconButton(
+//                         onPressed: () => onEdit(c),
+//                         icon: const Icon(Icons.edit),
+//                       ),
+//                       IconButton(
+//                         tooltip: c.active ? 'Deaktiviraj' : 'Aktiviraj',
+//                         onPressed: () => onToggle(c.id),
+//                         icon: Icon(
+//                           c.active ? Icons.toggle_on : Icons.toggle_off,
+//                           size: 30, // malo veće da vizualno “nosi” status
+//                           color: c.active
+//                               ? Theme.of(context).colorScheme.primary
+//                               : Theme.of(context).colorScheme.onSurfaceVariant,
+//                         ),
+//                       ),
+//                       IconButton(
+//                         onPressed: () => onDelete(c.id),
+//                         icon: const Icon(Icons.delete),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             );
+//           }).toList(),
+//         ),
+//       ),
+//     );
+//   }
+// }
+
+// radi
 class _CategoryTable extends StatelessWidget {
   final List<CategoryDto> items;
   final void Function(int id) onToggle;
@@ -624,56 +771,104 @@ class _CategoryTable extends StatelessWidget {
     required this.onEdit,
   });
 
+  static const double wOrdinal = 80; // Redni broj
+  static const double wColor = 88; // Boja
+  static const double wActive = 96; // Aktivna?
+  static const double wActions = 168; // Akcije
+
   @override
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: DataTable(
-          columns: const [
-            DataColumn(label: Text('Redni broj')),
-            DataColumn(label: Text('Naziv')),
-            DataColumn(label: Text('Boja')),
-            DataColumn(label: Text('Aktivna?')),
-            DataColumn(label: Text('Akcije')),
-          ],
-          rows: items.map((c) {
-            return DataRow(
-              cells: [
-                DataCell(Text(c.ordinalNumber.toString())),
-                DataCell(Text(c.name)),
-                DataCell(_ColorDot(hex: c.color)),
-                DataCell(_ActiveChip(active: c.active)),
-                DataCell(
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () => onEdit(c),
-                        icon: const Icon(Icons.edit),
-                      ),
-                      IconButton(
-                        tooltip: c.active ? 'Deaktiviraj' : 'Aktiviraj',
-                        onPressed: () => onToggle(c.id),
-                        icon: Icon(
-                          c.active ? Icons.toggle_on : Icons.toggle_off,
-                          size: 30, // malo veće da vizualno “nosi” status
-                          color: c.active
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => onDelete(c.id),
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
-                  ),
+      child: LayoutBuilder(
+        builder: (ctx, c) {
+          return DataTable2(
+            headingRowColor: WidgetStatePropertyAll(
+              Theme.of(context).colorScheme.primary.withValues(alpha: 0.09),
+            ),
+            // spriječi 0-width situacije
+            minWidth: c.maxWidth,
+
+            columnSpacing: 20,
+            horizontalMargin: 16,
+            headingRowHeight: 44,
+            dataRowHeight: 48,
+
+            columns: [
+              DataColumn2(
+                label: const Center(child: Text('Redni broj')),
+                size: ColumnSize.S,
+                fixedWidth: wOrdinal,
+              ),
+              const DataColumn2(label: Text('Naziv'), size: ColumnSize.L),
+              DataColumn2(
+                label: const Center(child: Text('Boja')),
+                size: ColumnSize.S,
+                fixedWidth: wColor,
+              ),
+              DataColumn2(
+                label: const Center(child: Text('Aktivna?')),
+                size: ColumnSize.S,
+                fixedWidth: wActive,
+              ),
+              DataColumn2(
+                label: const Center(
+                  //alignment: Alignment.center,
+                  child: Text('Akcije'),
                 ),
-              ],
-            );
-          }).toList(),
-        ),
+                size: ColumnSize.S,
+                fixedWidth: wActions,
+              ),
+            ],
+
+            rows: items.map((cItem) {
+              return DataRow(
+                cells: [
+                  DataCell(Center(child: Text('${cItem.ordinalNumber}'))),
+                  DataCell(
+                    Text(
+                      cItem.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DataCell(Center(child: _ColorDot(hex: cItem.color))),
+                  DataCell(Center(child: StatusChip(value: cItem.active))),
+                  DataCell(
+                    Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            onPressed: () => onEdit(cItem),
+                            icon: const Icon(Icons.edit),
+                          ),
+                          IconButton(
+                            tooltip: cItem.active ? 'Deaktiviraj' : 'Aktiviraj',
+                            onPressed: () => onToggle(cItem.id),
+                            icon: Icon(
+                              cItem.active ? Icons.toggle_on : Icons.toggle_off,
+                              size: 30,
+                              color: cItem.active
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => onDelete(cItem.id),
+                            icon: const Icon(Icons.delete),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }).toList(),
+          );
+        },
       ),
     );
   }
@@ -728,19 +923,58 @@ class _ColorDot extends StatelessWidget {
   }
 }
 
-class _ActiveChip extends StatelessWidget {
-  final bool active;
-  const _ActiveChip({required this.active});
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: active ? cs.primaryContainer : cs.errorContainer,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(active ? 'DA' : 'NE'),
-    );
-  }
-}
+// class _ActiveChip extends StatelessWidget {
+//   final bool active;
+//   const _ActiveChip({required this.active});
+//   @override
+//   Widget build(BuildContext context) {
+//     final cs = Theme.of(context).colorScheme;
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+//       decoration: BoxDecoration(
+//         color: active ? cs.primaryContainer : cs.errorContainer,
+//         borderRadius: BorderRadius.circular(999),
+//       ),
+//       child: Text(active ? 'DA' : 'NE'),
+//     );
+//   }
+// }
+
+// novo sa ikonom - ali u zasebnom widgetu
+// class _ActiveChip extends StatelessWidget {
+//   final bool active;
+//   const _ActiveChip({required this.active});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final cs = Theme.of(context).colorScheme;
+
+//     final bg = active ? cs.primaryContainer : cs.errorContainer;
+//     final fg = active ? cs.onPrimaryContainer : cs.onErrorContainer;
+//     final icon = active ? Icons.check : Icons.close;
+
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+//       decoration: BoxDecoration(
+//         color: bg,
+//         borderRadius: BorderRadius.circular(999),
+//       ),
+//       child: Row(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           // mali kružić s ikonicom
+//           Icon(icon, size: 14, color: fg),
+//           const SizedBox(width: 6),
+//           Text(
+//             active ? 'DA' : 'NE',
+//             style: TextStyle(
+//               color: fg,
+//               fontWeight: FontWeight.w600,
+//               letterSpacing: 0.2,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }

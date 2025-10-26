@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'color_utils.dart';
+import '../../utils/color_utils.dart';
 
 Future<String?> pickHexColor(BuildContext context, String currentHex) async {
   Color current = tryParseHexColor(currentHex) ?? Colors.blue;

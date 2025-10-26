@@ -29,6 +29,7 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
     notifyListeners();
     try {
       final pr = await fetch(buildSearch());
+      //_items = List<T>.from(pr.items); probati ovo ako bi bio opet neki error s brisanjem
       _items = pr.items;
       _totalCount = pr.totalCount ?? (_items.length + page * pageSize);
     } catch (e) {

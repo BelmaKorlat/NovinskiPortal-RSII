@@ -1,10 +1,10 @@
 // lib/screens/category_edit_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/category_models.dart';
-import '../providers/category_provider.dart';
-import '../utils/color_utils.dart';
-import '../utils/color_picker.dart';
+import '../../models/category_models.dart';
+import '../../providers/category_provider.dart';
+import '../../utils/color_utils.dart';
+import '../../widgets/dialogs/color_picker.dart';
 
 class EditCategoryPage extends StatefulWidget {
   const EditCategoryPage({super.key});

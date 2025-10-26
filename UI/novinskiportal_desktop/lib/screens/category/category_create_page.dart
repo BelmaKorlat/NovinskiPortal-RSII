@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/category_provider.dart';
-import '../models/category_models.dart';
-import '../utils/color_utils.dart';
-import '../utils/color_picker.dart';
+import '../../providers/category_provider.dart';
+import '../../models/category_models.dart';
+import '../../utils/color_utils.dart';
+import '../../widgets/dialogs/color_picker.dart';
 
 class CreateCategoryPage extends StatefulWidget {
   const CreateCategoryPage({super.key});
