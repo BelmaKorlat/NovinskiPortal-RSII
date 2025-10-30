@@ -40,6 +40,8 @@ dependencies:
   provider: ^6.1.5+1
   flutter_colorpicker: ^1.0.3
   data_table_2: ^2.5.10
+  elegant_notification: ^2.5.1
+  form_validation: ^3.2.0
 
 dev_dependencies:
   flutter_test:
@@ -97,3 +99,6 @@ flutter:
 
   assets:
     - assets/logo.png
+    - assets/novinskiportal_logo_transparent.png
+    - assets/novinskiportal_logo_white_shaded.png
+  

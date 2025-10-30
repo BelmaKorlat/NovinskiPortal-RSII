@@ -1,10 +1,12 @@
-// lib/screens/category_edit_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/category_models.dart';
 import '../../providers/category_provider.dart';
 import '../../utils/color_utils.dart';
 import '../../widgets/dialogs/color_picker.dart';
+import 'package:form_validation/form_validation.dart';
+import '../../core/api_error.dart';
+import '../../core/notification_service.dart';
 
 class EditCategoryPage extends StatefulWidget {
   const EditCategoryPage({super.key});
@@ -19,22 +21,36 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
   late final TextEditingController _ord;
   late final TextEditingController _name;
   late final TextEditingController _color;
-  late CategoryDto _cat; // original
+  late CategoryDto _cat;
   bool _active = true;
   bool _saving = false;
+  late final Validator ordinalNumberValidator;
+  late final Validator nameValidator;
+
+  @override
+  void initState() {
+    super.initState();
+
+    ordinalNumberValidator = Validator(
+      validators: [RequiredValidator(), NumberValidator(allowDecimal: false)],
+    );
+
+    nameValidator = Validator(
+      validators: [RequiredValidator(), MaxLengthValidator(length: 50)],
+    );
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_inited) return; // spriječi re-init
-
+    if (_inited) return;
     _cat = ModalRoute.of(context)!.settings.arguments as CategoryDto;
     _ord = TextEditingController(text: _cat.ordinalNumber.toString());
     _name = TextEditingController(text: _cat.name);
     _color = TextEditingController(text: _cat.color);
     _active = _cat.active;
 
-    _color.addListener(() => setState(() {})); // repaint kvadratića
+    _color.addListener(() => setState(() {}));
     _inited = true;
   }
 
@@ -59,6 +75,12 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
       await context.read<CategoryProvider>().update(_cat.id, req);
       if (!mounted) return;
       Navigator.pop(context);
+    } on ApiException catch (ex) {
+      if (!mounted) return;
+      NotificationService.error('Greška', ex.message);
+    } catch (_) {
+      if (!mounted) return;
+      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -78,7 +100,7 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Uredi kategoriju',
+                'Uredite kategoriju',
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 12),
@@ -97,12 +119,13 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                           bottom: BorderSide(color: cs.outlineVariant),
                         ),
                       ),
-                      child: const Text('Ažuriraj podatke'),
+                      child: const Text('Ažurirajte podatke'),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Form(
                         key: _form,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -112,6 +135,11 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                               decoration: const InputDecoration(
                                 labelText: 'Redni broj',
                               ),
+                              validator: (v) => ordinalNumberValidator.validate(
+                                label: 'Redni broj',
+                                value: v,
+                              ),
+                              textInputAction: TextInputAction.next,
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
@@ -119,9 +147,11 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
                               decoration: const InputDecoration(
                                 labelText: 'Naziv',
                               ),
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? 'Obavezno'
-                                  : null,
+                              validator: (v) => nameValidator.validate(
+                                label: 'Naziv',
+                                value: v,
+                              ),
+                              textInputAction: TextInputAction.next,
                             ),
                             const SizedBox(height: 12),
                             Row(

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_models.dart';
 import '../services/auth_service.dart';
+import '../core/api_error.dart';
 
 class AuthProvider extends ChangeNotifier {
   final _service = AuthService();
@@ -28,6 +29,10 @@ class AuthProvider extends ChangeNotifier {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('jwt', _token!);
+    } on ApiException {
+      _token = null;
+      _user = null;
+      rethrow;
     } finally {
       _loading = false;
       notifyListeners();

@@ -4,8 +4,8 @@ import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
 
 class AdminLayout extends StatefulWidget {
-  final Widget child; // stranica u sadržaju
-  final int currentIndex; // aktivna stavka menija
+  final Widget child;
+  final int currentIndex;
 
   const AdminLayout({
     super.key,
@@ -48,8 +48,11 @@ class _AdminLayoutState extends State<AdminLayout> {
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final assetPath = isDark
+        ? 'assets/novinskiportal_logo_white_shaded.png'
+        : 'assets/novinskiportal_logo_transparent.png';
 
-    // Boja za sidebar
     final borderColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF6A6E77)
         : const Color(0xFFBBBEC2);
@@ -63,7 +66,6 @@ class _AdminLayoutState extends State<AdminLayout> {
             child: ListView(
               children: [
                 Container(
-                  // novo zamijenjeno
                   height: 56,
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -72,64 +74,92 @@ class _AdminLayoutState extends State<AdminLayout> {
                       bottom: BorderSide(color: borderColor, width: 1),
                     ),
                   ),
-                  child: const Text(
-                    'Novinski Portal',
-                    style: TextStyle(fontWeight: FontWeight.w600),
+
+                  child: Row(
+                    children: [
+                      Image.asset(assetPath, height: 40, fit: BoxFit.contain),
+                      const SizedBox(width: 12),
+
+                      const Expanded(
+                        child: Text(
+                          'Novinski Portal',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                _NavTile(
-                  icon: Icons.home,
-                  label: 'Početna',
-                  index: 0,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                _NavTile(
-                  icon: Icons.category,
-                  label: 'Kategorije',
-                  index: 1,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                _NavTile(
-                  icon: Icons.list_alt,
-                  label: 'Potkategorije',
-                  index: 2,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                _NavTile(
-                  icon: Icons.article,
-                  label: 'Članci',
-                  index: 3,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                _NavTile(
-                  icon: Icons.people,
-                  label: 'Korisnici',
-                  index: 4,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                _NavTile(
-                  icon: Icons.chat_bubble,
-                  label: 'Komentari',
-                  index: 5,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
-                ),
-                Container(height: 1, color: borderColor), // novo
-                _NavTile(
-                  icon: Icons.logout,
-                  label: 'Odjava',
-                  index: 6,
-                  current: widget.currentIndex,
-                  onTap: _onSelect,
+                DefaultTextStyle.merge(
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  child: IconTheme.merge(
+                    data: const IconThemeData(size: 20),
+                    child: Column(
+                      children: [
+                        _NavTile(
+                          icon: Icons.home,
+                          label: 'Početna',
+                          index: 0,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        _NavTile(
+                          icon: Icons.category,
+                          label: 'Kategorije',
+                          index: 1,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        _NavTile(
+                          icon: Icons.list_alt,
+                          label: 'Potkategorije',
+                          index: 2,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        _NavTile(
+                          icon: Icons.article,
+                          label: 'Članci',
+                          index: 3,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        _NavTile(
+                          icon: Icons.people,
+                          label: 'Korisnici',
+                          index: 4,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        _NavTile(
+                          icon: Icons.chat_bubble,
+                          label: 'Komentari',
+                          index: 5,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                        Container(height: 1, color: borderColor),
+                        _NavTile(
+                          icon: Icons.logout,
+                          label: 'Odjava',
+                          index: 6,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
+
           Expanded(
             child: Column(
               children: [
@@ -141,7 +171,6 @@ class _AdminLayoutState extends State<AdminLayout> {
                     children: [
                       const Spacer(),
 
-                      // Tema: light/dark
                       IconButton(
                         tooltip: 'Tema',
                         onPressed: () =>
@@ -154,7 +183,6 @@ class _AdminLayoutState extends State<AdminLayout> {
                       ),
                       const SizedBox(width: 8),
 
-                      // Info o korisniku
                       Text(
                         '${user?.firstName ?? ''} ${user?.lastName ?? ''} (${user?.username ?? ''})',
                       ),

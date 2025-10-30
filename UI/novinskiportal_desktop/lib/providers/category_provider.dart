@@ -1,14 +1,15 @@
-// lib/providers/category_provider.dart
+import 'package:novinskiportal_desktop/core/notification_service.dart';
+
 import '../models/category_models.dart';
 import '../services/category_service.dart';
 import '../providers/paged_provider.dart';
 import '../core/paging.dart';
+import '../core/api_error.dart';
 
 class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
   final _service = CategoryService();
 
-  // filter state
-  bool? active; // null = sve
+  bool? active;
   String fts = '';
   @override
   CategorySearch buildSearch() => CategorySearch(
@@ -27,11 +28,13 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
   Future<void> create(CreateCategoryRequest r) async {
     await _service.create(r);
     await load();
+    NotificationService.success('Notifikacija', 'Uspješno dodano!');
   }
 
   Future<void> update(int id, UpdateCategoryRequest r) async {
     await _service.update(id, r);
     await load();
+    NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
   }
 
   Future<void> toggle(int id) async {
@@ -42,8 +45,14 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
         items[i] = fresh;
         notifyListeners();
       }
-    } catch (e) {
-      setError(e.toString());
+      final msg = fresh.active
+          ? 'Uspješno aktivirano!'
+          : 'Uspješno deaktivirano!';
+      NotificationService.success('Notifikacija', msg);
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri promjeni statusa.');
     }
   }
 
@@ -51,5 +60,6 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
     await _service.delete(id);
     items.removeWhere((x) => x.id == id);
     notifyListeners();
+    NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
   }
 }

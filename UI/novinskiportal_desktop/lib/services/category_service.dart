@@ -1,17 +1,32 @@
-// lib/services/category_service.dart
 import 'package:dio/dio.dart';
 import '../core/api_client.dart';
 import '../models/category_models.dart';
 import '../core/paging.dart';
+import '../core/api_error.dart';
 
 class CategoryService {
   final Dio _dio = ApiClient().dio;
   static const String _base = '/api/Categories';
 
-  Future<PagedResult<CategoryDto>> getPage(CategorySearch s) async {
-    final res = await _dio.get(_base, queryParameters: s.toQuery());
+  // Pomoćni metod za konzistentno mapiranje DioException -> ApiException
+  ApiException _asApi(
+    DioException e, {
+    String fallback = 'Došlo je do greške.',
+  }) {
+    if (e.error is ApiException) return e.error as ApiException;
 
-    if (res.statusCode == 200) {
+    final code = e.response?.statusCode;
+    final data = e.response?.data;
+    return ApiException(
+      statusCode: code,
+      message: humanMessage(code, data, fallback),
+    );
+  }
+
+  Future<PagedResult<CategoryDto>> getPage(CategorySearch s) async {
+    try {
+      final res = await _dio.get(_base, queryParameters: s.toQuery());
+
       final data = res.data;
       final list = readItems(data);
       final items = list
@@ -20,81 +35,100 @@ class CategoryService {
           .toList();
       final total = readTotalCount(data) ?? items.length;
       return PagedResult(items: items, totalCount: total);
+    } on DioException catch (e) {
+      throw _asApi(e, fallback: 'Neuspješan GET.');
+      //  throw _asApi(e, fallback: 'Greška prilikom dobavljanja kategorija.');
+    } catch (_) {
+      throw ApiException(message: 'Neočekivan oblik odgovora.');
     }
-    throw Exception('Neuspješan GET (${res.statusCode})');
   }
 
-  //  lista
   Future<List<CategoryDto>> getList(CategorySearch s) async {
-    final res = await _dio.get(_base, queryParameters: s.toQuery());
-
-    if (res.statusCode == 200) {
+    try {
+      final res = await _dio.get(_base, queryParameters: s.toQuery());
       final data = res.data;
 
-      // 1) /api/Categories → vrati čisti niz
       if (data is List) {
         return data
-            .map((e) => CategoryDto.fromJson(e as Map<String, dynamic>))
+            .whereType<Map<String, dynamic>>()
+            .map(CategoryDto.fromJson)
             .toList();
       }
 
-      // 2) /api/Categories → vrati objekat s paginacijom (items/data/result/records)
       if (data is Map<String, dynamic>) {
         final list =
             data['items'] ?? data['data'] ?? data['result'] ?? data['records'];
-
         if (list is List) {
           return list
-              .map((e) => CategoryDto.fromJson(e as Map<String, dynamic>))
+              .whereType<Map<String, dynamic>>()
+              .map(CategoryDto.fromJson)
               .toList();
         }
-
-        // Ako backend vrati prazan objekat {}
         if (data.isEmpty) return <CategoryDto>[];
       }
 
-      // Ako dođeš dovde – format je neočekivan
-      throw Exception('Neočekivan oblik odgovora: ${data.runtimeType}');
+      throw ApiException(message: 'Neočekivan oblik odgovora.');
+    } on DioException catch (e) {
+      throw _asApi(e, fallback: 'Neuspješan GET kategorija.');
     }
-
-    throw Exception('Neuspješan GET kategorija (${res.statusCode})');
   }
 
   Future<CategoryDto> getById(int id) async {
-    final res = await _dio.get('$_base/$id');
-    if (res.statusCode == 200 && res.data is Map<String, dynamic>) {
-      return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+    try {
+      final res = await _dio.get('$_base/$id');
+      if (res.data is Map<String, dynamic>) {
+        return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+      }
+      throw ApiException(message: 'Neočekivan oblik odgovora.');
+    } on DioException catch (e) {
+      throw _asApi(e, fallback: 'Neuspješan GET by id.');
     }
-    throw Exception('Neuspješan GET by id (${res.statusCode})');
   }
 
-  Future<CategoryDto> create(CreateCategoryRequest r) async {
-    final res = await _dio.post(_base, data: r.toJson());
-    if (res.statusCode == 200 || res.statusCode == 201) {
-      return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+  Future<void> create(CreateCategoryRequest r) async {
+    try {
+      await _dio.post(_base, data: r.toJson());
+    } on DioException catch (e) {
+      final code = e.response?.statusCode;
+      final msg = humanMessage(
+        code,
+        e.response?.data,
+        'Došlo je do greške prilikom kreiranja kategorije.',
+      );
+      throw ApiException(statusCode: code, message: msg);
     }
-    throw Exception('Neuspješan CREATE (${res.statusCode})');
   }
 
-  Future<CategoryDto> update(int id, UpdateCategoryRequest r) async {
-    final res = await _dio.put('$_base/$id', data: r.toJson());
-    if (res.statusCode == 200 || res.statusCode == 204) {
-      return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+  Future<void> update(int id, UpdateCategoryRequest r) async {
+    try {
+      final res = await _dio.put('$_base/$id', data: r.toJson());
+      final _ = res;
+    } on DioException catch (e) {
+      throw _asApi(
+        e,
+        fallback: 'Došlo je do greške prilikom ažuriranja kategorije.',
+      );
     }
-    throw Exception('Neuspješan UPDATE (${res.statusCode})');
   }
 
   Future<CategoryDto> toggleStatus(int id) async {
-    final res = await _dio.patch('$_base/$id/status');
-    if (res.statusCode == 200) {
-      return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+    try {
+      final res = await _dio.patch('$_base/$id/status');
+      if (res.data is Map<String, dynamic>) {
+        return CategoryDto.fromJson(res.data as Map<String, dynamic>);
+      }
+      throw ApiException(message: 'Neočekivan oblik odgovora.');
+    } on DioException catch (e) {
+      throw _asApi(e, fallback: 'Greška pri ažuriranju statusa.');
     }
-    throw Exception('Neuspješan TOGGLE (${res.statusCode})');
   }
 
   Future<bool> delete(int id) async {
-    final res = await _dio.delete('$_base/$id');
-    if (res.statusCode == 200 || res.statusCode == 204) return true;
-    throw Exception('Neuspješan DELETE (${res.statusCode})');
+    try {
+      await _dio.delete('$_base/$id');
+      return true;
+    } on DioException catch (e) {
+      throw _asApi(e, fallback: 'Greška pri brisanju kategorije.');
+    }
   }
 }

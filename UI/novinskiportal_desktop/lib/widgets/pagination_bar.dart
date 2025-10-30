@@ -1,26 +1,19 @@
-// lib/widgets/pagination_bar.dart
 import 'package:flutter/material.dart';
 
 class PaginationBar extends StatelessWidget {
-  /// 0-based index trenutne stranice
   final int page;
 
-  /// Ukupan broj zapisa (ne stranica!)
   final int totalCount;
 
-  /// Koliko zapisa po stranici
   final int pageSize;
 
-  /// Callback za promjenu stranice (0-based)
   final ValueChanged<int> onPageChanged;
 
-  /// Callback za promjenu page size-a
   final ValueChanged<int> onPageSizeChanged;
 
-  /// Opcije za page size
   final List<int> pageSizeOptions;
 
-  /// Koliko "susjednih" stranica prikazati oko aktivne (1 = ... 4 [5] 6 ...)
+  ///  (1 = ... 4 [5] 6 ...)
   final int window;
 
   const PaginationBar({
@@ -38,15 +31,16 @@ class PaginationBar extends StatelessWidget {
   int get _pagesCount => _lastPage + 1;
 
   List<int?> _pagesToShow() {
-    // int = index stranice; null = "…"
     if (_pagesCount <= 7) {
       return List<int>.generate(_pagesCount, (i) => i);
     }
 
     final set = <int>{
-      0, _lastPage, // prva i zadnja
-      1, if (_lastPage >= 1) _lastPage - 1, // druge po redu
-      page, // aktivna
+      0,
+      _lastPage,
+      1,
+      if (_lastPage >= 1) _lastPage - 1,
+      page,
       ...List.generate(window, (i) => page - (i + 1)),
       ...List.generate(window, (i) => page + (i + 1)),
     }.where((i) => i >= 0 && i <= _lastPage).toList()..sort();
@@ -55,7 +49,7 @@ class PaginationBar extends StatelessWidget {
     for (int i = 0; i < set.length; i++) {
       out.add(set[i]);
       if (i < set.length - 1 && (set[i + 1] - set[i]) > 1) {
-        out.add(null); // rupa -> ubaci elipsu
+        out.add(null);
       }
     }
     return out;
@@ -76,7 +70,6 @@ class PaginationBar extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: [
-            // PREV
             IconButton(
               visualDensity: VisualDensity.compact,
               onPressed: page > 0 ? () => onPageChanged(page - 1) : null,
@@ -84,7 +77,6 @@ class PaginationBar extends StatelessWidget {
               tooltip: 'Prethodna',
             ),
 
-            // NUMERIČKE STRANICE
             ..._pagesToShow().map((idx) {
               if (idx == null) {
                 return const Padding(
@@ -128,7 +120,6 @@ class PaginationBar extends StatelessWidget {
                     );
             }),
 
-            // NEXT
             IconButton(
               visualDensity: VisualDensity.compact,
               onPressed: page < _lastPage
@@ -138,10 +129,8 @@ class PaginationBar extends StatelessWidget {
               tooltip: 'Sljedeća',
             ),
 
-            // RAZMAK
             const SizedBox(width: 12),
 
-            // PAGE SIZE
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [

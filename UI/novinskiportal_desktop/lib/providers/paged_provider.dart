@@ -1,6 +1,6 @@
-// lib/providers/paged_provider.dart
 import 'package:flutter/foundation.dart';
 import '../core/paging.dart';
+import '../core/api_error.dart';
 
 abstract class PagedProvider<T, S> extends ChangeNotifier {
   bool _loading = false;
@@ -17,10 +17,8 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
   int get totalCount => _totalCount;
   int get lastPage => (_totalCount == 0) ? 0 : ((_totalCount - 1) ~/ pageSize);
 
-  /// Djeca vraćaju PagedResult za zadani search.
   Future<PagedResult<T>> fetch(S search);
 
-  /// Djeca moraju dati aktivni search state.
   S buildSearch();
 
   Future<void> load() async {
@@ -29,11 +27,12 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
     notifyListeners();
     try {
       final pr = await fetch(buildSearch());
-      //_items = List<T>.from(pr.items); probati ovo ako bi bio opet neki error s brisanjem
       _items = pr.items;
       _totalCount = pr.totalCount ?? (_items.length + page * pageSize);
-    } catch (e) {
-      _error = e.toString();
+    } on ApiException catch (ex) {
+      _error = ex.message;
+    } catch (_) {
+      _error = 'Greška pri učitavanju.';
     } finally {
       _loading = false;
       notifyListeners();

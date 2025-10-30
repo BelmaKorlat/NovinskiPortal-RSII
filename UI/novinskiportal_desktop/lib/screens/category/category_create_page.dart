@@ -4,6 +4,9 @@ import '../../providers/category_provider.dart';
 import '../../models/category_models.dart';
 import '../../utils/color_utils.dart';
 import '../../widgets/dialogs/color_picker.dart';
+import '../../core/api_error.dart';
+import 'package:form_validation/form_validation.dart';
+import '../../core/notification_service.dart';
 
 class CreateCategoryPage extends StatefulWidget {
   const CreateCategoryPage({super.key});
@@ -19,6 +22,21 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
   final _color = TextEditingController(text: '#3B82F6');
   bool _active = true;
   bool _saving = false;
+  late final Validator ordinalNumberValidator;
+  late final Validator nameValidator;
+
+  @override
+  void initState() {
+    super.initState();
+
+    ordinalNumberValidator = Validator(
+      validators: [RequiredValidator(), NumberValidator(allowDecimal: false)],
+    );
+
+    nameValidator = Validator(
+      validators: [RequiredValidator(), MaxLengthValidator(length: 50)],
+    );
+  }
 
   @override
   void dispose() {
@@ -30,17 +48,25 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+
     setState(() => _saving = true);
     try {
       final req = CreateCategoryRequest(
-        ordinalNumber: int.tryParse(_ord.text) ?? 0,
+        ordinalNumber: int.parse(_ord.text.trim()),
         name: _name.text.trim(),
         color: _color.text.trim(),
         active: _active,
       );
+
       await context.read<CategoryProvider>().create(req);
       if (!mounted) return;
-      Navigator.pop(context); // nazad na listu
+      Navigator.pop(context);
+    } on ApiException catch (ex) {
+      if (!mounted) return;
+      NotificationService.error('Greška', ex.message);
+    } catch (e) {
+      if (!mounted) return;
+      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -55,7 +81,7 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
       child: Align(
         alignment: Alignment.topLeft,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720), // širina forme
+          constraints: const BoxConstraints(maxWidth: 720),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -68,7 +94,6 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
                 clipBehavior: Clip.antiAlias,
                 child: Column(
                   children: [
-                    // header kartice
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -86,30 +111,35 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
                       padding: const EdgeInsets.all(16),
                       child: Form(
                         key: _form,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             TextFormField(
                               controller: _ord,
                               keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
+                              decoration: InputDecoration(
                                 labelText: 'Redni broj',
                               ),
+                              validator: (v) => ordinalNumberValidator.validate(
+                                label: 'Redni broj',
+                                value: v,
+                              ),
+                              textInputAction: TextInputAction.next,
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
                               controller: _name,
-                              decoration: const InputDecoration(
-                                labelText: 'Naziv',
+                              decoration: InputDecoration(labelText: 'Naziv'),
+                              validator: (v) => nameValidator.validate(
+                                label: 'Naziv',
+                                value: v,
                               ),
-                              validator: (v) => (v == null || v.trim().isEmpty)
-                                  ? 'Obavezno'
-                                  : null,
+                              textInputAction: TextInputAction.next,
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                // mali preview tačka
                                 Container(
                                   width: 24,
                                   height: 24,
@@ -155,7 +185,6 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            // checkbox
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -175,7 +204,6 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
                         ),
                       ),
                     ),
-                    // footer kartice
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),

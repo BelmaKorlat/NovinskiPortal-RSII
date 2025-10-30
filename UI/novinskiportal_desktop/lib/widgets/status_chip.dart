@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
 class StatusChip extends StatelessWidget {
-  final bool value; // npr. aktivna ili ne
-  final String trueText; // "DA"
-  final String falseText; // "NE"
-  final IconData trueIcon; // Icons.check
-  final IconData falseIcon; // Icons.close
-  final EdgeInsets padding; // po želji
-  final double iconSize; // po želji
+  final bool value;
+  final String trueText;
+  final String falseText;
+  final IconData trueIcon;
+  final IconData falseIcon;
+  final EdgeInsets padding;
+  final double iconSize;
 
   const StatusChip({
     super.key,
@@ -29,7 +29,7 @@ class StatusChip extends StatelessWidget {
     final text = value ? trueText : falseText;
 
     return Semantics(
-      label: text, // pristupačnost
+      label: text,
       child: Container(
         padding: padding,
         decoration: BoxDecoration(

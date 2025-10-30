@@ -1,8 +1,8 @@
-// lib/core/api_client.dart
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart'; // OVO je bitno
+import 'package:dio/io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'api_error.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -20,11 +20,10 @@ class ApiClient {
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 15),
         headers: {'Content-Type': 'application/json'},
-        validateStatus: (s) => s != null && s >= 200 && s < 500,
+        validateStatus: (s) => s != null && s >= 200 && s < 300,
       ),
     );
 
-    // Dev: dozvoli self-signed cert za localhost
     final adapter = dio.httpClientAdapter as IOHttpClientAdapter;
     adapter.createHttpClient = () {
       final client = HttpClient();
@@ -37,12 +36,6 @@ class ApiClient {
 
     dio.interceptors.add(
       InterceptorsWrapper(
-        // onRequest: (options, handler) async {
-        //   // Token će dodati provider kad ga sačuva u SharedPreferences
-        //   // Ako želiš odmah, dodaj čitanje SharedPreferences ovdje.
-        //   handler.next(options);
-        // },
-        // novo provjeriti zasto je ovako sad a ne ovako kako je zakomentarisano
         onRequest: (options, handler) async {
           final p = await SharedPreferences.getInstance();
           final token = p.getString('jwt');
@@ -52,7 +45,45 @@ class ApiClient {
           handler.next(options);
         },
         onResponse: (response, handler) => handler.next(response),
-        onError: (err, handler) => handler.next(err),
+        onError: (err, handler) {
+          String message;
+          int? status;
+          final req = err.requestOptions;
+
+          // mreža
+          if (err.type == DioExceptionType.connectionTimeout ||
+              err.type == DioExceptionType.sendTimeout ||
+              err.type == DioExceptionType.receiveTimeout) {
+            message = 'Veza je istekla. Pokušajte ponovo.';
+          } else if (err.type == DioExceptionType.connectionError ||
+              err.error is SocketException) {
+            message = 'Nema veze sa serverom. Provjerite internet.';
+          } else {
+            // HTTP
+            final resp = err.response;
+            status = resp?.statusCode;
+            final data = resp?.data;
+            final path = req.path;
+            final isLogin =
+                path.endsWith('/api/auth/login') ||
+                path.contains('/auth/login');
+
+            if (status == 401 && isLogin) {
+              message = 'Pogrešan username ili lozinka.';
+            } else if ((status == 400 || status == 401) && isLogin) {
+              message = 'Pogrešan username ili lozinka.';
+            } else {
+              message = humanMessage(status, data, 'Došlo je do greške.');
+            }
+          }
+
+          handler.reject(
+            DioException(
+              requestOptions: req,
+              error: ApiException(statusCode: status, message: message),
+            ),
+          );
+        },
       ),
     );
   }

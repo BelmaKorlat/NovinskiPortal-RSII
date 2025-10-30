@@ -1,11 +1,9 @@
-// lib/core/paging.dart
 class PagedResult<T> {
   final List<T> items;
   final int? totalCount;
   const PagedResult({required this.items, this.totalCount});
 }
 
-/// Sigurno čitanje response polja Items/items i TotalCount/totalCount
 List<dynamic> readItems(dynamic data) {
   if (data is Map<String, dynamic>) {
     final raw = data['items'] ?? data['Items'];

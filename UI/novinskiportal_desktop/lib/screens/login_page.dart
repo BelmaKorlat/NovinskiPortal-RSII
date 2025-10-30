@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../core/api_error.dart';
+import '../core/notification_service.dart';
+import 'package:form_validation/form_validation.dart';
 
 void showToastTopRight(
   BuildContext context,
@@ -52,6 +55,26 @@ class _LoginPageState extends State<LoginPage> {
   final _passCtrl = TextEditingController();
   bool _obscure = true;
   Timer? _revealTimer;
+  late final Validator emailValidator;
+  late final Validator usernameValidator;
+  late final Validator passwordValidator;
+
+  @override
+  void initState() {
+    super.initState();
+
+    emailValidator = Validator(
+      validators: [RequiredValidator(), EmailValidator()],
+    );
+
+    usernameValidator = Validator(
+      validators: [RequiredValidator(), MinLengthValidator(length: 3)],
+    );
+
+    passwordValidator = Validator(
+      validators: [RequiredValidator(), MinLengthValidator(length: 6)],
+    );
+  }
 
   @override
   void dispose() {
@@ -66,24 +89,28 @@ class _LoginPageState extends State<LoginPage> {
     if (!ok) return;
 
     final auth = context.read<AuthProvider>();
-
     try {
       await auth.login(_userCtrl.text.trim(), _passCtrl.text);
       if (!mounted) return;
 
-      showToastTopRight(context, 'Login uspješan', seconds: 3);
-
+      NotificationService.success('Notifikacija', 'Login uspješan');
       Navigator.pushNamedAndRemoveUntil(context, '/admin', (_) => false);
-    } catch (e) {
+    } on ApiException catch (ex) {
       if (!mounted) return;
-      final msg = e.toString().replaceFirst('Exception: ', '');
-      showToastTopRight(context, msg);
+      NotificationService.error('Greška', ex.message);
+    } catch (_) {
+      if (!mounted) return;
+      NotificationService.error('Greška', 'Greška pri prijavi.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final assetPath = isDark
+        ? 'assets/novinskiportal_logo_white_shaded.png'
+        : 'assets/novinskiportal_logo_transparent.png';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
@@ -95,32 +122,30 @@ class _LoginPageState extends State<LoginPage> {
               padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      'assets/logo.png',
-                      width: 150,
-                      height: 150,
-                      fit: BoxFit.contain,
-                    ),
+                    Image.asset(assetPath, width: 120),
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _userCtrl,
                       decoration: const InputDecoration(
-                        hintText: 'Username ili email',
+                        hintText: 'Korisničko ime ili email',
                         prefixIcon: Icon(Icons.person),
                       ),
                       validator: (v) {
                         final s = v?.trim() ?? '';
-                        if (s.isEmpty) return 'Unesi username ili email';
                         if (s.contains('@')) {
-                          final ok = RegExp(
-                            r'^[^@]+@[^@]+\.[^@]+$',
-                          ).hasMatch(s);
-                          if (!ok) return 'Email nije ispravan';
+                          return emailValidator.validate(
+                            label: 'Email',
+                            value: s,
+                          );
                         }
-                        return null;
+                        return usernameValidator.validate(
+                          label: 'Korisničko ime',
+                          value: s,
+                        );
                       },
                       textInputAction: TextInputAction.next,
                     ),
@@ -129,29 +154,22 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passCtrl,
                       obscureText: _obscure,
                       decoration: InputDecoration(
-                        hintText: 'Password',
+                        hintText: 'Lozinka',
                         prefixIcon: const Icon(Icons.lock),
-                        suffixIcon: MouseRegion(
-                          onEnter: (_) => setState(() => _obscure = false),
-                          onExit: (_) => setState(() => _obscure = true),
-                          child: IconButton(
-                            onPressed:
-                                () {}, // klik ne radi ništa, prikaz je samo na hover
-                            icon: Icon(
-                              _obscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            tooltip: 'Pređi mišem za prikaz',
+                        suffixIcon: GestureDetector(
+                          onTapDown: (_) => setState(() => _obscure = false),
+                          onTapUp: (_) => setState(() => _obscure = true),
+                          onTapCancel: () => setState(() => _obscure = true),
+                          behavior: HitTestBehavior.opaque,
+                          child: Icon(
+                            _obscure ? Icons.visibility : Icons.visibility_off,
                           ),
                         ),
                       ),
-                      validator: (v) {
-                        final s = v ?? '';
-                        if (s.isEmpty) return 'Unesi password';
-                        if (s.length < 6) return 'Minimalno 6 znakova';
-                        return null;
-                      },
+                      validator: (v) => passwordValidator.validate(
+                        label: 'Lozinka',
+                        value: v,
+                      ),
                       onFieldSubmitted: (_) => _submit(),
                     ),
                     const SizedBox(height: 16),

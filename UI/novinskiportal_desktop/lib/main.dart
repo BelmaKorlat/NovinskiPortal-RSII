@@ -10,10 +10,23 @@ import 'screens/login_page.dart';
 import 'screens/admin_layout.dart';
 import 'screens/category/category_create_page.dart';
 import 'screens/category/category_edit_page.dart';
+import 'core/notification_service.dart';
+import 'package:form_validation/form_validation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   ApiClient();
+
+  final t = FormValidationTranslations.values;
+  t['form_validation_required'] = '{label} je obavezno polje.';
+  t['form_validation_max_length'] =
+      '{label} smije imati najviše {length} znakova.';
+  t['form_validation_min_length'] =
+      '{label} mora imati najmanje {length} znakova.';
+  t['form_validation_min_number'] = '{label} mora biti najmanje {number}.';
+  t['form_validation_number'] = '{label} mora biti broj.';
+  t['form_validation_email'] = 'Neispravan email format.';
+  t['form_validation_phone_number'] = 'Neispravan broj telefona.';
 
   runApp(
     MultiProvider(
@@ -37,6 +50,7 @@ class App extends StatelessWidget {
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),
       themeMode: context.watch<ThemeProvider>().mode,
+      navigatorKey: NotificationService.navigatorKey,
       home: const LoginPage(),
       routes: {
         '/login': (_) => const LoginPage(),

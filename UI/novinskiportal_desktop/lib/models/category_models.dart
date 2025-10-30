@@ -1,11 +1,10 @@
-// lib/models/category_models.dart
 import '../core/base_search.dart';
 
 class CategoryDto {
   final int id;
   final String name;
   final int ordinalNumber;
-  final String color; // npr "#00AA66"
+  final String color;
   final bool active;
 
   CategoryDto({
@@ -25,7 +24,6 @@ class CategoryDto {
   );
 }
 
-// druga paginacija:
 class CategorySearch extends BaseSearch {
   final bool? active;
 
@@ -49,7 +47,7 @@ class CategorySearch extends BaseSearch {
 class CreateCategoryRequest {
   final String name;
   final int ordinalNumber;
-  final String color; // u backendu je string
+  final String color;
   final bool active;
 
   CreateCategoryRequest({

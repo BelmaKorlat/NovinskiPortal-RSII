@@ -1,7 +1,5 @@
-// lib/core/search.dart
-
 mixin PageArgs {
-  int get page; // 0-based
+  int get page;
   int get pageSize;
   bool get includeTotalCount;
   bool get retrieveAll;
@@ -9,7 +7,6 @@ mixin PageArgs {
   Map<String, dynamic> toPageQuery() {
     final q = <String, dynamic>{};
     if (retrieveAll) {
-      // tražiš sve, backend ignoriše paging
       q['RetrieveAll'] = 'true';
     } else {
       q['Page'] = page.toString();
@@ -39,7 +36,6 @@ abstract class BaseSearch with PageArgs {
     this.retrieveAll = false,
   });
 
-  // Djeca proširuju sa svojim filterima.
   Map<String, dynamic> toQuery() {
     final q = toPageQuery();
     if (fts != null && fts!.trim().isNotEmpty) q['FTS'] = fts!.trim();
