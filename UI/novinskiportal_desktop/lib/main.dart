@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
+import 'package:novinskiportal_desktop/providers/subcategory_provider.dart';
 import 'package:novinskiportal_desktop/screens/category/category_list_page.dart';
+import 'package:novinskiportal_desktop/screens/subcategory/subcategory_edit_page.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
@@ -12,6 +14,8 @@ import 'screens/category/category_create_page.dart';
 import 'screens/category/category_edit_page.dart';
 import 'core/notification_service.dart';
 import 'package:form_validation/form_validation.dart';
+import 'screens/subcategory/subcategory_list_page.dart';
+import 'screens/subcategory/subcategory_create_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +38,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthProvider()..loadToken()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()..load()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => SubcategoryProvider()),
       ],
       child: const App(),
     ),
@@ -65,10 +70,12 @@ class App extends StatelessWidget {
             const AdminLayout(currentIndex: 1, child: CreateCategoryPage()),
         '/categories/edit': (_) =>
             const AdminLayout(currentIndex: 1, child: EditCategoryPage()),
-        '/subcategories': (_) => const AdminLayout(
-          currentIndex: 2,
-          child: Center(child: Text('Potkategorije')),
-        ),
+        '/subcategories': (_) =>
+            const AdminLayout(currentIndex: 2, child: SubcategoryListPage()),
+        '/subcategories/new': (_) =>
+            const AdminLayout(currentIndex: 2, child: CreateSubcategoryPage()),
+        '/subcategories/edit': (_) =>
+            const AdminLayout(currentIndex: 2, child: EditSubcategoryPage()),
         // privremeni placeholderi da sidebar radi bez greške
         '/articles': (_) => const AdminLayout(
           currentIndex: 3,

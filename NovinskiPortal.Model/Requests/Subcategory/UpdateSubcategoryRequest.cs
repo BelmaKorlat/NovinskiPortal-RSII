@@ -5,7 +5,7 @@ namespace NovinskiPortal.Model.Requests.Subcategory
 {
     public class UpdateSubcategoryRequest
     {
-        public int Id { get; set; } = default!;
+        //public int Id { get; set; } = default!;
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Subcategory name is required.")]
         [MinLength(1, ErrorMessage = "Subcategory name min lenght is 1.")]
