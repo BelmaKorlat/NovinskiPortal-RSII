@@ -62,6 +62,7 @@ namespace NovinskiPortal.Services.Services.BaseService
         {
             return query;
         }
+
         public virtual async Task<T?> GetByIdAsync(int id)
         {
             var entity = await _context.Set<TEntity>().FindAsync(id);

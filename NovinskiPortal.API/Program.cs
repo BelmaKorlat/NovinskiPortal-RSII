@@ -9,6 +9,7 @@ using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.Services.AdminService;
+using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 using NovinskiPortal.Services.Services.JwtService;
@@ -97,6 +98,19 @@ TypeAdapterConfig<User, UserAdminResponse>.NewConfig()
     .Map(dest => dest.RoleName, src => src.Role.Name);
 TypeAdapterConfig<User, UserResponse>.NewConfig()
     .Map(dest => dest.RoleName, src => src.Role.Name);
+TypeAdapterConfig<Article, ArticleResponse>.NewConfig()
+    .Map(d => d.Category, s => s.Category.Name)
+    .Map(d => d.Subcategory, s => s.Subcategory.Name)
+    .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)
+    .Map(d => d.Color, s => s.Category.Color);
+
+TypeAdapterConfig<Article, ArticleDetailResponse>.NewConfig()
+    .Map(d => d.Category, s => s.Category.Name)
+    .Map(d => d.Subcategory, s => s.Subcategory.Name)
+    .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)
+    .Map(d => d.Color, s => s.Category.Color)
+    .Map(d => d.AdditionalPhotos, s => s.ArticlePhotos.Select(p => p.PhotoPath).ToList());
+
 
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -106,18 +120,23 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

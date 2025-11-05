@@ -23,6 +23,9 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
             _mapper = mapper;
         }
 
+        // u BaseCRUDService<TResp, TSearch, TEntity, TCreate, TUpdate>
+        protected virtual Task AfterInsertAsync(TEntity entity) => Task.CompletedTask;
+
         public virtual async Task<T> CreateAsync(TInsert request)
         {
               var entity = new TEntity();
@@ -32,6 +35,9 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
             await BeforeInsert(entity, request);
 
             await _context.SaveChangesAsync();
+
+            await AfterInsertAsync(entity);
+
             return MapToResponse(entity);
         }
 
@@ -53,6 +59,8 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
             MapToEntityUpdate(entity, request);
 
             await _context.SaveChangesAsync();
+            await AfterInsertAsync(entity);
+
             return MapToResponse(entity);
         }
 
