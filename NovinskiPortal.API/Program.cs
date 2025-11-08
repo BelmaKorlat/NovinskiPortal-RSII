@@ -94,17 +94,27 @@ builder.Services.AddScoped<IMapper, ServiceMapper>();
 // In your application startup (e.g., Program.cs or a dedicated config class):
 TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
     .Map(dest => dest.CategoryName, src => src.Category.Name);
+
 TypeAdapterConfig<User, UserAdminResponse>.NewConfig()
     .Map(dest => dest.RoleName, src => src.Role.Name);
 TypeAdapterConfig<User, UserResponse>.NewConfig()
     .Map(dest => dest.RoleName, src => src.Role.Name);
+
 TypeAdapterConfig<Article, ArticleResponse>.NewConfig()
+    .Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+    .Map(d => d.PublishedAt,
+         s => DateTime.SpecifyKind(s.PublishedAt, DateTimeKind.Utc))
     .Map(d => d.Category, s => s.Category.Name)
     .Map(d => d.Subcategory, s => s.Subcategory.Name)
     .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)
     .Map(d => d.Color, s => s.Category.Color);
 
 TypeAdapterConfig<Article, ArticleDetailResponse>.NewConfig()
+     .Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+    .Map(d => d.PublishedAt,
+         s => DateTime.SpecifyKind(s.PublishedAt, DateTimeKind.Utc))
     .Map(d => d.Category, s => s.Category.Name)
     .Map(d => d.Subcategory, s => s.Subcategory.Name)
     .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)

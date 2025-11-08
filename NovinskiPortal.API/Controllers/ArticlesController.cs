@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.API.Utils;
 using NovinskiPortal.Model.Responses;
@@ -25,6 +26,16 @@ namespace NovinskiPortal.API.Controllers
             if (articleSearchObject == null)
                 articleSearchObject = new ArticleSearchObject();
             var result = await _articleService.GetAsync(articleSearchObject);
+            if(result?.Items != null)
+            {
+                foreach (var item in result.Items)
+                {
+                    if (!string.IsNullOrEmpty(item.MainPhotoPath))
+                    {
+                        item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
+                    }
+                }
+            }
             return Ok(result);
         }
 
@@ -35,6 +46,7 @@ namespace NovinskiPortal.API.Controllers
             var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return Unauthorized();
+            var publishedLocal = DateTime.SpecifyKind(createArticleRequest.PublishedAt, DateTimeKind.Local);
 
             var newArticle = new Model.Requests.Article.CreateArticleRequest
             {
@@ -42,7 +54,7 @@ namespace NovinskiPortal.API.Controllers
                 Subheadline = createArticleRequest.Subheadline,
                 ShortText = createArticleRequest.ShortText,
                 Text = createArticleRequest.Text,
-                PublishedAt = createArticleRequest.PublishedAt,
+                PublishedAt = publishedLocal.ToUniversalTime(),
                 Active = createArticleRequest.Active,
                 HideFullName = createArticleRequest.HideFullName,
                 BreakingNews = createArticleRequest.BreakingNews,
@@ -55,9 +67,10 @@ namespace NovinskiPortal.API.Controllers
             };
 
             var created = await _articleService.CreateAsync(newArticle);
+
             return Ok(created);
             //return CreatedAtAction(nameof(GetDetailById), new { id = created.Id }, created);
-        }
+       }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<ArticleResponse>> GetById(int id)

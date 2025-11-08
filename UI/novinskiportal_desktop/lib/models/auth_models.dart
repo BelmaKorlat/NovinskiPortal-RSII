@@ -1,4 +1,5 @@
 class UserDto {
+  final int id;
   final String firstName;
   final String lastName;
   final String username;
@@ -6,6 +7,7 @@ class UserDto {
   final String roleName;
 
   UserDto({
+    required this.id,
     required this.firstName,
     required this.lastName,
     required this.username,
@@ -14,6 +16,9 @@ class UserDto {
   });
 
   factory UserDto.fromJson(Map<String, dynamic> j) => UserDto(
+    id: j['id'] is int
+        ? j['id'] as int
+        : int.tryParse(j['id']?.toString() ?? '') ?? 0,
     firstName: (j['firstName'] ?? '') as String,
     lastName: (j['lastName'] ?? '') as String,
     username: (j['username'] ?? '') as String,

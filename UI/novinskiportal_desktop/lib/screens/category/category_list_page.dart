@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
 import 'package:provider/provider.dart';
 import '../../providers/category_provider.dart';
 import '../../models/category_models.dart';
@@ -49,7 +50,7 @@ class CategoryListPageState extends State<CategoryListPage> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(left: 4, right: 4, bottom: 10),
           child: SizedBox(
             width: double.infinity,
             child: Row(
@@ -79,7 +80,7 @@ class CategoryListPageState extends State<CategoryListPage> {
 
         // TOOLBAR
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
             children: [
               Flexible(
@@ -125,8 +126,6 @@ class CategoryListPageState extends State<CategoryListPage> {
 
         const SizedBox(height: 8),
 
-        const SizedBox(height: 8),
-
         // TABLICA
         Expanded(
           child: vm.isLoading
@@ -136,9 +135,9 @@ class CategoryListPageState extends State<CategoryListPage> {
               : _CategoryTable(
                   items: vm.items,
                   onToggle: (id) async {
-                    final ok = await _confirmActive(
-                      context,
-                      'Jeste li sigurni da želite promijeniti status?',
+                    final ok = await showConfirmDialog(
+                      context: context,
+                      message: 'Jeste li sigurni da želite promijeniti status?',
                     );
                     if (!ok) return;
                     try {
@@ -155,9 +154,10 @@ class CategoryListPageState extends State<CategoryListPage> {
                     }
                   },
                   onDelete: (id) async {
-                    final ok = await _confirmDelete(
-                      context,
-                      'Jeste li sigurni da želite obrisati ovu kategoriju?',
+                    final ok = await showDestructiveConfirmDialog(
+                      context: context,
+                      message:
+                          'Jeste li sigurni da želite obrisati ovu kategoriju?',
                     );
                     if (!ok) return;
                     try {
@@ -203,51 +203,29 @@ class CategoryListPageState extends State<CategoryListPage> {
       ],
     );
   }
-
-  Future<bool> _confirmDelete(BuildContext context, String msg) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Potvrda'),
-        content: Text(msg),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Ne'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Da'),
-          ),
-        ],
-      ),
-    );
-    return ok == true;
-  }
 }
 
-Future<bool> _confirmActive(BuildContext context, String msg) async {
-  final ok = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Potvrda'),
-      content: Text(msg),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx, false),
-          child: const Text('Ne'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.pop(ctx, true),
-          child: const Text('Da'),
-        ),
-      ],
-    ),
-  );
-  return ok == true;
-}
+// Future<bool> _confirmActive(BuildContext context, String msg) async {
+//   final ok = await showDialog<bool>(
+//     context: context,
+//     barrierDismissible: false,
+//     builder: (ctx) => AlertDialog(
+//       title: const Text('Potvrda'),
+//       content: Text(msg),
+//       actions: [
+//         TextButton(
+//           onPressed: () => Navigator.pop(ctx, false),
+//           child: const Text('Ne'),
+//         ),
+//         FilledButton(
+//           onPressed: () => Navigator.pop(ctx, true),
+//           child: const Text('Da'),
+//         ),
+//       ],
+//     ),
+//   );
+//   return ok == true;
+// }
 
 class _CategoryTable extends StatelessWidget {
   final List<CategoryDto> items;
@@ -280,7 +258,7 @@ class _CategoryTable extends StatelessWidget {
             minWidth: c.maxWidth,
 
             columnSpacing: 20,
-            horizontalMargin: 16,
+            //horizontalMargin: 16,
             headingRowHeight: 44,
             dataRowHeight: 48,
 

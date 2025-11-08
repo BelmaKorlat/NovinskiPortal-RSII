@@ -58,7 +58,11 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
       );
       setState(() {
         _categories = List<CategoryDto>.from(list)
-          ..sort((a, b) => a.name.compareTo(b.name));
+          ..sort((a, b) {
+            final an = a.name.trim().toLowerCase();
+            final bn = b.name.trim().toLowerCase();
+            return an.compareTo(bn);
+          });
         _categoryLoading = false;
       });
     } catch (_) {
@@ -154,45 +158,53 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SizedBox(
-                              width: 380,
-                              child: _categoryLoading
-                                  ? const LinearProgressIndicator()
-                                  : DropdownButtonFormField<int>(
-                                      initialValue: _categoryId,
-                                      isExpanded: true,
-                                      decoration: const InputDecoration(
-                                        labelText: 'Kategorija',
-                                      ),
-                                      items: _categories
-                                          .map(
-                                            (c) => DropdownMenuItem(
-                                              value: c.id,
-                                              child: Text(c.name),
-                                            ),
-                                          )
-                                          .toList(),
-                                      onChanged: (v) =>
-                                          setState(() => _categoryId = v),
-                                      validator: (v) => v == null
-                                          ? 'Odaberite kategoriju'
-                                          : null,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _categoryLoading
+                                      ? const LinearProgressIndicator()
+                                      : DropdownButtonFormField<int>(
+                                          initialValue: _categoryId,
+                                          isExpanded: true,
+                                          decoration: const InputDecoration(
+                                            labelText: 'Kategorija',
+                                          ),
+                                          items: _categories
+                                              .map(
+                                                (c) => DropdownMenuItem(
+                                                  value: c.id,
+                                                  child: Text(c.name),
+                                                ),
+                                              )
+                                              .toList(),
+                                          onChanged: (v) =>
+                                              setState(() => _categoryId = v),
+                                          validator: (v) => v == null
+                                              ? 'Odaberite kategoriju'
+                                              : null,
+                                        ),
+                                ),
+
+                                const SizedBox(width: 16),
+
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: _name,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Naziv',
                                     ),
+                                    validator: (v) => nameValidator.validate(
+                                      label: 'Naziv',
+                                      value: v,
+                                    ),
+                                    textInputAction: TextInputAction.next,
+                                  ),
+                                ),
+                              ],
                             ),
+
                             const SizedBox(height: 12),
-                            TextFormField(
-                              controller: _ord,
-                              keyboardType: TextInputType.number,
-                              decoration: const InputDecoration(
-                                labelText: 'Redni broj',
-                              ),
-                              validator: (v) => ordinalNumberValidator.validate(
-                                label: 'Redni broj',
-                                value: v,
-                              ),
-                              textInputAction: TextInputAction.next,
-                            ),
-                            const SizedBox(height: 12),
+
                             TextFormField(
                               controller: _name,
                               decoration: const InputDecoration(

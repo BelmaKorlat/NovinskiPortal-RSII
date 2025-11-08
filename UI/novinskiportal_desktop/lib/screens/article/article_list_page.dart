@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:novinskiportal_desktop/models/subcategory_models.dart';
+import 'package:novinskiportal_desktop/services/subcategory_service.dart';
 import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
 import 'package:provider/provider.dart';
-import '../../providers/subcategory_provider.dart';
-import '../../models/subcategory_models.dart';
+import '../../providers/article_provider.dart';
+import '../../models/article_models.dart';
 import 'package:data_table_2/data_table_2.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_chip.dart';
@@ -11,27 +14,35 @@ import '../../core/notification_service.dart';
 import '../../models/category_models.dart';
 import '../../services/category_service.dart';
 
-class SubcategoryListPage extends StatefulWidget {
-  const SubcategoryListPage({super.key});
+class ArticleListPage extends StatefulWidget {
+  const ArticleListPage({super.key});
   @override
-  State<SubcategoryListPage> createState() => SubcategoryListPageState();
+  State<ArticleListPage> createState() => ArticleListPageState();
 }
 
-class SubcategoryListPageState extends State<SubcategoryListPage> {
+class ArticleListPageState extends State<ArticleListPage> {
   bool _categoryLoading = true;
   List<CategoryDto> _categories = [];
+  bool _subcategoryLoading = true;
+  List<SubcategoryDto> _subcategories = [];
+  // vidjeti kako uraditi load user-a
+  final _fts = TextEditingController();
   int? _categoryId;
-  bool? _active;
+  int? _subcategoryId;
+  int? _userId;
 
   @override
   void initState() {
     super.initState();
-    final provider = context.read<SubcategoryProvider>();
+    final provider = context.read<ArticleProvider>();
+    _fts.text = provider.fts;
     _categoryId = provider.categoryId;
-    _active = provider.active;
+    _subcategoryId = provider.subcategoryId;
+    _userId = provider.userId;
     Future.microtask(() => provider.load());
 
     _loadCategories();
+    _loadSubcategories();
   }
 
   Future<void> _loadCategories() async {
@@ -55,22 +66,46 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
     }
   }
 
+  Future<void> _loadSubcategories() async {
+    try {
+      final svc = SubcategoryService();
+      final list = await svc.getList(
+        const SubcategorySearch(retrieveAll: true, active: true),
+      );
+      setState(() {
+        _subcategories = List<SubcategoryDto>.from(list)
+          ..sort((a, b) {
+            final an = a.name.trim().toLowerCase();
+            final bn = b.name.trim().toLowerCase();
+            return an.compareTo(bn);
+          });
+        _subcategoryLoading = false;
+      });
+    } catch (_) {
+      setState(() => _subcategoryLoading = false);
+      NotificationService.error('Greška', 'Ne mogu učitati potkategorije.');
+    }
+  }
+
   @override
   void dispose() {
+    _fts.dispose();
     super.dispose();
   }
 
   void _applyFilters() {
-    final vm = context.read<SubcategoryProvider>();
+    final vm = context.read<ArticleProvider>();
     vm.page = 0;
+    vm.fts = _fts.text.trim();
     vm.categoryId = _categoryId;
-    vm.active = _active;
+    vm.subcategoryId = _subcategoryId;
+    vm.userId = _userId;
     vm.load();
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<SubcategoryProvider>();
+    final vm = context.watch<ArticleProvider>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -84,7 +119,7 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
               children: [
                 Expanded(
                   child: Text(
-                    'Potkategorije',
+                    'Članci',
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontSize: 22,
@@ -95,9 +130,9 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
 
                 OutlinedButton.icon(
                   icon: const Icon(Icons.add),
-                  label: const Text('Nova potkategorija'),
+                  label: const Text('Novi članak'),
                   onPressed: () =>
-                      Navigator.pushNamed(context, '/subcategories/new'),
+                      Navigator.pushNamed(context, '/articles/new'),
                 ),
               ],
             ),
@@ -109,6 +144,20 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
             children: [
+              Flexible(
+                flex: 4,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560),
+                  child: TextField(
+                    controller: _fts,
+                    decoration: const InputDecoration(
+                      labelText: 'Pretraga po nazivu',
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
               SizedBox(
                 width: 280,
                 child: _categoryLoading
@@ -135,22 +184,58 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Status
+              // Potkategorije
               SizedBox(
-                width: 180,
-                child: DropdownButtonFormField<bool?>(
-                  initialValue: _active,
-                  decoration: const InputDecoration(labelText: 'Status'),
-                  items: const [
-                    DropdownMenuItem(value: null, child: Text('Sve')),
-                    DropdownMenuItem(value: true, child: Text('Aktivne')),
-                    DropdownMenuItem(value: false, child: Text('Neaktivne')),
-                  ],
-                  onChanged: (v) => setState(() => _active = v),
-                ),
+                width: 280,
+                child: _subcategoryLoading
+                    ? const LinearProgressIndicator()
+                    : DropdownButtonFormField<int?>(
+                        initialValue: _subcategoryId,
+                        decoration: const InputDecoration(
+                          labelText: 'Filtriraj po potkategoriji',
+                        ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Sve potkategorije'),
+                          ),
+                          ..._subcategories.map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text(c.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _subcategoryId = v),
+                      ),
               ),
               const SizedBox(width: 12),
-
+              // Ovako treba uraditi i za usere
+              // SizedBox(
+              //   width: 280,
+              //   child: _subcategoryLoading
+              //       ? const LinearProgressIndicator()
+              //       : DropdownButtonFormField<int?>(
+              //           initialValue: _subcategoryId,
+              //           decoration: const InputDecoration(
+              //             labelText: 'Filtriraj po potkategoriji',
+              //           ),
+              //           items: [
+              //             const DropdownMenuItem(
+              //               value: null,
+              //               child: Text('Sve potkategorije'),
+              //             ),
+              //             ..._subcategories.map(
+              //               (c) => DropdownMenuItem(
+              //                 value: c.id,
+              //                 child: Text(c.name),
+              //               ),
+              //             ),
+              //           ],
+              //           onChanged: (v) => setState(() => _subcategoryId = v),
+              //         ),
+              // ),
+              // const SizedBox(width: 12),
               // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
@@ -169,7 +254,7 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
               ? const Center(child: CircularProgressIndicator())
               : vm.error != null
               ? Center(child: Text(vm.error!))
-              : _SubcategoryTable(
+              : _ArticleTable(
                   items: vm.items,
                   onToggle: (id) async {
                     final ok = await showConfirmDialog(
@@ -186,7 +271,7 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
                       if (!context.mounted) return;
                       NotificationService.error(
                         'Greška',
-                        'Greška pri promjeni statusa potkategorije.',
+                        'Greška pri promjeni statusa članka.',
                       );
                     }
                   },
@@ -194,7 +279,7 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
                     final ok = await showDestructiveConfirmDialog(
                       context: context,
                       message:
-                          'Jeste li sigurni da želite obrisati ovu potkategoriju?',
+                          'Jeste li sigurni da želite obrisati ovaj članak?',
                     );
                     if (!ok) return;
                     try {
@@ -206,14 +291,14 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
                       if (!context.mounted) return;
                       NotificationService.error(
                         'Greška',
-                        'Greška pri brisanju potkategorije.',
+                        'Greška pri brisanju članka.',
                       );
                     }
                   },
                   onEdit: (c) {
                     Navigator.pushNamed(
                       context,
-                      '/subcategories/edit',
+                      '/articles/edit',
                       arguments: c,
                     );
                   },
@@ -241,27 +326,27 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
     );
   }
 
-  // Future<bool> _confirmDelete(BuildContext context, String msg) async {
-  //   final ok = await showDialog<bool>(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text('Potvrda'),
-  //       content: Text(msg),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(ctx, false),
-  //           child: const Text('Ne'),
-  //         ),
-  //         FilledButton(
-  //           onPressed: () => Navigator.pop(ctx, true),
-  //           child: const Text('Da'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //   return ok == true;
-  // }
+  //   Future<bool> _confirmDelete(BuildContext context, String msg) async {
+  //     final ok = await showDialog<bool>(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (ctx) => AlertDialog(
+  //         title: const Text('Potvrda'),
+  //         content: Text(msg),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(ctx, false),
+  //             child: const Text('Ne'),
+  //           ),
+  //           FilledButton(
+  //             onPressed: () => Navigator.pop(ctx, true),
+  //             child: const Text('Da'),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //     return ok == true;
+  //   }
 }
 
 // Future<bool> _confirmActive(BuildContext context, String msg) async {
@@ -286,21 +371,25 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
 //   return ok == true;
 // }
 
-class _SubcategoryTable extends StatelessWidget {
-  final List<SubcategoryDto> items;
+// helper za datum
+// String _fmtDate(DateTime dt) {
+//   return '${dt.day}.${dt.month}.${dt.year}.';
+// }
+
+class _ArticleTable extends StatelessWidget {
+  final List<ArticleDto> items;
   final void Function(int id) onToggle;
   final void Function(int id) onDelete;
-  final void Function(SubcategoryDto c) onEdit;
+  final void Function(ArticleDto c) onEdit;
 
-  const _SubcategoryTable({
+  const _ArticleTable({
     required this.items,
     required this.onToggle,
     required this.onDelete,
     required this.onEdit,
   });
 
-  static const double wOrdinal = 90;
-  static const double wActive = 96;
+  static const double wFlag = 96;
   static const double wActions = 168;
 
   @override
@@ -322,17 +411,28 @@ class _SubcategoryTable extends StatelessWidget {
 
             columns: [
               const DataColumn2(label: Text('Kategorija'), size: ColumnSize.S),
-              DataColumn2(
-                label: const Center(child: Text('Redni broj')),
+              const DataColumn2(
+                label: Text('Potkategorija'),
                 size: ColumnSize.S,
-                fixedWidth: wOrdinal,
               ),
               const DataColumn2(label: Text('Naziv'), size: ColumnSize.L),
-
+              DataColumn2(label: Text('Datum objave'), size: ColumnSize.S),
+              DataColumn2(label: Text('Datum kreiranja'), size: ColumnSize.S),
+              DataColumn2(label: Text('Autor'), size: ColumnSize.S),
+              DataColumn2(
+                label: Center(child: Text('Udarna?')),
+                size: ColumnSize.S,
+                fixedWidth: wFlag,
+              ),
+              DataColumn2(
+                label: Center(child: Text('Uživo?')),
+                size: ColumnSize.S,
+                fixedWidth: wFlag,
+              ),
               DataColumn2(
                 label: const Center(child: Text('Aktivna?')),
                 size: ColumnSize.S,
-                fixedWidth: wActive,
+                fixedWidth: wFlag,
               ),
               DataColumn2(
                 label: const Center(child: Text('Akcije')),
@@ -341,24 +441,50 @@ class _SubcategoryTable extends StatelessWidget {
               ),
             ],
             rows: items.map((cItem) {
-              final categoryName = cItem.categoryName ?? '${cItem.categoryId}';
               return DataRow(
                 cells: [
                   DataCell(
                     Text(
-                      categoryName,
+                      cItem.category,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  DataCell(Center(child: Text('${cItem.ordinalNumber}'))),
                   DataCell(
                     Text(
-                      cItem.name,
+                      cItem.subcategory,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  DataCell(
+                    Text(
+                      cItem.headline,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  //DataCell(Text(_fmtDate(cItem.publishedAt))),
+                  DataCell(
+                    Text(
+                      DateFormat('d.M.yyyy, HH:mm').format(cItem.publishedAt),
+                    ),
+                  ),
+                  DataCell(
+                    Text(DateFormat('d.M.yyyy, HH:mm').format(cItem.createdAt)),
+                  ),
+                  //DataCell(Text(_fmtDate(cItem.createdAt))),
+                  DataCell(
+                    Text(
+                      cItem.user,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  DataCell(
+                    Center(child: StatusChip(value: cItem.breakingNews)),
+                  ),
+                  DataCell(Center(child: StatusChip(value: cItem.live))),
                   DataCell(Center(child: StatusChip(value: cItem.active))),
                   DataCell(
                     Center(

@@ -16,6 +16,10 @@ class AuthProvider extends ChangeNotifier {
   bool get isLoading => _loading;
   bool get isAuthenticated => _token != null;
 
+  int? get userId => _user?.id;
+  String get fullName =>
+      _user == null ? '' : '${_user!.firstName} ${_user!.lastName}'.trim();
+
   Future<void> login(String emailOrUsername, String password) async {
     _loading = true;
     notifyListeners();

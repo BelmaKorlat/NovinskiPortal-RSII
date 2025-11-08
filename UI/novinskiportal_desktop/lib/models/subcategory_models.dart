@@ -23,7 +23,7 @@ class SubcategoryDto {
     ordinalNumber: j['ordinalNumber'] as int,
     active: j['active'] as bool,
     categoryId: j['categoryId'] as int,
-    categoryName: j['categoryName'] as String?, // NOVO
+    categoryName: j['categoryName'] as String?,
   );
 }
 
