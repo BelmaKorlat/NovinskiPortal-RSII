@@ -73,7 +73,7 @@ class ArticleService {
 
   Future<ArticleDetailDto> getById(int id) async {
     try {
-      final res = await _dio.get('$_base/$id');
+      final res = await _dio.get('$_base/$id/detail');
       if (res.data is Map<String, dynamic>) {
         return ArticleDetailDto.fromJson(res.data as Map<String, dynamic>);
       }

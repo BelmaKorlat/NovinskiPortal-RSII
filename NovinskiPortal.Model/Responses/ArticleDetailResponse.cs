@@ -4,6 +4,7 @@ namespace NovinskiPortal.Model.Responses
 {
     public class ArticleDetailResponse
     {
+        public int Id { get; set; }
         public string Headline { get; set; } = default!;
         public string Subheadline { get; set; } = default!;
         public string ShortText { get; set; } = default!;

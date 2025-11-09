@@ -16,6 +16,10 @@ import '../../services/subcategory_service.dart';
 import '../../models/subcategory_models.dart';
 import '../../providers/auth_provider.dart';
 
+// Ako imaš UserService i UserDto, odkomentariši:
+// import '../../services/user_service.dart';
+// import '../../models/user_models.dart';
+
 class EditArticlePage extends StatefulWidget {
   const EditArticlePage({super.key});
 
@@ -26,7 +30,7 @@ class EditArticlePage extends StatefulWidget {
 class _EditArticlePageState extends State<EditArticlePage> {
   final _form = GlobalKey<FormState>();
 
-  bool _inited = false;
+  late ArticleDetailDto _art;
   late int _articleId;
 
   late final TextEditingController _headline;
@@ -43,22 +47,22 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
   int? _categoryId;
   int? _subcategoryId;
-
-  bool _loading = true;
+  //int? _userId; // uraditi kasnije
   bool _categoryLoading = true;
   bool _subcategoryLoading = true;
-  bool _saving = false;
-
+  // bool _userLoading = true;
   List<CategoryDto> _categories = [];
   List<SubcategoryDto> _subcategories = [];
+  // List<UserDto> _users = [];
 
-  // postojeće slike sa servera
   String? _existingMainPhotoPath;
   List<String> _existingAdditionalPhotos = [];
-
-  // nove slike
+  // slike
   PhotoUpload? _newMainPhoto;
-  List<PhotoUpload> _newAdditionalPhotos = [];
+  final List<PhotoUpload> _newAdditionalPhotos = [];
+
+  bool _saving = false;
+  bool _inited = false;
 
   late final Validator _headlineValidator;
   late final Validator _subheadlineValidator;
@@ -71,6 +75,11 @@ class _EditArticlePageState extends State<EditArticlePage> {
   void initState() {
     super.initState();
 
+    _headline = TextEditingController();
+    _subheadline = TextEditingController();
+    _shortText = TextEditingController();
+    _text = TextEditingController();
+
     _headlineValidator = Validator(
       validators: [RequiredValidator(), MaxLengthValidator(length: 150)],
     );
@@ -82,10 +91,9 @@ class _EditArticlePageState extends State<EditArticlePage> {
     );
     _textValidator = Validator(validators: [RequiredValidator()]);
 
-    _headline = TextEditingController();
-    _subheadline = TextEditingController();
-    _shortText = TextEditingController();
-    _text = TextEditingController();
+    _loadCategories();
+    //_loadSubcategories();
+    // _loadUsers();
   }
 
   @override
@@ -94,10 +102,29 @@ class _EditArticlePageState extends State<EditArticlePage> {
     if (_inited) return;
     _inited = true;
 
-    // articleId dolazi iz liste:
-    // Navigator.pushNamed(context, '/articles/edit', arguments: article.id);
-    _articleId = ModalRoute.of(context)!.settings.arguments as int;
-    _loadInitial();
+    _art = ModalRoute.of(context)!.settings.arguments as ArticleDetailDto;
+    _articleId = _art.id;
+
+    _categoryId = _art.categoryId;
+    _subcategoryId = _art.subcategoryId;
+    _publishedAt = _art.publishedAt.toLocal();
+
+    _headline.text = _art.headline;
+    _subheadline.text = _art.subheadline;
+    _shortText.text = _art.shortText;
+    _text.text = _art.text;
+
+    _active = _art.active;
+    _hideFullName = _art.hideFullName;
+    _breakingNews = _art.breakingNews;
+    _live = _art.live;
+
+    _existingMainPhotoPath = _art.mainPhotoPath;
+    _existingAdditionalPhotos = List<String>.from(_art.additionalPhotos);
+
+    _loadSubcategories(categoryIdFilter: _categoryId);
+
+    _inited = true;
   }
 
   @override
@@ -106,73 +133,28 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _subheadline.dispose();
     _shortText.dispose();
     _text.dispose();
+
     super.dispose();
   }
 
-  Future<void> _loadInitial() async {
+  Future<void> _loadCategories() async {
     try {
-      // kategorije
-      final catSvc = CategoryService();
-      final catList = await catSvc.getList(
+      final svc = CategoryService();
+      final list = await svc.getList(
         const CategorySearch(retrieveAll: true, active: true),
       );
-      _categories = List<CategoryDto>.from(catList)
-        ..sort((a, b) {
-          final an = a.name.trim().toLowerCase();
-          final bn = b.name.trim().toLowerCase();
-          return an.compareTo(bn);
-        });
-      _categoryLoading = false;
-
-      // detalji članka
-      final articleProvider = context.read<ArticleProvider>();
-      final ArticleDetailDto detail = await articleProvider.getDetail(
-        _articleId,
-      );
-
-      _headline.text = detail.headline;
-      _subheadline.text = detail.subheadline;
-      _shortText.text = detail.shortText;
-      _text.text = detail.text;
-
-      _publishedAt = detail.publishedAt.toLocal();
-      _active = detail.active;
-      _hideFullName = detail.hideFullName;
-      _breakingNews = detail.breakingNews;
-      _live = detail.live;
-
-      _categoryId = detail.categoryId;
-      _subcategoryId = detail.subcategoryId;
-
-      _existingMainPhotoPath = detail.mainPhotoPath;
-      _existingAdditionalPhotos = List<String>.from(detail.additionalPhotos);
-
-      // potkategorije za tu kategoriju
-      if (_categoryId != null) {
-        await _loadSubcategories(categoryIdFilter: _categoryId);
-      }
-
-      if (!mounted) return;
       setState(() {
-        _loading = false;
-      });
-    } on ApiException {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
+        _categories = List<CategoryDto>.from(list)
+          ..sort((a, b) {
+            final an = a.name.trim().toLowerCase();
+            final bn = b.name.trim().toLowerCase();
+            return an.compareTo(bn);
+          });
         _categoryLoading = false;
-        _subcategoryLoading = false;
       });
-      Navigator.pop(context);
     } catch (_) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri učitavanju članka.');
-      setState(() {
-        _loading = false;
-        _categoryLoading = false;
-        _subcategoryLoading = false;
-      });
-      Navigator.pop(context);
+      setState(() => _categoryLoading = false);
+      NotificationService.error('Greška', 'Ne mogu učitati kategorije.');
     }
   }
 
@@ -185,7 +167,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
         categoryId: categoryIdFilter,
       );
       final list = await svc.getList(search);
-      if (!mounted) return;
       setState(() {
         _subcategories = List<SubcategoryDto>.from(list)
           ..sort((a, b) {
@@ -196,14 +177,27 @@ class _EditArticlePageState extends State<EditArticlePage> {
         _subcategoryLoading = false;
       });
     } catch (_) {
-      if (!mounted) return;
       setState(() => _subcategoryLoading = false);
       NotificationService.error('Greška', 'Ne mogu učitati potkategorije.');
     }
   }
 
-  // File picker helperi
+  // Ako imaš listu korisnika, odkomentariši i prilagodi:
+  // Future<void> _loadUsers() async {
+  //   try {
+  //     final svc = UserService();
+  //     final list = await svc.getList();
+  //     setState(() {
+  //       _users = List<UserDto>.from(list)..sort((a, b) => a.fullName.compareTo(b.fullName));
+  //       _userLoading = false;
+  //     });
+  //   } catch (_) {
+  //     setState(() => _userLoading = false);
+  //     NotificationService.error('Greška', 'Ne mogu učitati autore.');
+  //   }
+  // }
 
+  // File picker helpers
   Future<PhotoUpload?> _pickOne() async {
     final res = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -229,16 +223,16 @@ class _EditArticlePageState extends State<EditArticlePage> {
       allowMultiple: true,
     );
     if (res == null || res.files.isEmpty) return [];
-    final list = <PhotoUpload>[];
+    final additionalPhotos = <PhotoUpload>[];
     for (final f in res.files) {
       if (f.bytes != null) {
-        list.add(PhotoUpload(fileName: f.name, bytes: f.bytes!));
+        additionalPhotos.add(PhotoUpload(fileName: f.name, bytes: f.bytes!));
       } else if (f.path != null) {
         final bytes = await File(f.path!).readAsBytes();
-        list.add(PhotoUpload(fileName: f.name, bytes: bytes));
+        additionalPhotos.add(PhotoUpload(fileName: f.name, bytes: bytes));
       }
     }
-    return list;
+    return additionalPhotos;
   }
 
   Future<void> _pickMainPhoto() async {
@@ -246,7 +240,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
     if (p == null) return;
     setState(() {
       _newMainPhoto = p;
-      // ako biramo novu, staru više ne prikazujemo
       _existingMainPhotoPath = null;
     });
   }
@@ -286,6 +279,16 @@ class _EditArticlePageState extends State<EditArticlePage> {
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
 
+    final auth = context.read<AuthProvider>();
+    final userId = auth.userId;
+
+    if (userId == null || userId == 0) {
+      NotificationService.error(
+        'Greška',
+        'Nije moguće odrediti autora. Prijavite se ponovo.',
+      );
+      return;
+    }
     if (_categoryId == null) {
       NotificationService.error('Greška', 'Odaberite kategoriju.');
       return;
@@ -294,22 +297,11 @@ class _EditArticlePageState extends State<EditArticlePage> {
       NotificationService.error('Greška', 'Odaberite potkategoriju.');
       return;
     }
+    // Ako nemaš dropdown za autora, postavi userId iz logina ili fiksno:
+    //final userId = _userId ?? 1; // zamijeni stvarnim id iz AuthProvidera
 
     setState(() => _saving = true);
-
     try {
-      final auth = context.read<AuthProvider>();
-      final userId = auth.userId;
-
-      if (userId == null || userId == 0) {
-        NotificationService.error(
-          'Greška',
-          'Nije moguće odrediti autora. Prijavite se ponovo.',
-        );
-        setState(() => _saving = false);
-        return;
-      }
-
       final req = UpdateArticleRequest(
         headline: _headline.text.trim(),
         subheadline: _subheadline.text.trim(),
@@ -330,7 +322,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
       );
 
       await context.read<ArticleProvider>().update(_articleId, req);
-
       if (!mounted) return;
       Navigator.pop(context);
     } on ApiException catch (ex) {
@@ -348,11 +339,18 @@ class _EditArticlePageState extends State<EditArticlePage> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    final selectedCategoryId =
+        (_categoryId != null && _categories.any((c) => c.id == _categoryId))
+        ? _categoryId
+        : null;
 
-    return Padding(
+    final selectedSubcategoryId =
+        (_subcategoryId != null &&
+            _subcategories.any((s) => s.id == _subcategoryId))
+        ? _subcategoryId
+        : null;
+
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Align(
         alignment: Alignment.topLeft,
@@ -391,14 +389,13 @@ class _EditArticlePageState extends State<EditArticlePage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // kategorija / potkategorija
                             Row(
                               children: [
                                 Expanded(
                                   child: _categoryLoading
                                       ? const LinearProgressIndicator()
                                       : DropdownButtonFormField<int>(
-                                          value: _categoryId,
+                                          initialValue: selectedCategoryId,
                                           isExpanded: true,
                                           decoration: const InputDecoration(
                                             labelText: 'Kategorija',
@@ -426,12 +423,14 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                               : null,
                                         ),
                                 ),
+
                                 const SizedBox(width: 16),
+
                                 Expanded(
                                   child: _subcategoryLoading
                                       ? const LinearProgressIndicator()
                                       : DropdownButtonFormField<int>(
-                                          value: _subcategoryId,
+                                          initialValue: selectedSubcategoryId,
                                           isExpanded: true,
                                           decoration: const InputDecoration(
                                             labelText: 'Potkategorija',
@@ -444,11 +443,9 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                                 ),
                                               )
                                               .toList(),
-                                          onChanged: (v) {
-                                            setState(() {
-                                              _subcategoryId = v;
-                                            });
-                                          },
+                                          onChanged: (v) => setState(
+                                            () => _subcategoryId = v,
+                                          ),
                                           validator: (v) => v == null
                                               ? 'Odaberite potkategoriju'
                                               : null,
@@ -459,7 +456,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
                             const SizedBox(height: 12),
 
-                            // nadnaslov + datum/vrijeme
                             Row(
                               children: [
                                 Expanded(
@@ -497,7 +493,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
                             const SizedBox(height: 12),
 
-                            // naslov
                             TextFormField(
                               controller: _headline,
                               decoration: const InputDecoration(
@@ -509,10 +504,8 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ),
                               textInputAction: TextInputAction.next,
                             ),
-
                             const SizedBox(height: 12),
 
-                            // kratki tekst
                             TextFormField(
                               controller: _shortText,
                               decoration: const InputDecoration(
@@ -527,7 +520,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
                             const SizedBox(height: 12),
 
-                            // sadržaj
                             TextFormField(
                               controller: _text,
                               minLines: 5,
@@ -541,10 +533,8 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                 value: v,
                               ),
                             ),
-
                             const SizedBox(height: 8),
 
-                            // checkboxi
                             Wrap(
                               spacing: 16,
                               runSpacing: 8,
@@ -574,25 +564,25 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: 16),
 
-                            // glavna slika
                             Text(
                               'Glavna slika',
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 8),
 
+                            // dugme preko cijele širine
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(
                                 onPressed: _pickMainPhoto,
                                 icon: const Icon(Icons.image),
                                 label: Text(
-                                  _newMainPhoto != null
+                                  _newMainPhoto != null ||
+                                          _existingMainPhotoPath != null
                                       ? 'Promijeni glavnu sliku'
-                                      : 'Odaberite novu glavnu sliku',
+                                      : 'Odaberite glavnu sliku',
                                   textAlign: TextAlign.left,
                                 ),
                                 style: OutlinedButton.styleFrom(
@@ -605,6 +595,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ),
                             ),
 
+                            // prikaz selektovane slike ispod
                             if (_newMainPhoto != null) ...[
                               const SizedBox(height: 8),
                               Stack(
@@ -618,6 +609,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                       fit: BoxFit.cover,
                                     ),
                                   ),
+                                  const SizedBox(width: 12),
                                   Container(
                                     decoration: BoxDecoration(
                                       color: Colors.black54,
@@ -650,7 +642,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
                             const SizedBox(height: 16),
 
-                            // galerija
                             Text(
                               'Galerija slika',
                               style: Theme.of(context).textTheme.titleSmall,
@@ -662,9 +653,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               child: OutlinedButton.icon(
                                 onPressed: _pickGallery,
                                 icon: const Icon(Icons.collections),
-                                label: const Text(
-                                  'Dodaj nove slike u galeriju',
-                                ),
+                                label: const Text('Dodaj slike u galeriju'),
                                 style: OutlinedButton.styleFrom(
                                   alignment: Alignment.centerLeft,
                                   padding: const EdgeInsets.symmetric(
@@ -674,7 +663,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                 ),
                               ),
                             ),
-
                             if (_existingAdditionalPhotos.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Wrap(
@@ -685,14 +673,13 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                     borderRadius: BorderRadius.circular(6),
                                     child: Image.network(
                                       url,
-                                      height: 70,
+                                      height: 100,
                                       fit: BoxFit.cover,
                                     ),
                                   );
                                 }).toList(),
                               ),
                             ],
-
                             if (_newAdditionalPhotos.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Wrap(
@@ -706,7 +693,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                         borderRadius: BorderRadius.circular(6),
                                         child: Image.memory(
                                           p.bytes,
-                                          height: 70,
+                                          height: 100,
                                           fit: BoxFit.cover,
                                         ),
                                       ),

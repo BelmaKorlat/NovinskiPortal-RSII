@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:novinskiportal_desktop/models/subcategory_models.dart';
+import 'package:novinskiportal_desktop/services/article_service.dart';
 import 'package:novinskiportal_desktop/services/subcategory_service.dart';
 import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
 import 'package:provider/provider.dart';
@@ -295,11 +296,17 @@ class ArticleListPageState extends State<ArticleListPage> {
                       );
                     }
                   },
-                  onEdit: (c) {
-                    Navigator.pushNamed(
+
+                  onEdit: (c) async {
+                    final svc = ArticleService();
+                    final detail = await svc.getById(c.id);
+
+                    if (!context.mounted) return;
+
+                    await Navigator.pushNamed(
                       context,
                       '/articles/edit',
-                      arguments: c,
+                      arguments: detail,
                     );
                   },
                 ),

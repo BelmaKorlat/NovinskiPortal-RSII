@@ -55,6 +55,7 @@ class ArticleDto {
 
 /// 2) DTO za detalj (mapira tvoj ArticleDetailResponse)
 class ArticleDetailDto {
+  final int id;
   final String headline;
   final String subheadline;
   final String shortText;
@@ -78,6 +79,7 @@ class ArticleDetailDto {
   final List<String> additionalPhotos;
 
   ArticleDetailDto({
+    required this.id,
     required this.headline,
     required this.subheadline,
     required this.shortText,
@@ -99,6 +101,7 @@ class ArticleDetailDto {
   });
 
   factory ArticleDetailDto.fromJson(Map<String, dynamic> j) => ArticleDetailDto(
+    id: j['id'] as int,
     headline: j['headline'] as String,
     subheadline: j['subheadline'] as String,
     shortText: j['shortText'] as String,
