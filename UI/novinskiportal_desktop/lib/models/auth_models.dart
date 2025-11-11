@@ -40,3 +40,15 @@ class AuthResponseDto {
     user: UserDto.fromJson(j['user'] as Map<String, dynamic>),
   );
 }
+
+class LoginRequest {
+  final String emailOrUsername;
+  final String password;
+
+  LoginRequest({required this.emailOrUsername, required this.password});
+
+  Map<String, dynamic> toJson() => {
+    'emailOrUsername': emailOrUsername,
+    'password': password,
+  };
+}

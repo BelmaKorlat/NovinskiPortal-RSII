@@ -297,8 +297,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
       NotificationService.error('Greška', 'Odaberite potkategoriju.');
       return;
     }
-    // Ako nemaš dropdown za autora, postavi userId iz logina ili fiksno:
-    //final userId = _userId ?? 1; // zamijeni stvarnim id iz AuthProvidera
 
     setState(() => _saving = true);
     try {
@@ -572,7 +570,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
                             ),
                             const SizedBox(height: 8),
 
-                            // dugme preko cijele širine
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(

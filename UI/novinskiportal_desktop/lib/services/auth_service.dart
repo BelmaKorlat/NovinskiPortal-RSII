@@ -26,10 +26,12 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final res = await _dio.post(
-        loginPath,
-        data: {'emailOrUsername': emailOrUsername, 'password': password},
+      final req = LoginRequest(
+        emailOrUsername: emailOrUsername,
+        password: password,
       );
+
+      final res = await _dio.post(loginPath, data: req.toJson());
 
       if (res.data is Map<String, dynamic>) {
         return AuthResponseDto.fromJson(res.data as Map<String, dynamic>);

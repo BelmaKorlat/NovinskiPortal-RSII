@@ -8,7 +8,7 @@ using NovinskiPortal.Services.Services.AdminService;
 
 namespace NovinskiPortal.API.Controllers
 {
-    [Route("api/admin/users")]
+    [Route("api/Admin/Users")]
     [ApiController]
     [Authorize(Roles = "Admin")] 
     public class AdminUsersController : BaseCRUDController<UserAdminResponse, UserSearchObject, CreateUserRequest, UpdateUserRequest>
@@ -38,17 +38,16 @@ namespace NovinskiPortal.API.Controllers
         [HttpPatch("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] int role)
         {
-            var result = await _adminService.ChangeRoleAsync(id, role);
-            if (!result) return NotFound();
-            return NoContent();
+            var userDto = await _adminService.ChangeRoleAsync(id, role);
+            return userDto is null ? NotFound() : Ok(userDto);
         }
 
         [HttpPatch("{id}/status")]
-        public async Task<IActionResult> SetActive(int id, [FromBody] bool active)
+        public async Task<IActionResult> ToggleStatusUserAsync(int id)
         {
-            var result = await _adminService.SetActiveAsync(id, active);
-            if (!result) return NotFound();
-            return NoContent();
+            var userDto = await _adminService.ToggleStatusUserAsync(id);
+            return userDto is null ? NotFound() : Ok(userDto);
+       
         }
     }
 }

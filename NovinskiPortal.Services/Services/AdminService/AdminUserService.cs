@@ -1,5 +1,4 @@
 ﻿
-
 using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using NovinskiPortal.Commom.PasswordService;
@@ -140,31 +139,32 @@ namespace NovinskiPortal.Services.Services.AdminService
 
             user.IsDeleted = false;
             // (opciono) ne diraj Active, ili ga postavi kako želiš:
-            // user.Active = true;
+             user.Active = true;
 
             await _context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> ChangeRoleAsync(int id, int role)
+
+        public async Task<UserAdminResponse?> ChangeRoleAsync(int id, int role)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user is null) return false;
+            if (user is null) return null;
 
             user.RoleId = role;
 
             await _context.SaveChangesAsync();
-            return true;
+            return _mapper.Map<UserAdminResponse>(user);
         }
 
-        public async Task<bool> SetActiveAsync(int id, bool active)
+        public async Task<UserAdminResponse?> ToggleStatusUserAsync(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            if (user is null) return false;
+            if (user is null) return null;
 
-            user.Active = active;
+            user.Active = !user.Active;
 
             await _context.SaveChangesAsync();
-            return true;
+            return _mapper.Map<UserAdminResponse>(user);
         }
     }
 }

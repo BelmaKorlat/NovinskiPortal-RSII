@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/providers/admin_user_provider.dart';
 import 'package:novinskiportal_desktop/providers/article_provider.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
 import 'package:novinskiportal_desktop/providers/subcategory_provider.dart';
+import 'package:novinskiportal_desktop/screens/admin_user/admin_user_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_create_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_list_page.dart';
@@ -44,6 +46,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => SubcategoryProvider()),
         ChangeNotifierProvider(create: (_) => ArticleProvider()),
+        ChangeNotifierProvider(create: (_) => AdminUserProvider()),
       ],
       child: const App(),
     ),
@@ -88,11 +91,11 @@ class App extends StatelessWidget {
             const AdminLayout(currentIndex: 3, child: CreateArticlePage()),
         '/articles/edit': (_) =>
             const AdminLayout(currentIndex: 3, child: EditArticlePage()),
+
+        '/admin/users': (_) =>
+            const AdminLayout(currentIndex: 4, child: AdminUserListPage()),
+
         // privremeni placeholderi da sidebar radi bez greške
-        '/users': (_) => const AdminLayout(
-          currentIndex: 4,
-          child: Center(child: Text('Korisnici')),
-        ),
         '/comments': (_) => const AdminLayout(
           currentIndex: 5,
           child: Center(child: Text('Komentari')),

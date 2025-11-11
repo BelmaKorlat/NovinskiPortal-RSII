@@ -9,8 +9,8 @@ namespace NovinskiPortal.Services.Services.AdminService
 {
     public interface IAdminUserService : ICRUDService<UserAdminResponse, UserSearchObject, CreateUserRequest, UpdateUserRequest>
     {
-        Task<bool> SetActiveAsync(int id, bool active);
-        Task<bool> ChangeRoleAsync(int id, int role);
+        Task<UserAdminResponse?> ToggleStatusUserAsync(int id);
+        Task<UserAdminResponse?> ChangeRoleAsync(int id, int role);
         Task<bool> SoftDeleteAsync(int id);
         Task<bool> RestoreAsync(int id);
     }

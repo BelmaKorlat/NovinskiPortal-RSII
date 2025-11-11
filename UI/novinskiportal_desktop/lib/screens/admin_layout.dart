@@ -33,7 +33,7 @@ class _AdminLayoutState extends State<AdminLayout> {
         Navigator.pushReplacementNamed(context, '/articles');
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/users');
+        Navigator.pushReplacementNamed(context, '/admin/users');
         break;
       case 5:
         Navigator.pushReplacementNamed(context, '/comments');
