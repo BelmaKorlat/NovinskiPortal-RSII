@@ -11,13 +11,11 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
   String fts = '';
   int? roleId;
   bool? active;
-  bool includeDeleted = false;
   @override
   UserAdminSearch buildSearch() => UserAdminSearch(
     fts: fts.trim().isEmpty ? null : fts.trim(),
     roleId: roleId,
     active: active,
-    includeDeleted: includeDeleted,
     page: page,
     pageSize: pageSize,
     includeTotalCount: true,
@@ -40,22 +38,13 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
     NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
   }
 
-  Future<void> setRoleFilter(int? value) async {
-    roleId = value;
-    page = 0;
+  Future<void> changePasswordForUser(
+    int id,
+    AdminChangePasswordRequest r,
+  ) async {
+    await _service.changePasswordForUser(id, r);
     await load();
-  }
-
-  Future<void> setActiveFilter(bool? value) async {
-    active = value;
-    page = 0;
-    await load();
-  }
-
-  Future<void> setIncludeDeleted(bool value) async {
-    includeDeleted = value;
-    page = 0;
-    await load();
+    NotificationService.success('Notifikacija', 'Uspješan reset lozinke!');
   }
 
   Future<void> toggle(int id) async {
@@ -96,30 +85,14 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
   Future<void> softDelete(int id) async {
     try {
       await _service.softDelete(id);
-      // ako ne prikazujemo obrisane, ukloni iz liste
-      if (!includeDeleted) {
-        items.removeWhere((x) => x.id == id);
-        notifyListeners();
-      } else {
-        await load();
-      }
-      NotificationService.success('Notifikacija', 'Korisnik je soft obrisan.');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri soft delete korisnika.');
-    }
-  }
+      items.removeWhere((x) => x.id == id);
+      notifyListeners();
 
-  Future<void> restore(int id) async {
-    try {
-      await _service.restore(id);
-      await load();
-      NotificationService.success('Notifikacija', 'Korisnik je vraćen.');
+      NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
     } on ApiException catch (ex) {
       NotificationService.error('Greška', ex.message);
     } catch (_) {
-      NotificationService.error('Greška', 'Greška pri vraćanju korisnika.');
+      NotificationService.error('Greška', 'Greška pri brisanju korisnika.');
     }
   }
 

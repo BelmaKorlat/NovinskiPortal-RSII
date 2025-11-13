@@ -26,10 +26,6 @@ namespace NovinskiPortal.Services.Services.AdminService
         {
             query = query.Include(u => u.Role).AsNoTracking();
 
-            // Ako admin želi da vidi i obrisane, skloni globalni filter
-            if (search.IncludeDeleted)
-                query = query.IgnoreQueryFilters();
-
             if (search.Active.HasValue)
             {
                 query = query.Where(u => u.Active == search.Active.Value);
@@ -91,12 +87,7 @@ namespace NovinskiPortal.Services.Services.AdminService
             if (conflict)
                 throw new InvalidOperationException("Username or email already exists.");
 
-            if (!string.IsNullOrWhiteSpace(updateUserRequest.NewPassword))
-            {
-                var salt = _passwordService.GenerateSalt();
-                entity.PasswordSalt = salt;
-                entity.PasswordHash = _passwordService.HashPassword(updateUserRequest.NewPassword, salt);
-            }
+          
         }
 
         protected override void MapToEntityUpdate(User entity, UpdateUserRequest updateUserRequest)
@@ -112,38 +103,19 @@ namespace NovinskiPortal.Services.Services.AdminService
 
         public async Task<bool> SoftDeleteAsync(int id)
         {
-            // Globalni filter krije samo IsDeleted = true, a mi tražimo aktivnog (nije obrisan)
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
             if (user is null) return false;
 
-            if (user.IsDeleted) return true; // već “obrisan” – idempotentno
+            if (user.IsDeleted) return true; 
 
             user.IsDeleted = true;
-            // (opciono) korisnik više nije aktivan ako je soft-deleted
             user.Active = false;
 
             await _context.SaveChangesAsync();
             return true;
         }
 
-        public async Task<bool> RestoreAsync(int id)
-        {
-            // Pošto je obrisan korisnik sakriven globalnim filterom, moraš ga ignorisati da bi ga našla
-            var user = await _context.Users
-                .IgnoreQueryFilters()
-                .FirstOrDefaultAsync(u => u.Id == id);
-
-            if (user is null) return false;
-
-            if (!user.IsDeleted) return true; // već “aktivan” – idempotentno
-
-            user.IsDeleted = false;
-            // (opciono) ne diraj Active, ili ga postavi kako želiš:
-             user.Active = true;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }
+ 
 
         public async Task<UserAdminResponse?> ChangeRoleAsync(int id, int role)
         {
@@ -165,6 +137,23 @@ namespace NovinskiPortal.Services.Services.AdminService
 
             await _context.SaveChangesAsync();
             return _mapper.Map<UserAdminResponse>(user);
+        }
+
+        public async Task<bool> AdminChangePasswordAsync(int id, AdminChangePasswordRequest adminChangePasswordRequest)
+        {
+            if (adminChangePasswordRequest.NewPassword != adminChangePasswordRequest.ConfirmNewPassword)
+                return false;
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return false;
+
+            var salt = _passwordService.GenerateSalt();
+            user.PasswordSalt = salt;
+            user.PasswordHash = _passwordService.HashPassword(adminChangePasswordRequest.NewPassword, salt);
+
+            await _context.SaveChangesAsync();
+            return true;
         }
     }
 }

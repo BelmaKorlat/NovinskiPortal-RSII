@@ -38,9 +38,9 @@ class UserAdminDto {
       roleId: j['roleId'] as int,
       roleName: (j['roleName'] ?? '') as String,
       active: j['active'] as bool,
-      createdAt: DateTime.parse(j['createdAt'] as String),
+      createdAt: (DateTime.parse(j['createdAt'] as String)).toLocal(),
       lastLoginAt: j['lastLoginAt'] != null
-          ? DateTime.parse(j['lastLoginAt'] as String)
+          ? DateTime.parse(j['lastLoginAt'] as String).toLocal()
           : null,
     );
   }
@@ -49,12 +49,10 @@ class UserAdminDto {
 class UserAdminSearch extends BaseSearch {
   final int? roleId;
   final bool? active;
-  final bool? includeDeleted;
 
   const UserAdminSearch({
     this.roleId,
     this.active,
-    this.includeDeleted,
     super.fts,
     super.page = 0,
     super.pageSize = 10,
@@ -67,7 +65,6 @@ class UserAdminSearch extends BaseSearch {
     final q = super.toQuery();
     if (roleId != null) q['RoleId'] = roleId;
     if (active != null) q['Active'] = active.toString();
-    if (includeDeleted != null) q['IncludeDeleted'] = includeDeleted.toString();
     return q;
   }
 }
@@ -112,7 +109,6 @@ class UpdateAdminUserRequest {
   final String email;
   final int roleId;
   final bool active;
-  final String? newPassword;
 
   UpdateAdminUserRequest({
     required this.firstName,
@@ -122,7 +118,6 @@ class UpdateAdminUserRequest {
     required this.email,
     required this.roleId,
     required this.active,
-    this.newPassword,
   });
 
   Map<String, dynamic> toJson() => {
@@ -133,6 +128,20 @@ class UpdateAdminUserRequest {
     'email': email,
     'roleId': roleId,
     'active': active,
+  };
+}
+
+class AdminChangePasswordRequest {
+  final String newPassword;
+  final String confirmNewPassword;
+
+  AdminChangePasswordRequest({
+    required this.newPassword,
+    required this.confirmNewPassword,
+  });
+
+  Map<String, dynamic> toJson() => {
     'newPassword': newPassword,
+    'confirmNewPassword': confirmNewPassword,
   };
 }

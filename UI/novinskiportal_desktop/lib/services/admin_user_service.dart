@@ -111,6 +111,23 @@ class AdminUserService {
     }
   }
 
+  Future<void> changePasswordForUser(
+    int id,
+    AdminChangePasswordRequest r,
+  ) async {
+    try {
+      await _dio.post('$_base/$id/change-password', data: r.toJson());
+    } on DioException catch (e) {
+      final code = e.response?.statusCode;
+      final msg = humanMessage(
+        code,
+        e.response?.data,
+        'Došlo je do greške prilikom reset lozinke.',
+      );
+      throw ApiException(statusCode: code, message: msg);
+    }
+  }
+
   Future<UserAdminDto> toggleStatus(int id) async {
     try {
       final res = await _dio.patch('$_base/$id/status');
@@ -127,15 +144,7 @@ class AdminUserService {
     try {
       await _dio.delete('$_base/$id/soft-delete');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri soft delete korisnika.');
-    }
-  }
-
-  Future<void> restore(int id) async {
-    try {
-      await _dio.post('$_base/$id/restore');
-    } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri vraćanju korisnika.');
+      throw _asApi(e, fallback: 'Greška pri brisanju korisnika.');
     }
   }
 

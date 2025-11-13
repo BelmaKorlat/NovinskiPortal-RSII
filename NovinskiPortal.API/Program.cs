@@ -96,7 +96,14 @@ TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
     .Map(dest => dest.CategoryName, src => src.Category.Name);
 
 TypeAdapterConfig<User, UserAdminResponse>.NewConfig()
-    .Map(dest => dest.RoleName, src => src.Role.Name);
+    .Map(dest => dest.RoleName, src => src.Role.Name)
+    .Map(dest => dest.CreatedAt,
+         src => DateTime.SpecifyKind(src.CreatedAt, DateTimeKind.Utc))
+    .Map(dest => dest.LastLoginAt,
+        src => src.LastLoginAt == null || src.LastLoginAt == default
+        ? (DateTime?)null
+        : DateTime.SpecifyKind(src.LastLoginAt.Value, DateTimeKind.Utc));
+
 TypeAdapterConfig<User, UserResponse>.NewConfig()
     .Map(dest => dest.RoleName, src => src.Role.Name);
 

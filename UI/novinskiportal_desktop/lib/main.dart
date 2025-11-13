@@ -3,7 +3,10 @@ import 'package:novinskiportal_desktop/providers/admin_user_provider.dart';
 import 'package:novinskiportal_desktop/providers/article_provider.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
 import 'package:novinskiportal_desktop/providers/subcategory_provider.dart';
+import 'package:novinskiportal_desktop/screens/admin_user/admin_user_create_page.dart';
+import 'package:novinskiportal_desktop/screens/admin_user/admin_user_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_page.dart';
+import 'package:novinskiportal_desktop/screens/admin_user/admin_user_reset_password_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_create_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_list_page.dart';
@@ -94,8 +97,13 @@ class App extends StatelessWidget {
 
         '/admin/users': (_) =>
             const AdminLayout(currentIndex: 4, child: AdminUserListPage()),
-
-        // privremeni placeholderi da sidebar radi bez greške
+        '/admin/users/new': (_) =>
+            const AdminLayout(currentIndex: 4, child: CreateAdminUserPage()),
+        '/admin/users/edit': (_) =>
+            const AdminLayout(currentIndex: 4, child: EditAdminUserPage()),
+        '/admin/users/change-password': (_) =>
+            const AdminLayout(currentIndex: 4, child: ResetPasswordPage()),
+        // privremeni plac: eholderi da sidebar radi bez greške
         '/comments': (_) => const AdminLayout(
           currentIndex: 5,
           child: Center(child: Text('Komentari')),

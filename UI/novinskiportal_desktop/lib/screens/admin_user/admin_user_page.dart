@@ -8,6 +8,7 @@ import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_chip.dart';
 import '../../core/api_error.dart';
 import '../../core/notification_service.dart';
+import 'package:intl/intl.dart';
 
 class AdminUserListPage extends StatefulWidget {
   const AdminUserListPage({super.key});
@@ -19,7 +20,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
   final _fts = TextEditingController();
   int? _roleId;
   bool? _active;
-  bool _includeDeleted = false;
 
   @override
   void initState() {
@@ -28,7 +28,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
     _fts.text = provider.fts;
     _roleId = provider.roleId;
     _active = provider.active;
-    _includeDeleted = provider.includeDeleted;
     Future.microtask(() => provider.load());
   }
 
@@ -44,7 +43,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
     vm.fts = _fts.text.trim();
     vm.roleId = _roleId;
     vm.active = _active;
-    vm.includeDeleted = _includeDeleted;
     vm.load();
   }
 
@@ -77,7 +75,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                   icon: const Icon(Icons.add),
                   label: const Text('Novi korisnik'),
                   onPressed: () =>
-                      Navigator.pushNamed(context, '/admin/user/new'),
+                      Navigator.pushNamed(context, '/admin/users/new'),
                 ),
               ],
             ),
@@ -136,21 +134,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Prikaži obrisane (soft delete)
-              Row(
-                children: [
-                  Checkbox(
-                    value: _includeDeleted,
-                    onChanged: (v) {
-                      if (v == null) return;
-                      setState(() => _includeDeleted = v);
-                    },
-                  ),
-                  const Text('Prikaži obrisane'),
-                ],
-              ),
-              const SizedBox(width: 12),
-
               // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
@@ -174,7 +157,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                   onEdit: (c) {
                     Navigator.pushNamed(
                       context,
-                      '/admin/user/edit',
+                      '/admin/users/edit',
                       arguments: c,
                     );
                   },
@@ -200,8 +183,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                   onSoftDelete: (id) async {
                     final ok = await showDestructiveConfirmDialog(
                       context: context,
-                      message:
-                          'Jeste li sigurni da želite soft delete korisnika?',
+                      message: 'Jeste li sigurni da želite obrisati korisnika?',
                     );
                     if (!ok) return;
                     try {
@@ -217,44 +199,12 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                       );
                     }
                   },
-                  onRestore: (id) async {
-                    final ok = await showConfirmDialog(
-                      context: context,
-                      message: 'Jeste li sigurni da želite vratiti korisnika?',
+                  onResetPassword: (c) {
+                    Navigator.pushNamed(
+                      context,
+                      '/admin/users/change-password',
+                      arguments: c,
                     );
-                    if (!ok) return;
-                    try {
-                      await vm.restore(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri vraćanju korisnika.',
-                      );
-                    }
-                  },
-                  onDelete: (id) async {
-                    final ok = await showDestructiveConfirmDialog(
-                      context: context,
-                      message:
-                          'Jeste li sigurni da želite obrisati ovog korisnika?',
-                    );
-                    if (!ok) return;
-                    try {
-                      await vm.remove(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri brisanju korisnika.',
-                      );
-                    }
                   },
                 ),
         ),
@@ -279,67 +229,21 @@ class AdminUserListPageState extends State<AdminUserListPage> {
       ],
     );
   }
-
-  // Future<bool> _confirmDelete(BuildContext context, String msg) async {
-  //   final ok = await showDialog<bool>(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text('Potvrda'),
-  //       content: Text(msg),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(ctx, false),
-  //           child: const Text('Ne'),
-  //         ),
-  //         FilledButton(
-  //           onPressed: () => Navigator.pop(ctx, true),
-  //           child: const Text('Da'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //   return ok == true;
-  // }
 }
-
-// Future<bool> _confirmActive(BuildContext context, String msg) async {
-//   final ok = await showDialog<bool>(
-//     context: context,
-//     barrierDismissible: false,
-//     builder: (ctx) => AlertDialog(
-//       title: const Text('Potvrda'),
-//       content: Text(msg),
-//       actions: [
-//         TextButton(
-//           onPressed: () => Navigator.pop(ctx, false),
-//           child: const Text('Ne'),
-//         ),
-//         FilledButton(
-//           onPressed: () => Navigator.pop(ctx, true),
-//           child: const Text('Da'),
-//         ),
-//       ],
-//     ),
-//   );
-//   return ok == true;
-// }
 
 class _AdminUserTable extends StatelessWidget {
   final List<UserAdminDto> items;
   final void Function(int id) onToggle;
-  final void Function(int id) onDelete;
-  final void Function(UserAdminDto c) onEdit;
   final void Function(int id) onSoftDelete;
-  final void Function(int id) onRestore;
+  final void Function(UserAdminDto c) onEdit;
+  final void Function(UserAdminDto c) onResetPassword;
 
   const _AdminUserTable({
     required this.items,
     required this.onToggle,
-    required this.onDelete,
-    required this.onEdit,
     required this.onSoftDelete,
-    required this.onRestore,
+    required this.onEdit,
+    required this.onResetPassword,
   });
 
   static const double wActive = 90;
@@ -363,15 +267,22 @@ class _AdminUserTable extends StatelessWidget {
             dataRowHeight: 48,
 
             columns: [
-              const DataColumn2(label: Text('Ime'), size: ColumnSize.S),
-              const DataColumn2(label: Text('Prezime'), size: ColumnSize.S),
+              const DataColumn2(
+                label: Text('Ime i prezime'),
+                size: ColumnSize.M,
+              ),
+              const DataColumn2(label: Text('Email'), size: ColumnSize.L),
               const DataColumn2(
                 label: Text('Korisničko ime'),
                 size: ColumnSize.S,
               ),
               const DataColumn2(label: Text('Nadimak'), size: ColumnSize.S),
-              const DataColumn2(label: Text('Email'), size: ColumnSize.L),
               const DataColumn2(label: Text('Uloga'), size: ColumnSize.S),
+              const DataColumn2(label: Text('Kreiran'), size: ColumnSize.S),
+              const DataColumn2(
+                label: Text('Posljednja prijava'),
+                size: ColumnSize.S,
+              ),
               DataColumn2(
                 label: const Center(child: Text('Aktivna?')),
                 size: ColumnSize.S,
@@ -388,14 +299,14 @@ class _AdminUserTable extends StatelessWidget {
                 cells: [
                   DataCell(
                     Text(
-                      cItem.firstName,
+                      '${cItem.firstName} ${cItem.lastName}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   DataCell(
                     Text(
-                      cItem.lastName,
+                      cItem.email,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -416,16 +327,21 @@ class _AdminUserTable extends StatelessWidget {
                   ),
                   DataCell(
                     Text(
-                      cItem.email,
+                      cItem.roleName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   DataCell(
+                    Text(DateFormat('d.M.yyyy, HH:mm').format(cItem.createdAt)),
+                  ),
+                  DataCell(
                     Text(
-                      cItem.roleName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      cItem.lastLoginAt == null
+                          ? '-'
+                          : DateFormat(
+                              'd.M.yyyy, HH:mm',
+                            ).format(cItem.lastLoginAt!),
                     ),
                   ),
                   DataCell(Center(child: StatusChip(value: cItem.active))),
@@ -435,14 +351,9 @@ class _AdminUserTable extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
-                            tooltip: 'Soft delete',
-                            onPressed: () => onSoftDelete(cItem.id),
-                            icon: const Icon(Icons.archive),
-                          ),
-                          IconButton(
-                            tooltip: 'Vrati korisnika',
-                            onPressed: () => onRestore(cItem.id),
-                            icon: const Icon(Icons.unarchive),
+                            tooltip: 'Uredi',
+                            onPressed: () => onEdit(cItem),
+                            icon: const Icon(Icons.edit),
                           ),
                           IconButton(
                             tooltip: cItem.active ? 'Deaktiviraj' : 'Aktiviraj',
@@ -458,14 +369,13 @@ class _AdminUserTable extends StatelessWidget {
                             ),
                           ),
                           IconButton(
-                            tooltip: 'Uredi',
-                            onPressed: () => onEdit(cItem),
-                            icon: const Icon(Icons.edit),
+                            tooltip: 'Reset lozinke',
+                            onPressed: () => onResetPassword(cItem),
+                            icon: const Icon(Icons.lock_reset),
                           ),
-
                           IconButton(
                             tooltip: 'Obriši',
-                            onPressed: () => onDelete(cItem.id),
+                            onPressed: () => onSoftDelete(cItem.id),
                             icon: const Icon(Icons.delete),
                           ),
                         ],

@@ -27,14 +27,6 @@ namespace NovinskiPortal.API.Controllers
             return ok ? NoContent() : NotFound();
         }
 
-        [HttpPost("{id}/restore")]
-        public async Task<IActionResult> Restore(int id)
-        {
-            var ok = await _adminService.RestoreAsync(id);
-            return ok ? NoContent() : NotFound();
-        }
-
-
         [HttpPatch("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] int role)
         {
@@ -48,6 +40,16 @@ namespace NovinskiPortal.API.Controllers
             var userDto = await _adminService.ToggleStatusUserAsync(id);
             return userDto is null ? NotFound() : Ok(userDto);
        
+        }
+
+        [HttpPost("{id}/change-password")]
+        public async Task<IActionResult> ChangePasswordForUser(int id, AdminChangePasswordRequest adminChangePasswordRequest)
+        {
+            var password = await _adminService.AdminChangePasswordAsync(id, adminChangePasswordRequest);
+            if (!password)
+                return BadRequest();
+
+            return NoContent();
         }
     }
 }

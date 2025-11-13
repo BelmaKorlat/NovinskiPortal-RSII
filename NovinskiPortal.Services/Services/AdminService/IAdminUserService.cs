@@ -12,6 +12,6 @@ namespace NovinskiPortal.Services.Services.AdminService
         Task<UserAdminResponse?> ToggleStatusUserAsync(int id);
         Task<UserAdminResponse?> ChangeRoleAsync(int id, int role);
         Task<bool> SoftDeleteAsync(int id);
-        Task<bool> RestoreAsync(int id);
+        Task<bool> AdminChangePasswordAsync(int id, AdminChangePasswordRequest adminChangePasswordRequest);
     }
 }

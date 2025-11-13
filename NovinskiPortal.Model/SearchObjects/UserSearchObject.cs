@@ -6,7 +6,6 @@ namespace NovinskiPortal.Model.SearchObjects
     {
         public int? RoleId { get; set; }
         public bool? Active { get; set; }
-        public bool IncludeDeleted { get; set; }
 
     }
 }
