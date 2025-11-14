@@ -240,51 +240,7 @@ class SubcategoryListPageState extends State<SubcategoryListPage> {
       ],
     );
   }
-
-  // Future<bool> _confirmDelete(BuildContext context, String msg) async {
-  //   final ok = await showDialog<bool>(
-  //     context: context,
-  //     barrierDismissible: false,
-  //     builder: (ctx) => AlertDialog(
-  //       title: const Text('Potvrda'),
-  //       content: Text(msg),
-  //       actions: [
-  //         TextButton(
-  //           onPressed: () => Navigator.pop(ctx, false),
-  //           child: const Text('Ne'),
-  //         ),
-  //         FilledButton(
-  //           onPressed: () => Navigator.pop(ctx, true),
-  //           child: const Text('Da'),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  //   return ok == true;
-  // }
 }
-
-// Future<bool> _confirmActive(BuildContext context, String msg) async {
-//   final ok = await showDialog<bool>(
-//     context: context,
-//     barrierDismissible: false,
-//     builder: (ctx) => AlertDialog(
-//       title: const Text('Potvrda'),
-//       content: Text(msg),
-//       actions: [
-//         TextButton(
-//           onPressed: () => Navigator.pop(ctx, false),
-//           child: const Text('Ne'),
-//         ),
-//         FilledButton(
-//           onPressed: () => Navigator.pop(ctx, true),
-//           child: const Text('Da'),
-//         ),
-//       ],
-//     ),
-//   );
-//   return ok == true;
-// }
 
 class _SubcategoryTable extends StatelessWidget {
   final List<SubcategoryDto> items;
@@ -366,6 +322,7 @@ class _SubcategoryTable extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
+                            tooltip: 'Uredi',
                             onPressed: () => onEdit(cItem),
                             icon: const Icon(Icons.edit),
                           ),
@@ -383,6 +340,7 @@ class _SubcategoryTable extends StatelessWidget {
                             ),
                           ),
                           IconButton(
+                            tooltip: 'Obriši',
                             onPressed: () => onDelete(cItem.id),
                             icon: const Icon(Icons.delete),
                           ),

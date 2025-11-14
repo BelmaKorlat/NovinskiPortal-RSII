@@ -14,6 +14,6 @@ namespace NovinskiPortal.Model.Responses
         public string RoleName { get; set; } = default!;
         public bool Active { get; set; }
         public DateTime CreatedAt { get; set; }
-        public DateTime LastLoginAt { get; set; }
+        public DateTime? LastLoginAt { get; set; }
     }
 }

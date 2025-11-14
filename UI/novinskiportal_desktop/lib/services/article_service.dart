@@ -113,18 +113,6 @@ class ArticleService {
     }
   }
 
-  // Future<void> update(int id, UpdateArticleRequest r) async {
-  //   try {
-  //     final res = await _dio.put('$_base/$id', data: r.toJson());
-  //     final _ = res;
-  //   } on DioException catch (e) {
-  //     throw _asApi(
-  //       e,
-  //       fallback: 'Došlo je do greške prilikom ažuriranja članka.',
-  //     );
-  //   }
-  // }
-
   Future<ArticleDto> toggleStatus(int id) async {
     try {
       final res = await _dio.patch('$_base/$id/status');

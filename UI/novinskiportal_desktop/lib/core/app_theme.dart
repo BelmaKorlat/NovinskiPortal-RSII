@@ -42,26 +42,6 @@ ThemeData buildLightTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: base.colorScheme.primary, width: 2),
       ),
-
-      // errorBorder: OutlineInputBorder(
-      //   borderRadius: BorderRadius.circular(12),
-      //   borderSide: BorderSide(color: base.colorScheme.error, width: 1),
-      // ),
-      // focusedErrorBorder: OutlineInputBorder(
-      //   borderRadius: BorderRadius.circular(12),
-      //   borderSide: BorderSide(color: base.colorScheme.error, width: 2),
-      // ),
-
-      // // Ikonice
-      // prefixIconColor: base.colorScheme.onSurfaceVariant,
-      // suffixIconColor: base.colorScheme.onSurfaceVariant,
-      // prefixIconConstraints: const BoxConstraints(minWidth: 40),
-      // suffixIconConstraints: const BoxConstraints(minWidth: 40),
-
-      // // Poruke
-      // helperStyle: TextStyle(color: base.colorScheme.onSurfaceVariant),
-      // errorStyle: TextStyle(color: base.colorScheme.error),
-      // counterStyle: TextStyle(color: base.colorScheme.onSurfaceVariant),
     ),
 
     // Manji default font u formama (po želji)
@@ -144,23 +124,6 @@ ThemeData buildDarkTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: base.colorScheme.primary, width: 2),
       ),
-      // errorBorder: OutlineInputBorder(
-      //   borderRadius: BorderRadius.circular(12),
-      //   borderSide: BorderSide(color: base.colorScheme.error, width: 1),
-      // ),
-      // focusedErrorBorder: OutlineInputBorder(
-      //   borderRadius: BorderRadius.circular(12),
-      //   borderSide: BorderSide(color: base.colorScheme.error, width: 2),
-      // ),
-
-      // prefixIconColor: base.colorScheme.onSurfaceVariant,
-      // suffixIconColor: base.colorScheme.onSurfaceVariant,
-      // prefixIconConstraints: const BoxConstraints(minWidth: 40),
-      // suffixIconConstraints: const BoxConstraints(minWidth: 40),
-
-      // helperStyle: TextStyle(color: base.colorScheme.onSurfaceVariant),
-      // errorStyle: TextStyle(color: base.colorScheme.error),
-      // counterStyle: TextStyle(color: base.colorScheme.onSurfaceVariant),
     ),
 
     textTheme: base.textTheme.copyWith(

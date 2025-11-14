@@ -10,8 +10,7 @@ class ApiClient {
 
   late final Dio dio;
 
-  static const String baseUrl =
-      'https://localhost:7060'; // po potrebi promijeni
+  static const String baseUrl = 'https://localhost:7060';
 
   ApiClient._internal() {
     dio = Dio(

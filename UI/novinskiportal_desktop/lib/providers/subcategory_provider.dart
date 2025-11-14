@@ -26,15 +26,37 @@ class SubcategoryProvider
   }
 
   Future<void> create(CreateSubcategoryRequest r) async {
-    await _service.create(r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    try {
+      await _service.create(r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error(
+        'Greška',
+        'Greška pri dodavanju potkategorije.',
+      );
+      rethrow;
+    }
   }
 
   Future<void> update(int id, UpdateSubcategoryRequest r) async {
-    await _service.update(id, r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    try {
+      await _service.update(id, r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error(
+        'Greška',
+        'Greška pri ažuriranju potkategorije.',
+      );
+      rethrow;
+    }
   }
 
   Future<void> toggle(int id) async {

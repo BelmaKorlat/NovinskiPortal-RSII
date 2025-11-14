@@ -94,7 +94,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                   child: TextField(
                     controller: _fts,
                     decoration: const InputDecoration(
-                      labelText: 'Pretraga po nazivu',
+                      labelText: 'Pretraga po imenu ili emailu',
                       prefixIcon: Icon(Icons.search),
                     ),
                   ),
@@ -238,6 +238,8 @@ class _AdminUserTable extends StatelessWidget {
   final void Function(UserAdminDto c) onEdit;
   final void Function(UserAdminDto c) onResetPassword;
 
+  static const int adminId = 1;
+
   const _AdminUserTable({
     required this.items,
     required this.onToggle,
@@ -327,7 +329,7 @@ class _AdminUserTable extends StatelessWidget {
                   ),
                   DataCell(
                     Text(
-                      cItem.roleName,
+                      cItem.roleId == adminId ? 'Admin' : 'Korisnik',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

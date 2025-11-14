@@ -8,7 +8,6 @@ class SubcategoryService {
   final Dio _dio = ApiClient().dio;
   static const String _base = '/api/Subcategories';
 
-  // Pomoćni metod za konzistentno mapiranje DioException -> ApiException
   ApiException _asApi(
     DioException e, {
     String fallback = 'Došlo je do greške.',
@@ -37,7 +36,6 @@ class SubcategoryService {
       return PagedResult(items: items, totalCount: total);
     } on DioException catch (e) {
       throw _asApi(e, fallback: 'Neuspješan GET.');
-      //  throw _asApi(e, fallback: 'Greška prilikom dobavljanja kategorija.');
     } catch (_) {
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     }

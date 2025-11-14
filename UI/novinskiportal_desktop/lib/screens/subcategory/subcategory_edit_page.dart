@@ -180,7 +180,7 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
                                           onChanged: (v) =>
                                               setState(() => _categoryId = v),
                                           validator: (v) => v == null
-                                              ? 'Odaberite kategoriju'
+                                              ? 'Kategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),

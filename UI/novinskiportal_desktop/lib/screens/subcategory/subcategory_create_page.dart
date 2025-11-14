@@ -20,7 +20,7 @@ class _CreateSubcategoryPageState extends State<CreateSubcategoryPage> {
   final _ord = TextEditingController();
   final _name = TextEditingController();
   bool _active = true;
-  int? _categoryId; // provjeriti da li sa ? ili bez
+  int? _categoryId;
   bool _saving = false;
   bool _categoryLoading = true;
   List<CategoryDto> _categories = [];
@@ -161,7 +161,7 @@ class _CreateSubcategoryPageState extends State<CreateSubcategoryPage> {
                                           onChanged: (v) =>
                                               setState(() => _categoryId = v),
                                           validator: (v) => v == null
-                                              ? 'Odaberite kategoriju'
+                                              ? 'Kategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),

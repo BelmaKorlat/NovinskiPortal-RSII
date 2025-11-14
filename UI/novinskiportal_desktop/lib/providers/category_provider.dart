@@ -26,15 +26,31 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
   }
 
   Future<void> create(CreateCategoryRequest r) async {
-    await _service.create(r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    try {
+      await _service.create(r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri dodavanju kategorije.');
+      rethrow;
+    }
   }
 
   Future<void> update(int id, UpdateCategoryRequest r) async {
-    await _service.update(id, r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    try {
+      await _service.update(id, r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri ažuriranju kategorije.');
+      rethrow;
+    }
   }
 
   Future<void> toggle(int id) async {

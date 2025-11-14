@@ -16,10 +16,6 @@ import '../../services/subcategory_service.dart';
 import '../../models/subcategory_models.dart';
 import '../../providers/auth_provider.dart';
 
-// Ako imaš UserService i UserDto, odkomentariši:
-// import '../../services/user_service.dart';
-// import '../../models/user_models.dart';
-
 class EditArticlePage extends StatefulWidget {
   const EditArticlePage({super.key});
 
@@ -47,17 +43,14 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
   int? _categoryId;
   int? _subcategoryId;
-  //int? _userId; // uraditi kasnije
   bool _categoryLoading = true;
   bool _subcategoryLoading = true;
-  // bool _userLoading = true;
   List<CategoryDto> _categories = [];
   List<SubcategoryDto> _subcategories = [];
-  // List<UserDto> _users = [];
 
   String? _existingMainPhotoPath;
   List<String> _existingAdditionalPhotos = [];
-  // slike
+
   PhotoUpload? _newMainPhoto;
   final List<PhotoUpload> _newAdditionalPhotos = [];
 
@@ -92,8 +85,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _textValidator = Validator(validators: [RequiredValidator()]);
 
     _loadCategories();
-    //_loadSubcategories();
-    // _loadUsers();
   }
 
   @override
@@ -181,21 +172,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
       NotificationService.error('Greška', 'Ne mogu učitati potkategorije.');
     }
   }
-
-  // Ako imaš listu korisnika, odkomentariši i prilagodi:
-  // Future<void> _loadUsers() async {
-  //   try {
-  //     final svc = UserService();
-  //     final list = await svc.getList();
-  //     setState(() {
-  //       _users = List<UserDto>.from(list)..sort((a, b) => a.fullName.compareTo(b.fullName));
-  //       _userLoading = false;
-  //     });
-  //   } catch (_) {
-  //     setState(() => _userLoading = false);
-  //     NotificationService.error('Greška', 'Ne mogu učitati autore.');
-  //   }
-  // }
 
   // File picker helpers
   Future<PhotoUpload?> _pickOne() async {
@@ -417,7 +393,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                             );
                                           },
                                           validator: (v) => v == null
-                                              ? 'Odaberite kategoriju'
+                                              ? 'Kategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),
@@ -445,7 +421,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                             () => _subcategoryId = v,
                                           ),
                                           validator: (v) => v == null
-                                              ? 'Odaberite potkategoriju'
+                                              ? 'Potkategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),
@@ -592,7 +568,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ),
                             ),
 
-                            // prikaz selektovane slike ispod
                             if (_newMainPhoto != null) ...[
                               const SizedBox(height: 8),
                               Stack(

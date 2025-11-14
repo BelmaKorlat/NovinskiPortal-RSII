@@ -27,24 +27,48 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
   }
 
   Future<void> create(CreateAdminUserRequest r) async {
-    await _service.create(r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    try {
+      await _service.create(r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno dodano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri dodavanju korisnika.');
+      rethrow;
+    }
   }
 
   Future<void> update(int id, UpdateAdminUserRequest r) async {
-    await _service.update(id, r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    try {
+      await _service.update(id, r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri ažuriranju korisnika.');
+      rethrow;
+    }
   }
 
   Future<void> changePasswordForUser(
     int id,
     AdminChangePasswordRequest r,
   ) async {
-    await _service.changePasswordForUser(id, r);
-    await load();
-    NotificationService.success('Notifikacija', 'Uspješan reset lozinke!');
+    try {
+      await _service.changePasswordForUser(id, r);
+      await load();
+      NotificationService.success('Notifikacija', 'Uspješan reset lozinke!');
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      rethrow;
+    } catch (_) {
+      NotificationService.error('Greška', 'Greška pri reset-u lozinke.');
+      rethrow;
+    }
   }
 
   Future<void> toggle(int id) async {

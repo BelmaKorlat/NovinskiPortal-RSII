@@ -151,7 +151,6 @@ class ArticleSearch extends BaseSearch {
   }
 }
 
-/// 4) Pomoćni model za foto upload
 class PhotoUpload {
   final String fileName;
   final Uint8List bytes;

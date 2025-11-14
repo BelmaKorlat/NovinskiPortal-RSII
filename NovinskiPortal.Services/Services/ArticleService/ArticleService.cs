@@ -53,8 +53,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 .Include(a => a.ArticlePhotos);
         }
 
-
-        // u ArticleService
         protected override async Task AfterInsertAsync(Article entity)
         {
             await _context.Entry(entity).Reference(a => a.Category).LoadAsync();
@@ -131,7 +129,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
 
             if(request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
             {
-                //var extraPhotos = new List<ArticlePhoto>();
                 entity.ArticlePhotos = new List<ArticlePhoto>();
                 foreach (var item in request.AdditionalPhotos)
                 {

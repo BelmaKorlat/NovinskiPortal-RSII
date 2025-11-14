@@ -15,26 +15,22 @@ Future<bool> showConfirmDialog({
     barrierDismissible: false,
     builder: (ctx) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      // isti koncept paddinga kao na delete popupu
       titlePadding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
       contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actionsAlignment: MainAxisAlignment.end,
 
-      // naslov u istom stilu kao "Potvrda brisanja", samo bez trake
       title: Text(
         title,
         style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
       ),
 
-      // poruka centrirana, kao kod delete
       content: Text(
         message,
         style: const TextStyle(fontSize: 14),
         textAlign: TextAlign.center,
       ),
 
-      // dugmad: isto poravnanje kao kod delete, samo neutralne boje
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
@@ -111,12 +107,6 @@ Future<bool> showDestructiveConfirmDialog({
       actionsAlignment: MainAxisAlignment.end,
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [
-        //     FilledButton.icon(
-        //   onPressed: () => Navigator.pop(ctx, false),
-        //   icon: const Icon(Icons.close, size: 16),
-        //   label: const Text('Otkaži'),
-        //   //child: Text(cancelLabel),
-        // ),
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
           child: Text(cancelLabel),

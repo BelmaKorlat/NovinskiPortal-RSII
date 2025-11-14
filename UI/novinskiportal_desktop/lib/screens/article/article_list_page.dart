@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:novinskiportal_desktop/models/admin_user_models.dart';
 import 'package:novinskiportal_desktop/models/subcategory_models.dart';
+import 'package:novinskiportal_desktop/services/admin_user_service.dart';
 import 'package:novinskiportal_desktop/services/article_service.dart';
 import 'package:novinskiportal_desktop/services/subcategory_service.dart';
 import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
@@ -26,11 +28,15 @@ class ArticleListPageState extends State<ArticleListPage> {
   List<CategoryDto> _categories = [];
   bool _subcategoryLoading = true;
   List<SubcategoryDto> _subcategories = [];
-  // vidjeti kako uraditi load user-a
+  bool _userLoading = true;
+  List<UserAdminDto> _users = [];
+
   final _fts = TextEditingController();
   int? _categoryId;
   int? _subcategoryId;
   int? _userId;
+
+  final int adminId = 1;
 
   @override
   void initState() {
@@ -44,6 +50,7 @@ class ArticleListPageState extends State<ArticleListPage> {
 
     _loadCategories();
     _loadSubcategories();
+    _loadUsers();
   }
 
   Future<void> _loadCategories() async {
@@ -85,6 +92,31 @@ class ArticleListPageState extends State<ArticleListPage> {
     } catch (_) {
       setState(() => _subcategoryLoading = false);
       NotificationService.error('Greška', 'Ne mogu učitati potkategorije.');
+    }
+  }
+
+  Future<void> _loadUsers() async {
+    try {
+      final svc = AdminUserService();
+      final list = await svc.getList(
+        const UserAdminSearch(retrieveAll: true, active: true),
+      );
+
+      final authors = list.where((u) => u.roleId == adminId).toList();
+
+      authors.sort((a, b) {
+        final an = '${a.firstName} ${a.lastName}'.trim().toLowerCase();
+        final bn = '${b.firstName} ${b.lastName}'.trim().toLowerCase();
+        return an.compareTo(bn);
+      });
+
+      setState(() {
+        _users = authors;
+        _userLoading = false;
+      });
+    } catch (_) {
+      setState(() => _userLoading = false);
+      NotificationService.error('Greška', 'Ne mogu učitati autore.');
     }
   }
 
@@ -211,32 +243,33 @@ class ArticleListPageState extends State<ArticleListPage> {
                       ),
               ),
               const SizedBox(width: 12),
-              // Ovako treba uraditi i za usere
-              // SizedBox(
-              //   width: 280,
-              //   child: _subcategoryLoading
-              //       ? const LinearProgressIndicator()
-              //       : DropdownButtonFormField<int?>(
-              //           initialValue: _subcategoryId,
-              //           decoration: const InputDecoration(
-              //             labelText: 'Filtriraj po potkategoriji',
-              //           ),
-              //           items: [
-              //             const DropdownMenuItem(
-              //               value: null,
-              //               child: Text('Sve potkategorije'),
-              //             ),
-              //             ..._subcategories.map(
-              //               (c) => DropdownMenuItem(
-              //                 value: c.id,
-              //                 child: Text(c.name),
-              //               ),
-              //             ),
-              //           ],
-              //           onChanged: (v) => setState(() => _subcategoryId = v),
-              //         ),
-              // ),
-              // const SizedBox(width: 12),
+
+              SizedBox(
+                width: 300,
+                child: _userLoading
+                    ? const LinearProgressIndicator()
+                    : DropdownButtonFormField<int?>(
+                        initialValue: _userId,
+                        decoration: const InputDecoration(
+                          labelText: 'Filtriraj po autoru',
+                        ),
+                        items: [
+                          const DropdownMenuItem(
+                            value: null,
+                            child: Text('Svi autori'),
+                          ),
+                          ..._users.map(
+                            (c) => DropdownMenuItem(
+                              value: c.id,
+                              child: Text('${c.firstName} ${c.lastName}'),
+                            ),
+                          ),
+                        ],
+                        onChanged: (v) => setState(() => _userId = v),
+                      ),
+              ),
+              const SizedBox(width: 12),
+
               // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
@@ -332,56 +365,7 @@ class ArticleListPageState extends State<ArticleListPage> {
       ],
     );
   }
-
-  //   Future<bool> _confirmDelete(BuildContext context, String msg) async {
-  //     final ok = await showDialog<bool>(
-  //       context: context,
-  //       barrierDismissible: false,
-  //       builder: (ctx) => AlertDialog(
-  //         title: const Text('Potvrda'),
-  //         content: Text(msg),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(ctx, false),
-  //             child: const Text('Ne'),
-  //           ),
-  //           FilledButton(
-  //             onPressed: () => Navigator.pop(ctx, true),
-  //             child: const Text('Da'),
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //     return ok == true;
-  //   }
 }
-
-// Future<bool> _confirmActive(BuildContext context, String msg) async {
-//   final ok = await showDialog<bool>(
-//     context: context,
-//     barrierDismissible: false,
-//     builder: (ctx) => AlertDialog(
-//       title: const Text('Potvrda'),
-//       content: Text(msg),
-//       actions: [
-//         TextButton(
-//           onPressed: () => Navigator.pop(ctx, false),
-//           child: const Text('Ne'),
-//         ),
-//         FilledButton(
-//           onPressed: () => Navigator.pop(ctx, true),
-//           child: const Text('Da'),
-//         ),
-//       ],
-//     ),
-//   );
-//   return ok == true;
-// }
-
-// helper za datum
-// String _fmtDate(DateTime dt) {
-//   return '${dt.day}.${dt.month}.${dt.year}.';
-// }
 
 class _ArticleTable extends StatelessWidget {
   final List<ArticleDto> items;
@@ -471,7 +455,6 @@ class _ArticleTable extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  //DataCell(Text(_fmtDate(cItem.publishedAt))),
                   DataCell(
                     Text(
                       DateFormat('d.M.yyyy, HH:mm').format(cItem.publishedAt),
@@ -480,7 +463,6 @@ class _ArticleTable extends StatelessWidget {
                   DataCell(
                     Text(DateFormat('d.M.yyyy, HH:mm').format(cItem.createdAt)),
                   ),
-                  //DataCell(Text(_fmtDate(cItem.createdAt))),
                   DataCell(
                     Text(
                       cItem.user,
@@ -499,6 +481,7 @@ class _ArticleTable extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           IconButton(
+                            tooltip: 'Uredi',
                             onPressed: () => onEdit(cItem),
                             icon: const Icon(Icons.edit),
                           ),
@@ -516,6 +499,7 @@ class _ArticleTable extends StatelessWidget {
                             ),
                           ),
                           IconButton(
+                            tooltip: 'Obriši',
                             onPressed: () => onDelete(cItem.id),
                             icon: const Icon(Icons.delete),
                           ),

@@ -16,10 +16,6 @@ import '../../services/subcategory_service.dart';
 import '../../models/subcategory_models.dart';
 import '../../providers/auth_provider.dart';
 
-// Ako imaš UserService i UserDto, odkomentariši:
-// import '../../services/user_service.dart';
-// import '../../models/user_models.dart';
-
 class CreateArticlePage extends StatefulWidget {
   const CreateArticlePage({super.key});
 
@@ -43,21 +39,16 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
 
   int? _categoryId;
   int? _subcategoryId;
-  //int? _userId; // uraditi kasnije
   bool _categoryLoading = true;
   bool _subcategoryLoading = true;
-  // bool _userLoading = true;
   List<CategoryDto> _categories = [];
   List<SubcategoryDto> _subcategories = [];
-  // List<UserDto> _users = [];
 
-  // slike
   PhotoUpload? _mainPhoto;
   List<PhotoUpload> _additionalPhotos = [];
 
   bool _saving = false;
 
-  // dodati ostatak validatora
   late final Validator _headlineValidator;
   late final Validator _subheadlineValidator;
   late final Validator _shortTextValidator;
@@ -81,7 +72,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
 
     _loadCategories();
     _loadSubcategories();
-    // _loadUsers();
   }
 
   @override
@@ -138,21 +128,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       NotificationService.error('Greška', 'Ne mogu učitati potkategorije.');
     }
   }
-
-  // Ako imaš listu korisnika, odkomentariši i prilagodi:
-  // Future<void> _loadUsers() async {
-  //   try {
-  //     final svc = UserService();
-  //     final list = await svc.getList();
-  //     setState(() {
-  //       _users = List<UserDto>.from(list)..sort((a, b) => a.fullName.compareTo(b.fullName));
-  //       _userLoading = false;
-  //     });
-  //   } catch (_) {
-  //     setState(() => _userLoading = false);
-  //     NotificationService.error('Greška', 'Ne mogu učitati autore.');
-  //   }
-  // }
 
   // File picker helpers
   Future<PhotoUpload?> _pickOne() async {
@@ -249,8 +224,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       NotificationService.error('Greška', 'Odaberite potkategoriju.');
       return;
     }
-    // Ako nemaš dropdown za autora, postavi userId iz logina ili fiksno:
-    //final userId = _userId ?? 1; // zamijeni stvarnim id iz AuthProvidera
 
     if (_mainPhoto == null) {
       NotificationService.error('Greška', 'Odaberite glavnu sliku.');
@@ -363,7 +336,7 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                                             );
                                           },
                                           validator: (v) => v == null
-                                              ? 'Odaberite kategoriju'
+                                              ? 'Kategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),
@@ -391,7 +364,7 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                                             () => _subcategoryId = v,
                                           ),
                                           validator: (v) => v == null
-                                              ? 'Odaberite potkategoriju'
+                                              ? 'Potkategorija je obavezno polje.'
                                               : null,
                                         ),
                                 ),
@@ -516,7 +489,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                             ),
                             const SizedBox(height: 8),
 
-                            // dugme preko cijele širine
                             SizedBox(
                               width: double.infinity,
                               child: OutlinedButton.icon(
@@ -538,7 +510,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                               ),
                             ),
 
-                            // prikaz selektovane slike ispod
                             if (_mainPhoto != null) ...[
                               const SizedBox(height: 8),
                               Stack(
