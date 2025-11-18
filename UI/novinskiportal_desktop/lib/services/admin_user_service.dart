@@ -7,6 +7,8 @@ import '../core/api_error.dart';
 class AdminUserService {
   final Dio _dio = ApiClient().dio;
   static const String _base = '/api/Admin/Users';
+  static const String _checkUsernamePath = '/api/Auth/check-username';
+  static const String _checkEmailPath = '/api/Auth/check-email';
 
   ApiException _asApi(
     DioException e, {
@@ -171,6 +173,40 @@ class AdminUserService {
       return true;
     } on DioException catch (e) {
       throw _asApi(e, fallback: 'Greška pri brisanju korisnika.');
+    }
+  }
+
+  Future<bool> isUsernameTaken(String username) async {
+    try {
+      final res = await _dio.get(
+        _checkUsernamePath,
+        queryParameters: {'username': username},
+      );
+
+      final data = res.data;
+      if (data is Map<String, dynamic>) {
+        return data['taken'] == true;
+      }
+      return false;
+    } on DioException {
+      return false;
+    }
+  }
+
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      final res = await _dio.get(
+        _checkEmailPath,
+        queryParameters: {'email': email},
+      );
+
+      final data = res.data;
+      if (data is Map<String, dynamic>) {
+        return data['taken'] == true;
+      }
+      return false;
+    } on DioException {
+      return false;
     }
   }
 }

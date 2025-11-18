@@ -126,4 +126,20 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
     notifyListeners();
     NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
   }
+
+  Future<bool> isUsernameTaken(String username) async {
+    try {
+      return await _service.isUsernameTaken(username);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      return await _service.isEmailTaken(email);
+    } catch (_) {
+      return false;
+    }
+  }
 }

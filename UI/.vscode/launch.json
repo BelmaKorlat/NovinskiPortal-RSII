@@ -1,0 +1,48 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "novinskiportal_desktop",
+            "cwd": "novinskiportal_desktop",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "novinskiportal_desktop (profile mode)",
+            "cwd": "novinskiportal_desktop",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "novinskiportal_desktop (release mode)",
+            "cwd": "novinskiportal_desktop",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "novinskiportal_mobile",
+            "cwd": "novinskiportal_mobile",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "novinskiportal_mobile (profile mode)",
+            "cwd": "novinskiportal_mobile",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "novinskiportal_mobile (release mode)",
+            "cwd": "novinskiportal_mobile",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

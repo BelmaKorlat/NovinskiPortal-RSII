@@ -6,42 +6,6 @@ import '../core/api_error.dart';
 import '../core/notification_service.dart';
 import 'package:form_validation/form_validation.dart';
 
-void showToastTopRight(
-  BuildContext context,
-  String message, {
-  int seconds = 3,
-}) {
-  final overlay = Overlay.of(context);
-
-  final topSafe = MediaQuery.of(context).viewPadding.top;
-
-  final entry = OverlayEntry(
-    builder: (_) => Positioned(
-      top: topSafe + 16,
-      right: 16,
-      child: Material(
-        color: Colors.transparent,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.black87,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [BoxShadow(blurRadius: 8, color: Colors.black26)],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Text(message, style: const TextStyle(color: Colors.white)),
-          ),
-        ),
-      ),
-    ),
-  );
-
-  overlay.insert(entry);
-  Future.delayed(Duration(seconds: seconds)).then((_) {
-    if (entry.mounted) entry.remove();
-  });
-}
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -93,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
       await auth.login(_userCtrl.text.trim(), _passCtrl.text);
       if (!mounted) return;
 
-      NotificationService.success('Notifikacija', 'Login uspješan');
+      NotificationService.success('Notifikacija', 'Prijava uspješan');
       Navigator.pushNamedAndRemoveUntil(context, '/admin', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
@@ -113,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
         : 'assets/novinskiportal_logo_transparent.png';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+      appBar: AppBar(title: const Text('Prijava')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400, maxHeight: 520),
@@ -185,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Login'),
+                            : const Text('Prijavi se'),
                       ),
                     ),
                   ],

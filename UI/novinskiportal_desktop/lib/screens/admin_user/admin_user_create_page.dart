@@ -29,6 +29,9 @@ class _CreateAdminUserPageState extends State<CreateAdminUserPage> {
   bool _confirmPasswordObscured = true;
   bool _saving = false;
 
+  String? _usernameExist;
+  String? _emailExist;
+
   late final Validator firstNameValidator;
   late final Validator lastNameValidator;
   late final Validator nickValidator;
@@ -103,6 +106,50 @@ class _CreateAdminUserPageState extends State<CreateAdminUserPage> {
     if (_nick.text != newNick) {
       _nick.text = newNick;
     }
+  }
+
+  Future<void> _checkUsername() async {
+    final username = _username.text.trim();
+
+    if (username.isEmpty) {
+      setState(() {
+        _usernameExist = null;
+      });
+      return;
+    }
+
+    final auth = context.read<AdminUserProvider>();
+    final taken = await auth.isUsernameTaken(username);
+
+    if (!mounted) return;
+
+    setState(() {
+      _usernameExist = taken ? 'Korisničko ime je već zauzeto.' : null;
+    });
+
+    _form.currentState?.validate();
+  }
+
+  Future<void> _checkEmail() async {
+    final email = _email.text.trim();
+
+    if (email.isEmpty) {
+      setState(() {
+        _emailExist = null;
+      });
+      return;
+    }
+
+    final auth = context.read<AdminUserProvider>();
+    final taken = await auth.isEmailTaken(email);
+
+    if (!mounted) return;
+
+    setState(() {
+      _emailExist = taken ? 'Email je već zauzet.' : null;
+    });
+
+    _form.currentState?.validate();
   }
 
   Future<void> _save() async {
@@ -217,11 +264,20 @@ class _CreateAdminUserPageState extends State<CreateAdminUserPage> {
                                     decoration: InputDecoration(
                                       labelText: 'Email',
                                     ),
-                                    validator: (v) => emailValidator.validate(
-                                      label: 'Email',
-                                      value: v,
-                                    ),
-                                    textInputAction: TextInputAction.next,
+                                    validator: (v) {
+                                      final error = emailValidator.validate(
+                                        label: 'Email',
+                                        value: v,
+                                      );
+                                      if (error != null) return error;
+
+                                      if (_emailExist != null) {
+                                        return _emailExist;
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (_) => _checkEmail(),
+                                    onFieldSubmitted: (_) => _checkEmail(),
                                   ),
                                 ),
 
@@ -233,12 +289,20 @@ class _CreateAdminUserPageState extends State<CreateAdminUserPage> {
                                     decoration: InputDecoration(
                                       labelText: 'Korisničko ime',
                                     ),
-                                    validator: (v) =>
-                                        usernameValidator.validate(
-                                          label: 'Korisničko ime',
-                                          value: v,
-                                        ),
-                                    textInputAction: TextInputAction.next,
+                                    validator: (v) {
+                                      final error = usernameValidator.validate(
+                                        label: 'Korisničko ime',
+                                        value: v,
+                                      );
+                                      if (error != null) return error;
+
+                                      if (_usernameExist != null) {
+                                        return _usernameExist;
+                                      }
+                                      return null;
+                                    },
+                                    onChanged: (_) => _checkUsername(),
+                                    onFieldSubmitted: (_) => _checkUsername(),
                                   ),
                                 ),
                               ],

@@ -35,5 +35,21 @@ namespace NovinskiPortal.API.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("check-username")]
+        public async Task<IActionResult> CheckUsernameAsync([FromQuery] string username)
+        {
+            var taken = await _authService.IsUsernameTakenAsync(username);
+            return Ok(new { taken });
+        }
+
+        [HttpGet("check-email")]
+        public async Task<IActionResult> CheckEmailAsync([FromQuery] string email)
+        {
+            var taken = await _authService.IsEmailTakenAsync(email);
+            return Ok(new { taken });
+        }
+
+
     }
 }

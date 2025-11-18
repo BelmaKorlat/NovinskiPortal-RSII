@@ -9,5 +9,8 @@ namespace NovinskiPortal.Services.Services.AuthService
     {
         Task<AuthResponse?> RegisterAsync(RegisterRequest registerRequest);
         Task<AuthResponse?> LoginAsync(LoginRequest loginRequest);
+
+        Task<bool> IsUsernameTakenAsync(string username);
+        Task<bool> IsEmailTakenAsync(string email);
     }
 }

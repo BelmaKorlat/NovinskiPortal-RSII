@@ -105,5 +105,21 @@ namespace NovinskiPortal.Services.Services.AuthService
 
             return authResponse;
         }
+
+        public async Task<bool> IsUsernameTakenAsync(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return false;
+
+            return await _context.Users.AnyAsync(u => u.Username.Trim() == username.Trim().ToLower());
+        }
+
+        public async Task<bool> IsEmailTakenAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return false;
+
+            return await _context.Users.AnyAsync(u => u.Email.Trim() == email.Trim().ToLower());
+        }
     }
 }
