@@ -85,4 +85,8 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> forgotPassword(String email) async {
+    await _service.forgotPassword(email);
+  }
 }

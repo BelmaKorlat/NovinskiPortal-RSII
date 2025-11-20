@@ -50,6 +50,35 @@ namespace NovinskiPortal.API.Controllers
             return Ok(new { taken });
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest forgotPasswordRequest)
+        {
+            if (string.IsNullOrWhiteSpace(forgotPasswordRequest.Email))
+                return BadRequest();
+
+            await _authService.ForgotPasswordAsync(forgotPasswordRequest);
+            return Ok();
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return ValidationProblem(ModelState);
+            }
+
+            var success = await _authService.ResetPasswordAsync(request);
+
+            if (!success)
+            {
+                return BadRequest();
+            }
+
+            return Ok();
+        }
 
     }
 }
+
+

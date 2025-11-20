@@ -12,6 +12,7 @@ using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
+using NovinskiPortal.Services.Services.EmailService;
 using NovinskiPortal.Services.Services.JwtService;
 using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
@@ -89,8 +90,14 @@ builder.Services.AddSwaggerGen(c =>
     }});
 });
 
+builder.Services.AddRazorPages();
+
+// reset - password email dio
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
+
 builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
+
 // In your application startup (e.g., Program.cs or a dedicated config class):
 TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
     .Map(dest => dest.CategoryName, src => src.Category.Name);
@@ -138,6 +145,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();
 
@@ -157,5 +165,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapRazorPages();
 
 app.Run();

@@ -8,6 +8,7 @@ class AuthService {
   static const String registerPath = '/api/auth/register';
   static const String checkUsernamePath = '/api/auth/check-username';
   static const String checkEmailPath = '/api/auth/check-email';
+  static const String forgotPasswordPath = '/api/auth/forgot-password';
 
   final Dio _dio = ApiClient().dio;
 
@@ -76,6 +77,21 @@ class AuthService {
       return false;
     } on DioException {
       return false;
+    }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    try {
+      await _dio.post(forgotPasswordPath, data: {'email': email});
+    } on DioException catch (e) {
+      // ako već imaš ApiException / humanMessage helper, koristi ga isto
+      final status = e.response?.statusCode;
+      throw ApiException(
+        statusCode: status,
+        message: 'Neuspješan reset lozinke.',
+      );
+    } catch (_) {
+      throw ApiException(message: 'Neočekivana greška.');
     }
   }
 }

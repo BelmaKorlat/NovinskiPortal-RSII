@@ -20,6 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  final _forgotEmailController = TextEditingController();
+
   late final Validator emailValidator;
   late final Validator usernameValidator;
   late final Validator passwordValidator;
@@ -45,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
   void dispose() {
     _emailOrUsernameController.dispose();
     _passwordController.dispose();
+    _forgotEmailController.dispose();
     super.dispose();
   }
 
@@ -73,6 +76,67 @@ class _LoginPageState extends State<LoginPage> {
       if (!mounted) return;
       NotificationService.error('Greška', 'Došlo je do greške pri prijavi.');
     }
+  }
+
+  Future<void> _showForgotPasswordDialog(BuildContext context) async {
+    return showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Zaboravljena lozinka'),
+          content: TextField(
+            controller: _forgotEmailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(ctx).pop(); // zatvori dialog
+              },
+              child: const Text('Otkaži'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final email = _forgotEmailController.text.trim();
+
+                if (email.isEmpty) {
+                  // ovdje možeš koristiti svoj NotificationService
+                  // ili običan SnackBar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Unesite email')),
+                  );
+                  return;
+                }
+
+                Navigator.of(ctx).pop(); // zatvori dialog prije poziva API-ja
+
+                try {
+                  final auth = context.read<AuthProvider>();
+                  await auth.forgotPassword(email);
+
+                  // poruka da je mail poslan (ili da će stići ako postoji)
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                        'Ako postoji nalog s tim emailom, poslali smo upute za reset lozinke.',
+                      ),
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Došlo je do greške pri slanju zahtjeva.'),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Pošalji'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -204,6 +268,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: TextButton(
                               onPressed: () {
                                 // zaboravljena lozinka
+                                _showForgotPasswordDialog(context);
                               },
                               child: Text(
                                 'Zaboravljena lozinka?',

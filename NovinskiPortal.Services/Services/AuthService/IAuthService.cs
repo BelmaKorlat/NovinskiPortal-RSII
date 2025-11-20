@@ -12,5 +12,8 @@ namespace NovinskiPortal.Services.Services.AuthService
 
         Task<bool> IsUsernameTakenAsync(string username);
         Task<bool> IsEmailTakenAsync(string email);
+
+        Task ForgotPasswordAsync(ForgotPasswordRequest forgotPasswordRequest);
+        Task<bool> ResetPasswordAsync(ResetPasswordRequest resetPasswordRequest);
     }
 }
