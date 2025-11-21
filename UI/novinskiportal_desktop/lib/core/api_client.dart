@@ -86,4 +86,15 @@ class ApiClient {
       ),
     );
   }
+
+  static String resolveUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    if (path.startsWith('/')) {
+      return '$baseUrl$path';
+    }
+    return '$baseUrl/$path';
+  }
 }

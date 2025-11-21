@@ -9,5 +9,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
     {
         Task<ArticleDetailResponse?> GetDetailByIdAsync(int id);
         Task<ArticleResponse?> ToggleArticleStatusAsync(int id);
+        Task<List<CategoryArticlesResponse>> GetCategoryArticlesAsync(int perCategory = 5);
     }
 }

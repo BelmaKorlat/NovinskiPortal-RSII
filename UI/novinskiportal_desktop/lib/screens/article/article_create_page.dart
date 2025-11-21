@@ -66,7 +66,7 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       validators: [RequiredValidator(), MaxLengthValidator(length: 200)],
     );
     _shortTextValidator = Validator(
-      validators: [RequiredValidator(), MaxLengthValidator(length: 300)],
+      validators: [RequiredValidator(), MaxLengthValidator(length: 1000)],
     );
     _textValidator = Validator(validators: [RequiredValidator()]);
 

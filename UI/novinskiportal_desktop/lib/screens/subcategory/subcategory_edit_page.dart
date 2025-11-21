@@ -189,14 +189,16 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
 
                                 Expanded(
                                   child: TextFormField(
-                                    controller: _name,
-                                    decoration: const InputDecoration(
-                                      labelText: 'Naziv',
+                                    controller: _ord,
+                                    keyboardType: TextInputType.number,
+                                    decoration: InputDecoration(
+                                      labelText: 'Redni broj',
                                     ),
-                                    validator: (v) => nameValidator.validate(
-                                      label: 'Naziv',
-                                      value: v,
-                                    ),
+                                    validator: (v) =>
+                                        ordinalNumberValidator.validate(
+                                          label: 'Redni broj',
+                                          value: v,
+                                        ),
                                     textInputAction: TextInputAction.next,
                                   ),
                                 ),

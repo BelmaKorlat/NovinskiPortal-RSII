@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/core/api_client.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
@@ -80,7 +81,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
       validators: [RequiredValidator(), MaxLengthValidator(length: 200)],
     );
     _shortTextValidator = Validator(
-      validators: [RequiredValidator(), MaxLengthValidator(length: 300)],
+      validators: [RequiredValidator(), MaxLengthValidator(length: 1000)],
     );
     _textValidator = Validator(validators: [RequiredValidator()]);
 
@@ -605,7 +606,8 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(6),
                                 child: Image.network(
-                                  _existingMainPhotoPath!,
+                                  //_existingMainPhotoPath!,
+                                  ApiClient.resolveUrl(_existingMainPhotoPath!),
                                   height: 100,
                                   fit: BoxFit.cover,
                                 ),
@@ -644,7 +646,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
                                   return ClipRRect(
                                     borderRadius: BorderRadius.circular(6),
                                     child: Image.network(
-                                      url,
+                                      ApiClient.resolveUrl(url),
                                       height: 100,
                                       fit: BoxFit.cover,
                                     ),

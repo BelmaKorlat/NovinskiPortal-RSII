@@ -84,14 +84,7 @@ class AuthService {
     try {
       await _dio.post(forgotPasswordPath, data: {'email': email});
     } on DioException catch (e) {
-      // ako već imaš ApiException / humanMessage helper, koristi ga isto
-      final status = e.response?.statusCode;
-      throw ApiException(
-        statusCode: status,
-        message: 'Neuspješan reset lozinke.',
-      );
-    } catch (_) {
-      throw ApiException(message: 'Neočekivana greška.');
+      throw _asApi(e, fallback: 'Neuspješan reset lozinke.');
     }
   }
 }

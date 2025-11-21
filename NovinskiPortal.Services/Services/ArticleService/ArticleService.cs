@@ -61,6 +61,44 @@ namespace NovinskiPortal.Services.Services.ArticleService
             await _context.Entry(entity).Collection(a => a.ArticlePhotos).LoadAsync();
         }
 
+        public async Task<List<CategoryArticlesResponse>> GetCategoryArticlesAsync(int perCategory = 5)
+        {
+            return await _context.Categories
+                .Where(c => c.Active)
+                .Select(c => new CategoryArticlesResponse
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Color = c.Color,
+
+                    Articles = _context.Articles
+                        .Where(a => a.Active &&
+                                    a.CategoryId == c.Id &&
+                                    a.PublishedAt <= DateTime.UtcNow)
+                        .OrderByDescending(a => a.PublishedAt)
+                        .Take(perCategory)
+                        .Select(a => new ArticleResponse
+                        {
+                            Id = a.Id,
+                            Headline = a.Headline,
+                            Subheadline = a.Subheadline,
+                            CreatedAt = DateTime.SpecifyKind(a.CreatedAt, DateTimeKind.Utc),
+                            PublishedAt = DateTime.SpecifyKind(a.PublishedAt, DateTimeKind.Utc),
+                            Active = a.Active,
+                            HideFullName = a.HideFullName,
+                            BreakingNews = a.BreakingNews,
+                            Live = a.Live,
+                            Category = a.Category.Name,
+                            Subcategory = a.Subcategory.Name,
+                            User = a.HideFullName ? a.User.Nick : a.User.FirstName + " " + a.User.LastName,          
+                            MainPhotoPath = a.MainPhotoPath,
+                            Color = a.Category.Color,    
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+        }
+
         public override async Task<ArticleResponse?> GetByIdAsync(int id)
         {
             var entity = await ApplyIncludes(_context.Articles.AsQueryable())

@@ -277,14 +277,13 @@ class _SubcategoryTable extends StatelessWidget {
             dataRowHeight: 48,
 
             columns: [
-              const DataColumn2(label: Text('Kategorija'), size: ColumnSize.S),
               DataColumn2(
                 label: const Center(child: Text('Redni broj')),
                 size: ColumnSize.S,
                 fixedWidth: wOrdinal,
               ),
+              const DataColumn2(label: Text('Kategorija'), size: ColumnSize.S),
               const DataColumn2(label: Text('Naziv'), size: ColumnSize.L),
-
               DataColumn2(
                 label: const Center(child: Text('Aktivna?')),
                 size: ColumnSize.S,
@@ -300,6 +299,7 @@ class _SubcategoryTable extends StatelessWidget {
               final categoryName = cItem.categoryName ?? '${cItem.categoryId}';
               return DataRow(
                 cells: [
+                  DataCell(Center(child: Text('${cItem.ordinalNumber}'))),
                   DataCell(
                     Text(
                       categoryName,
@@ -307,7 +307,6 @@ class _SubcategoryTable extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  DataCell(Center(child: Text('${cItem.ordinalNumber}'))),
                   DataCell(
                     Text(
                       cItem.name,

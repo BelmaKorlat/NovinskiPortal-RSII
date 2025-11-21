@@ -39,6 +39,7 @@ dependencies:
   elegant_notification: ^2.5.1
   provider: ^6.1.5+1
   form_validation: ^3.2.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -63,12 +64,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/Slika1.png
-    - assets/images/Slika2.jpg
-    - assets/images/Slika3.jpg
     - assets/images/Slika4.jpg
-    - assets/images/Slika5.jpg
     - assets/images/novinskiportal_logo_transparent.png
+    - assets/images/novinskiportal_logo_white_shaded.png
+    - assets/images/logo.png
 
 
   # To add assets to your application, add an assets section, like this:

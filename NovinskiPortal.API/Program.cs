@@ -98,7 +98,6 @@ builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"
 builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 builder.Services.AddScoped<IMapper, ServiceMapper>();
 
-// In your application startup (e.g., Program.cs or a dedicated config class):
 TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
     .Map(dest => dest.CategoryName, src => src.Category.Name);
 

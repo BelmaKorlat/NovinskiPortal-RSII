@@ -20,13 +20,20 @@ namespace NovinskiPortal.API.Controllers
             _articleService = articleService;
         }
 
-       [HttpGet]
-       public async Task<ActionResult<PagedResult<ArticleResponse>>> GetAsync([FromQuery] ArticleSearchObject articleSearchObject)
+       [HttpGet("category-articles")]
+       public async Task<ActionResult<List<CategoryArticlesResponse>>> GetCategoryArticles([FromQuery] int perCategory = 5)
+       {
+            var items = await _articleService.GetCategoryArticlesAsync(perCategory);
+
+            return Ok(items);
+       }
+        [HttpGet()]
+        public async Task<ActionResult<PagedResult<ArticleResponse>>> GetAsync([FromQuery] ArticleSearchObject articleSearchObject)
         {
             if (articleSearchObject == null)
                 articleSearchObject = new ArticleSearchObject();
             var result = await _articleService.GetAsync(articleSearchObject);
-            if(result?.Items != null)
+           /* if(result?.Items != null)
             {
                 foreach (var item in result.Items)
                 {
@@ -35,9 +42,11 @@ namespace NovinskiPortal.API.Controllers
                         item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
                     }
                 }
-            }
+            }*/
             return Ok(result);
-        }
+       }
+
+
 
         [HttpPost]
         //[Consumes("multipart/form-data")]
@@ -78,7 +87,7 @@ namespace NovinskiPortal.API.Controllers
             var item = await _articleService.GetByIdAsync(id);
             if (item is null)
                 return NotFound();
-            item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
+            // item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
             return Ok(item);
         }
 
@@ -88,18 +97,18 @@ namespace NovinskiPortal.API.Controllers
             var item = await _articleService.GetDetailByIdAsync(id);
             if( item is null )
                 return NotFound();
-            item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
+            /*item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
             if (item.AdditionalPhotos != null && item.AdditionalPhotos.Count > 0)
-                item.AdditionalPhotos = item.AdditionalPhotos.Select(ToAbsolute).ToList();
+                item.AdditionalPhotos = item.AdditionalPhotos.Select(ToAbsolute).ToList();*/
             return Ok(item);
         }
 
-        private string ToAbsolute(string? path)
+        /*private string ToAbsolute(string? path)
         {
             if (string.IsNullOrWhiteSpace(path)) return "";
             var request = HttpContext.Request;
             return $"{request.Scheme}://{request.Host}{request.PathBase}{path}";
-        }
+        }*/
 
 
         [HttpPut("{id}")]

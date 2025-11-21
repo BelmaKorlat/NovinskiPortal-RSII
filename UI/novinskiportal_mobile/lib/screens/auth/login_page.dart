@@ -66,9 +66,9 @@ class _LoginPageState extends State<LoginPage> {
       await auth.login(req);
       if (!mounted) return;
 
-      NotificationService.success('Notifikacija', 'Login uspješan');
+      //NotificationService.success('Notifikacija', 'Login uspješan');
       // ruta na home page kasnije
-      //Navigator.pushNamedAndRemoveUntil(context, '/welcome', (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
       NotificationService.error('Greška', ex.message);
@@ -92,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(ctx).pop(); // zatvori dialog
+                Navigator.of(ctx).pop();
               },
               child: const Text('Otkaži'),
             ),
@@ -101,22 +101,20 @@ class _LoginPageState extends State<LoginPage> {
                 final email = _forgotEmailController.text.trim();
 
                 if (email.isEmpty) {
-                  // ovdje možeš koristiti svoj NotificationService
-                  // ili običan SnackBar
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Unesite email')),
                   );
                   return;
                 }
 
-                Navigator.of(ctx).pop(); // zatvori dialog prije poziva API-ja
+                final messenger = ScaffoldMessenger.of(context);
+                final auth = context.read<AuthProvider>();
 
+                Navigator.of(ctx).pop();
                 try {
-                  final auth = context.read<AuthProvider>();
                   await auth.forgotPassword(email);
 
-                  // poruka da je mail poslan (ili da će stići ako postoji)
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text(
                         'Ako postoji nalog s tim emailom, poslali smo upute za reset lozinke.',
@@ -124,7 +122,9 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   );
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  if (!mounted) return;
+
+                  messenger.showSnackBar(
                     const SnackBar(
                       content: Text('Došlo je do greške pri slanju zahtjeva.'),
                     ),
@@ -156,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () {
             Navigator.pushNamedAndRemoveUntil(
               context,
-              '/home',
+              '/welcome',
               (route) => false,
             );
           },
@@ -267,7 +267,6 @@ class _LoginPageState extends State<LoginPage> {
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () {
-                                // zaboravljena lozinka
                                 _showForgotPasswordDialog(context);
                               },
                               child: Text(

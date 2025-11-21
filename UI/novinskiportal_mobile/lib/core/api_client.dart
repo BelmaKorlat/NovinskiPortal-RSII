@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_error.dart';
 
@@ -25,19 +24,6 @@ class ApiClient {
         validateStatus: (s) => s != null && s >= 200 && s < 300,
       ),
     );
-
-    final adapter = dio.httpClientAdapter as IOHttpClientAdapter;
-    adapter.createHttpClient = () {
-      final client = HttpClient();
-      client.badCertificateCallback =
-          (X509Certificate cert, String host, int port) {
-            return host == 'localhost' ||
-                host == '127.0.0.1' ||
-                host == '10.0.2.2' ||
-                host.startsWith('192.168.');
-          };
-      return client;
-    };
 
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -91,5 +77,15 @@ class ApiClient {
         },
       ),
     );
+  }
+  static String resolveUrl(String path) {
+    if (path.isEmpty) return '';
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    if (path.startsWith('/')) {
+      return '$baseUrl$path';
+    }
+    return '$baseUrl/$path';
   }
 }
