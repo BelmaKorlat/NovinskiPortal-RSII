@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/app_assets.dart';
+import 'package:novinskiportal_mobile/widgets/navigation/category_menu_section.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -44,18 +45,15 @@ class AppDrawer extends StatelessWidget {
               ),
 
               const Divider(height: 1),
-              // ovdje će kasnije doći kategorije
               Expanded(
-                child: ListView(
-                  children: const [ListTile(title: Text('Kategorije'))],
-                ),
+                child: SingleChildScrollView(child: CategoryMenuSection()),
               ),
 
               const Divider(height: 1),
 
               // Postavke
               ListTile(
-                leading: const Icon(Icons.settings),
+                leading: Icon(Icons.settings, color: cs.onSurface),
                 title: const Text('Postavke'),
                 onTap: () {
                   Navigator.pushNamed(context, '/settings');

@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
-import '../models/category_articles_models.dart';
-import '../services/article_service.dart';
-import '../core/api_error.dart';
-import '../core/notification_service.dart';
+import '../../models/category/category_articles_models.dart';
+import '../../services/article_service.dart';
+import '../../core/api_error.dart';
+import '../../core/notification_service.dart';
 
 class CategoryArticlesProvider extends ChangeNotifier {
   final ArticleService _service = ArticleService();

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:novinskiportal_mobile/models/category_articles_models.dart';
+import 'package:novinskiportal_mobile/models/category/category_articles_models.dart';
 import '../core/api_client.dart';
-import '../models/article_models.dart';
-import '../core/paging.dart';
+import '../models/article/article_models.dart';
+import '../models/common/paging.dart';
 import '../core/api_error.dart';
 
 class ArticleService {

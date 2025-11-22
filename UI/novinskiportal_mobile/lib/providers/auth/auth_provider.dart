@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:novinskiportal_mobile/models/auth_models.dart';
-import 'package:novinskiportal_mobile/models/user_models.dart';
+import 'package:novinskiportal_mobile/models/auth/auth_models.dart';
+import 'package:novinskiportal_mobile/models/user/user_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/auth_service.dart';
-import '../core/api_error.dart';
+import '../../services/auth_service.dart';
+import '../../core/api_error.dart';
 
 class AuthProvider extends ChangeNotifier {
   final _service = AuthService();

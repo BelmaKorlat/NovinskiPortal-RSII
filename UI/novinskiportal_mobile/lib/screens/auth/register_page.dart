@@ -4,8 +4,8 @@ import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/core/notification_service.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/auth_models.dart';
-import '../../providers/auth_provider.dart';
+import '../../models/auth/auth_models.dart';
+import '../../providers/auth/auth_provider.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

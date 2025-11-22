@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import '../core/api_client.dart';
-import '../models/auth_models.dart';
+import '../models/auth/auth_models.dart';
 import '../core/api_error.dart';
 
 class AuthService {

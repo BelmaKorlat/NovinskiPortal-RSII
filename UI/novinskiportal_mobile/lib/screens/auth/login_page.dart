@@ -4,8 +4,8 @@ import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/core/notification_service.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/auth_models.dart';
-import '../../providers/auth_provider.dart';
+import '../../models/auth/auth_models.dart';
+import '../../providers/auth/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
 
       //NotificationService.success('Notifikacija', 'Login uspješan');
       // ruta na home page kasnije
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (_) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
       NotificationService.error('Greška', ex.message);

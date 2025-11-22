@@ -1,10 +1,10 @@
 import 'package:novinskiportal_mobile/core/notification_service.dart';
 
-import '../models/article_models.dart';
-import '../services/article_service.dart';
-import '../providers/paged_provider.dart';
-import '../core/paging.dart';
-import '../core/api_error.dart';
+import '../../models/article/article_models.dart';
+import '../../services/article_service.dart';
+import '../page/paged_provider.dart';
+import '../../models/common/paging.dart';
+import '../../core/api_error.dart';
 
 class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
   final _service = ArticleService();

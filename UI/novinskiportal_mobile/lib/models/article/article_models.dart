@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import '../core/base_search.dart';
+import '../common/base_search.dart';
 
 class ArticleDto {
   final int id;

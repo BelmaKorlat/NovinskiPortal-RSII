@@ -1,4 +1,4 @@
-import 'article_models.dart';
+import '../article/article_models.dart';
 
 class CategoryArticlesDto {
   final int id;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:novinskiportal_mobile/providers/theme_provider.dart';
+import 'package:novinskiportal_mobile/providers/settings/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatelessWidget {
