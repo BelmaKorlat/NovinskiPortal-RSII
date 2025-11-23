@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/models/category/category_menu_models.dart';
 import 'package:novinskiportal_mobile/providers/article/category_feed_provider.dart';
 import 'package:novinskiportal_mobile/providers/category/category_menu_provider.dart';
-import 'package:novinskiportal_mobile/screens/article/category_articles_page.dart';
+import 'package:novinskiportal_mobile/screens/article/category_articles_feed_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:provider/provider.dart';
 
@@ -75,7 +75,7 @@ class _CategoryMenuSectionState extends State<CategoryMenuSection> {
                     builder: (_) => ChangeNotifierProvider(
                       create: (_) =>
                           CategoryFeedProvider(categoryId: category.id),
-                      child: CategoryArticlesPage(
+                      child: CategoryArticlesFeedPage(
                         categoryId: category.id,
                         categoryName: category.name,
                         categoryColor: color,
@@ -95,7 +95,7 @@ class _CategoryMenuSectionState extends State<CategoryMenuSection> {
                     builder: (_) => ChangeNotifierProvider(
                       create: (_) =>
                           CategoryFeedProvider(subcategoryId: sub.id),
-                      child: CategoryArticlesPage(
+                      child: CategoryArticlesFeedPage(
                         categoryId: sub.id,
                         categoryName: sub.name,
                         categoryColor: color,

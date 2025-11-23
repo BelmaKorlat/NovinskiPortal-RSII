@@ -6,5 +6,8 @@ namespace NovinskiPortal.Model.SearchObjects
         public int? CategoryId { get; set; }
         public int? SubcategoryId { get; set; }
         public int? UserId { get; set; }
+
+        public string? Mode { get; set; }
+        public bool IncludeFuture { get; set; } = false;
     }
 }

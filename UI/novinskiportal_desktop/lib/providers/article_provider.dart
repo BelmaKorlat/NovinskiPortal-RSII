@@ -22,6 +22,7 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
     page: page,
     pageSize: pageSize,
     includeTotalCount: true,
+    includeFuture: true,
   );
 
   @override

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
+import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
 import 'package:novinskiportal_mobile/widgets/article/big_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/standard_article_card.dart';
 import 'package:provider/provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_feed_provider.dart';
 
-class CategoryArticlesPage extends StatefulWidget {
+class CategoryArticlesFeedPage extends StatefulWidget {
   final int categoryId;
   final String categoryName;
   final Color categoryColor;
 
-  const CategoryArticlesPage({
+  const CategoryArticlesFeedPage({
     super.key,
     required this.categoryId,
     required this.categoryName,
@@ -17,10 +20,10 @@ class CategoryArticlesPage extends StatefulWidget {
   });
 
   @override
-  State<CategoryArticlesPage> createState() => _CategoryArticlesPageState();
+  State<CategoryArticlesFeedPage> createState() => _CategoryArticlesFeedPage();
 }
 
-class _CategoryArticlesPageState extends State<CategoryArticlesPage> {
+class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
   late final ScrollController _scrollController;
   late final PageController _pageController;
   int _currentPage = 0;
@@ -31,6 +34,30 @@ class _CategoryArticlesPageState extends State<CategoryArticlesPage> {
     // npr. Navigator.of(context).push(...);
   }
 
+  Future<void> _openArticleDetail(ArticleDto article) async {
+    final articleProvider = context.read<ArticleProvider>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final detail = await articleProvider.getDetail(article.id);
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +65,6 @@ class _CategoryArticlesPageState extends State<CategoryArticlesPage> {
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
 
-    //  _pageController = PageController();
     _pageController = PageController(viewportFraction: 0.9);
 
     _pageController.addListener(() {
@@ -155,7 +181,7 @@ class _CategoryArticlesPageState extends State<CategoryArticlesPage> {
                         return BigArticleCard(
                           article: article,
                           categoryColor: widget.categoryColor,
-                          // onTap: () { /* detalji članka kasnije */ },
+                          onTap: () => _openArticleDetail(article),
                         );
                       },
                     ),
@@ -213,7 +239,7 @@ class _CategoryArticlesPageState extends State<CategoryArticlesPage> {
       widgets.add(
         StandardArticleCard(
           article: article,
-          // onTap: () { /* detalji članka kasnije */ },
+          onTap: () => _openArticleDetail(article),
         ),
       );
     }

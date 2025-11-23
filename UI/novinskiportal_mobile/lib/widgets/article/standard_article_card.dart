@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 
 class StandardArticleCard extends StatelessWidget {
@@ -13,9 +14,9 @@ class StandardArticleCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final categoryColor = Color(
-      int.parse(article.color.replaceFirst('#', '0xFF')),
-    );
+    final categoryColor =
+        tryParseHexColor(article.color) ??
+        Theme.of(context).colorScheme.primary;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),

@@ -125,6 +125,7 @@ class ArticleSearch extends BaseSearch {
   final int? categoryId;
   final int? subcategoryId;
   final int? userId;
+  final String? mode;
 
   const ArticleSearch({
     this.categoryId,
@@ -135,6 +136,7 @@ class ArticleSearch extends BaseSearch {
     super.pageSize = 10,
     super.includeTotalCount = true,
     super.retrieveAll = false,
+    this.mode,
   });
 
   @override
@@ -143,6 +145,7 @@ class ArticleSearch extends BaseSearch {
     if (categoryId != null) q['categoryId'] = categoryId;
     if (subcategoryId != null) q['subcategoryId'] = subcategoryId;
     if (userId != null) q['userId'] = userId;
+    if (mode != null) q['mode'] = mode;
     return q;
   }
 }

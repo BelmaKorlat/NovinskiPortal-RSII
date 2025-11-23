@@ -35,8 +35,8 @@ namespace NovinskiPortal.Services.Services.BaseService
              
             if (!search.RetrieveAll)
             {
-                var page = Math.Max(search.Page ?? 0, 0);                 // default 0
-                var size = Math.Clamp(search.PageSize ?? 10, 1, 200);     // default 10, granice 1..200
+                var page = Math.Max(search.Page ?? 0, 0);                 
+                var size = Math.Clamp(search.PageSize ?? 10, 1, 200);     
 
                 query = query.Skip(page * size).Take(size);
             }

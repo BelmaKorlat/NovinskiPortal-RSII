@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/models/article/news_mode.dart';
+import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_articles_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_feed_provider.dart';
-import 'package:novinskiportal_mobile/screens/article/category_articles_page.dart';
+import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
+import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
+import 'package:novinskiportal_mobile/screens/article/category_articles_feed_page.dart';
+import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/widgets/article/medium_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/small_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/standard_article_card.dart';
+import 'package:novinskiportal_mobile/widgets/common/top_tabs.dart';
 import 'package:provider/provider.dart';
 import 'package:novinskiportal_mobile/models/category/category_articles_models.dart';
 
@@ -22,6 +29,30 @@ class HomePageState extends State<HomePage> {
     setState(() {
       _topTabIndex = -1;
     });
+  }
+
+  Future<void> _openArticleDetail(ArticleDto article) async {
+    final articleProvider = context.read<ArticleProvider>();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final detail = await articleProvider.getDetail(article.id);
+
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      await Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+    }
   }
 
   @override
@@ -59,22 +90,26 @@ class HomePageState extends State<HomePage> {
               currentIndex: _topTabIndex,
               labels: const ['Najnovije', 'Najčitanije', 'Uživo'],
               onChanged: (i) {
+                final latestProvider = context.read<NewsProvider>();
+
                 if (i == 0) {
-                  // Najnovije -> otvori novi screen
-                  Navigator.pushNamed(context, '/latestNews');
+                  latestProvider.changeMode(NewsMode.latest);
+                } else if (i == 1) {
+                  latestProvider.changeMode(NewsMode.mostread);
+                } else if (i == 2) {
+                  latestProvider.changeMode(NewsMode.live);
                 }
 
-                // Najčitanije i Uživo ćemo dodati kasnije
-                // if (i == 1) { ... }
-                // if (i == 2) { ... }
-
-                // ovdje kasnije ide navigacija ili promjena query-a
+                Navigator.pushNamed(context, '/newsScreen');
               },
             );
           }
 
           final cat = provider.items[index - 1];
-          return HomeCategorySection(category: cat);
+          return HomeCategorySection(
+            category: cat,
+            onArticleTap: _openArticleDetail,
+          );
         },
       ),
     );
@@ -83,8 +118,13 @@ class HomePageState extends State<HomePage> {
 
 class HomeCategorySection extends StatelessWidget {
   final CategoryArticlesDto category;
+  final void Function(ArticleDto) onArticleTap;
 
-  const HomeCategorySection({super.key, required this.category});
+  const HomeCategorySection({
+    super.key,
+    required this.category,
+    required this.onArticleTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -105,21 +145,26 @@ class HomeCategorySection extends StatelessWidget {
                   category.name.toUpperCase(),
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: _parseColor(category.color, cs.primary),
+                    color:
+                        tryParseHexColor(category.color) ??
+                        Theme.of(context).colorScheme.primary,
+
                     letterSpacing: 0.6,
                   ),
                 ),
                 const Spacer(),
                 InkWell(
                   onTap: () {
-                    final color = _parseColor(category.color, cs.primary);
+                    final color =
+                        tryParseHexColor(category.color) ??
+                        Theme.of(context).colorScheme.primary;
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider(
                           create: (_) =>
                               CategoryFeedProvider(categoryId: category.id),
-                          child: CategoryArticlesPage(
+                          child: CategoryArticlesFeedPage(
                             categoryId: category.id,
                             categoryName: category.name,
                             categoryColor: color,
@@ -149,6 +194,9 @@ class HomeCategorySection extends StatelessWidget {
   List<Widget> _buildArticles(BuildContext context) {
     final widgets = <Widget>[];
     final articles = category.articles;
+    final categoryColor =
+        tryParseHexColor(category.color) ??
+        Theme.of(context).colorScheme.primary;
 
     for (var i = 0; i < articles.length; i++) {
       final a = articles[i];
@@ -157,117 +205,19 @@ class HomeCategorySection extends StatelessWidget {
         widgets.add(
           MediumArticleCard(
             article: a,
-            categoryColor: _parseColor(
-              category.color,
-              Theme.of(context).colorScheme.primary,
-            ),
+            categoryColor: categoryColor,
+            onTap: () => onArticleTap(a),
           ),
         );
       } else if (i == 1 || i == 2) {
-        widgets.add(StandardArticleCard(article: a));
+        widgets.add(
+          StandardArticleCard(article: a, onTap: () => onArticleTap(a)),
+        );
       } else {
-        widgets.add(SmallArticleCard(article: a));
+        widgets.add(SmallArticleCard(article: a, onTap: () => onArticleTap(a)));
       }
     }
 
     return widgets;
-  }
-
-  Color _parseColor(String hex, Color fallback) {
-    try {
-      return Color(int.parse(hex.replaceFirst('#', '0xFF')));
-    } catch (_) {
-      return fallback;
-    }
-  }
-}
-
-class TopTabs extends StatelessWidget {
-  final int currentIndex;
-  final List<String> labels;
-  final ValueChanged<int> onChanged;
-
-  const TopTabs({
-    super.key,
-    required this.currentIndex,
-    required this.labels,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    final baseStyle =
-        theme.textTheme.labelLarge ?? const TextStyle(fontSize: 14);
-
-    double measureTextWidth(String text) {
-      final tp = TextPainter(
-        text: TextSpan(text: text, style: baseStyle),
-        maxLines: 1,
-        textDirection: TextDirection.ltr,
-      )..layout();
-      return tp.size.width;
-    }
-
-    Widget buildTab(String label, int index) {
-      final selected = currentIndex == index;
-      final width = measureTextWidth(label);
-
-      return GestureDetector(
-        onTap: () => onChanged(index),
-        child: Padding(
-          padding: EdgeInsets.only(right: index == labels.length - 1 ? 0 : 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 3,
-                width: width,
-                color: selected ? cs.onSurface : Colors.transparent,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: baseStyle.copyWith(
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: selected
-                      ? cs.onSurface
-                      : cs.onSurface.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
-      child: SizedBox(
-        height: 36,
-        child: Stack(
-          alignment: Alignment.topLeft,
-          children: [
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.topLeft,
-                child: Container(height: 2, color: cs.outlineVariant),
-              ),
-            ),
-            Align(
-              alignment: Alignment.topLeft,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < labels.length; i++)
-                    buildTab(labels[i], i),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

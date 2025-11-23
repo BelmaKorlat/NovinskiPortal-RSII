@@ -48,7 +48,9 @@ class _MainLayoutState extends State<MainLayout> {
         },
       ),
       drawer: const AppDrawer(),
-      body: SafeArea(child: _pages[_currentIndex]),
+      body: SafeArea(
+        child: IndexedStack(index: _currentIndex, children: _pages),
+      ),
       bottomNavigationBar: MainBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) {

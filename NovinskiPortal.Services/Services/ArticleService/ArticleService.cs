@@ -37,11 +37,42 @@ namespace NovinskiPortal.Services.Services.ArticleService
             if (search.UserId.HasValue)
                 query = query.Where(a => a.UserId == search.UserId.Value);
 
+            // ako je mod "live", filtriraj samo live članke
+            if (!string.IsNullOrWhiteSpace(search.Mode) &&
+                search.Mode.Equals("live", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(a => a.Live);
+            }
+
+            if (!search.IncludeFuture)
+            {
+                query = query.Where(a => a.PublishedAt <= DateTime.UtcNow && a.Active);
+            }
+
             return query;
         }
 
         protected override IOrderedQueryable<Article>? ApplyOrder(IQueryable<Article> query, ArticleSearchObject search)
         {
+            if (!string.IsNullOrWhiteSpace(search.Mode))
+            {
+                switch (search.Mode.ToLower())
+                {
+                    case "latest":
+                        // najnovije po datumu objave
+                        return query.OrderByDescending(a => a.PublishedAt);
+
+                    case "mostread":
+                        // za sada isto što i latest, dok ne dodaš ViewCount
+                        // kasnije: return query.OrderByDescending(a => a.ViewCount);
+                        return query.OrderByDescending(a => a.PublishedAt);
+
+                    case "live":
+                        // live članci, opet sortirani po datumu objave
+                        return query.OrderByDescending(a => a.PublishedAt);
+                }
+            }
+            // default, ako Mode nije poslan
             return query.OrderByDescending(a => a.PublishedAt);
         }
         protected override IQueryable<Article> ApplyIncludes(IQueryable<Article> query)

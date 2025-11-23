@@ -126,11 +126,13 @@ class ArticleSearch extends BaseSearch {
   final int? categoryId;
   final int? subcategoryId;
   final int? userId;
+  final bool includeFuture;
 
   const ArticleSearch({
     this.categoryId,
     this.subcategoryId,
     this.userId,
+    this.includeFuture = false,
     super.fts,
     super.page = 0,
     super.pageSize = 10,
@@ -144,6 +146,7 @@ class ArticleSearch extends BaseSearch {
     if (categoryId != null) q['categoryId'] = categoryId;
     if (subcategoryId != null) q['subcategoryId'] = subcategoryId;
     if (userId != null) q['userId'] = userId;
+    if (includeFuture) q['includeFuture'] = true;
     return q;
   }
 }

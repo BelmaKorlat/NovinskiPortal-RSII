@@ -6,11 +6,11 @@ import 'package:novinskiportal_mobile/core/app_theme.dart';
 import 'package:novinskiportal_mobile/core/dev_http_overrides.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_articles_provider.dart';
-import 'package:novinskiportal_mobile/providers/article/latest_articles_provider.dart';
+import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
 import 'package:novinskiportal_mobile/providers/category/category_menu_provider.dart';
 import 'package:novinskiportal_mobile/providers/settings/theme_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/home_page.dart';
-import 'package:novinskiportal_mobile/screens/article/latest_news_page.dart';
+import 'package:novinskiportal_mobile/screens/article/news_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/login_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/register_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/welcome_page.dart';
@@ -51,7 +51,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ArticleProvider()),
         ChangeNotifierProvider(create: (_) => CategoryArticlesProvider()),
         ChangeNotifierProvider(create: (_) => CategoryMenuProvider()),
-        ChangeNotifierProvider(create: (_) => LatestArticlesProvider()),
+        ChangeNotifierProvider(create: (_) => NewsProvider()),
       ],
       child: const NovinskiPortalMobileApp(),
     ),
@@ -80,7 +80,7 @@ class NovinskiPortalMobileApp extends StatelessWidget {
         '/home': (_) => const HomePage(),
         '/settings': (_) => const SettingsPage(),
         '/main': (_) => const MainLayout(),
-        '/latestNews': (_) => const LatestNewsScreen(),
+        '/newsScreen': (_) => const NewsPage(),
       },
     );
   }
