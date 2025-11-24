@@ -13,6 +13,7 @@ using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 using NovinskiPortal.Services.Services.EmailService;
+using NovinskiPortal.Services.Services.FavoriteService;
 using NovinskiPortal.Services.Services.JwtService;
 using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
@@ -134,6 +135,11 @@ TypeAdapterConfig<Article, ArticleDetailResponse>.NewConfig()
     .Map(d => d.Color, s => s.Category.Color)
     .Map(d => d.AdditionalPhotos, s => s.ArticlePhotos.Select(p => p.PhotoPath).ToList());
 
+TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
+    .Map(d => d.Id, s => s.Id)
+    .Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+    .Map(d => d.Article, s => s.Article);
 
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -145,6 +151,7 @@ builder.Services.AddScoped<IAdminUserService, AdminUserService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 
 var app = builder.Build();
 

@@ -18,6 +18,7 @@ namespace NovinskiPortal.Services.Database
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,16 +42,33 @@ namespace NovinskiPortal.Services.Database
                 .HasForeignKey(u => u.RoleId)
                 .IsRequired();
 
-            // Soft-delete: sakrij IsDeleted = true iz svih upita
             modelBuilder.Entity<User>()
                 .HasQueryFilter(u => !u.IsDeleted);
-            // I članci se sakriju ako je IsDeleted = true
+
             modelBuilder.Entity<Article>()
                 .HasQueryFilter(a => !a.User.IsDeleted);
 
             modelBuilder.Entity<Role>()
                 .HasIndex(r => r.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<Favorite>(entity =>
+            {
+                entity.HasKey(f => f.Id);
+
+                entity.HasOne(f => f.User)
+                      .WithMany(u => u.Favorites)
+                      .HasForeignKey(f => f.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(f => f.Article)
+                      .WithMany(a => a.Favorites)
+                      .HasForeignKey(f => f.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(f => new { f.UserId, f.ArticleId })
+                      .IsUnique();
+            });
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Admin", Active = true },

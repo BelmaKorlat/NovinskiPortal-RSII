@@ -3,13 +3,15 @@ import 'package:flutter/material.dart';
 class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback onMenuTap;
-  final VoidCallback onSearchTap;
+  final VoidCallback? onSearchTap;
+  final VoidCallback? onMoreTap;
 
   const MainAppBar({
     super.key,
     required this.title,
     required this.onMenuTap,
-    required this.onSearchTap,
+    this.onSearchTap,
+    this.onMoreTap,
   });
 
   @override
@@ -33,7 +35,19 @@ class MainAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       actions: [
-        IconButton(icon: const Icon(Icons.search), onPressed: onSearchTap),
+        if (onSearchTap != null)
+          IconButton(icon: const Icon(Icons.search), onPressed: onSearchTap),
+        if (onMoreTap != null)
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'delete') {
+                onMoreTap?.call();
+              }
+            },
+            itemBuilder: (ctx) => const [
+              PopupMenuItem(value: 'delete', child: Text('Brisanje')),
+            ],
+          ),
       ],
     );
   }

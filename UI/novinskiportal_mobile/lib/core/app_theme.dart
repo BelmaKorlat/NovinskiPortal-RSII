@@ -29,7 +29,7 @@ class AppTheme {
       ),
 
       drawerTheme: const DrawerThemeData(
-        backgroundColor: Color(0xFFFFF8F1), // secondaryCoffee
+        backgroundColor: Color(0xFFFFF8F1),
         surfaceTintColor: Colors.transparent,
       ),
 
@@ -65,75 +65,25 @@ class AppTheme {
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
-
-  // static ThemeData dark() {
-  //   final base = ThemeData.dark();
-
-  //   return base.copyWith(
-  //     colorScheme: base.colorScheme.copyWith(
-  //       primary: secondaryCoffee,
-  //       secondary: secondaryCoffee,
-  //       surface: const Color(0xFF1D1815),
-  //       onPrimary: Colors.black,
-  //       onSurface: Colors.white,
-  //     ),
-  //     scaffoldBackgroundColor: const Color(0xFF14100E),
-
-  //     appBarTheme: const AppBarTheme(
-  //       backgroundColor: Color(0xFF14100E),
-  //       foregroundColor: Colors.white,
-  //       elevation: 0,
-  //       centerTitle: true,
-  //       surfaceTintColor: Colors.transparent,
-  //     ),
-
-  //     drawerTheme: const DrawerThemeData(
-  //       backgroundColor: Color(0xFF1D1815),
-  //       surfaceTintColor: Colors.transparent,
-  //     ),
-
-  //     listTileTheme: const ListTileThemeData(
-  //       iconColor: secondaryCoffee,
-  //       textColor: Colors.white,
-  //     ),
-
-  //     inputDecorationTheme: InputDecorationTheme(
-  //       filled: true,
-  //       fillColor: const Color(0xFF1D1815),
-  //       border: OutlineInputBorder(
-  //         borderRadius: BorderRadius.circular(14),
-  //         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
-  //       ),
-  //       enabledBorder: OutlineInputBorder(
-  //         borderRadius: BorderRadius.circular(14),
-  //         borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.10)),
-  //       ),
-  //       focusedBorder: OutlineInputBorder(
-  //         borderRadius: BorderRadius.circular(14),
-  //         borderSide: BorderSide(color: secondaryCoffee, width: 1.4),
-  //       ),
-  //     ),
-
-  //     elevatedButtonTheme: ElevatedButtonThemeData(
-  //       style: ElevatedButton.styleFrom(
-  //         backgroundColor: secondaryCoffee,
-  //         foregroundColor: Colors.black,
-  //         shape: RoundedRectangleBorder(
-  //           borderRadius: BorderRadius.circular(24),
-  //         ),
-  //         textStyle: const TextStyle(fontWeight: FontWeight.w600),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   static ThemeData dark() {
     final base = ThemeData.dark();
 
     return base.copyWith(
-      // Neutral tamna pozadina, coffee samo kao akcent
       colorScheme: base.colorScheme.copyWith(
         primary: primaryCoffee,
         secondary: primaryCoffee,
@@ -187,6 +137,19 @@ class AppTheme {
           ),
           textStyle: const TextStyle(fontWeight: FontWeight.w600),
         ),
+      ),
+
+      popupMenuTheme: const PopupMenuThemeData(
+        color: darkSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: darkSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

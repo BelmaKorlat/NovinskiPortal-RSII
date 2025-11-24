@@ -16,5 +16,6 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
         public bool IsDeleted { get; set; } = false;
+        public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
+import 'package:provider/provider.dart';
 
 class ArticleDetailPage extends StatefulWidget {
   final ArticleDetailDto article;
@@ -14,7 +16,19 @@ class ArticleDetailPage extends StatefulWidget {
 }
 
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
-  bool _isFavorite = false; // zasad samo lokalno
+  bool _isFavorite = false;
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      if (!mounted) return;
+      final favorites = context.read<FavoritesProvider>();
+      final isFavorite = favorites.isFavorite(widget.article.id);
+      setState(() {
+        _isFavorite = isFavorite;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,11 +105,25 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                 : Icons.bookmark_border,
                             color: cs.primary,
                           ),
-                          onPressed: () {
+                          onPressed: () async {
+                            final favorites = context.read<FavoritesProvider>();
+
+                            final nowFavorite = await favorites.toggleFavorite(
+                              widget.article.id,
+                            );
+
                             setState(() {
-                              _isFavorite = !_isFavorite;
+                              _isFavorite = nowFavorite;
                             });
-                            // kasnije spoji na backend / provider
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  nowFavorite
+                                      ? 'Članak je spremljen u favorite.'
+                                      : 'Članak je uklonjen iz favorita.',
+                                ),
+                              ),
+                            );
                           },
                         ),
                       ),

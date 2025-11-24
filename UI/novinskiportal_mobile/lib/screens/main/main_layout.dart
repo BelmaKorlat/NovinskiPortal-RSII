@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/screens/article/home_page.dart';
+import 'package:novinskiportal_mobile/screens/favorite/favorite_list_page.dart';
 import 'package:novinskiportal_mobile/widgets/common/app_main_app_bar.dart';
 import 'package:novinskiportal_mobile/widgets/navigation/hamburger_menu.dart';
 import 'package:novinskiportal_mobile/widgets/navigation/main_bottom_nav.dart';
@@ -14,12 +15,15 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final GlobalKey<HomePageState> _homeKey = GlobalKey<HomePageState>();
+  final GlobalKey<FavoriteListPageState> _favoritesKey =
+      GlobalKey<FavoriteListPageState>();
+
   late final List<Widget> _pages;
   int _currentIndex = 0;
 
   static const List<String> _titles = [
     'Novinski portal',
-    'Favoriti',
+    'Spremljeni članci',
     'Dojava vijesti',
     'Profil',
   ];
@@ -28,10 +32,14 @@ class _MainLayoutState extends State<MainLayout> {
     super.initState();
     _pages = [
       HomePage(key: _homeKey),
-      const _FavoritesTab(),
+      FavoriteListPage(key: _favoritesKey),
       const _ReportNewsTab(),
       const _ProfileTab(),
     ];
+  }
+
+  void _onFavoritesMore() {
+    _favoritesKey.currentState?.enterSelectionMode();
   }
 
   @override
@@ -43,9 +51,12 @@ class _MainLayoutState extends State<MainLayout> {
         onMenuTap: () {
           _scaffoldKey.currentState?.openDrawer();
         },
-        onSearchTap: () {
-          // ovdje kasnije ide navigacija na search ekran
-        },
+        onSearchTap: _currentIndex == 1
+            ? null
+            : () {
+                // ovdje ostaje tvoj search za druge tabove
+              },
+        onMoreTap: _currentIndex == 1 ? _onFavoritesMore : null,
       ),
       drawer: const AppDrawer(),
       body: SafeArea(
@@ -60,15 +71,6 @@ class _MainLayoutState extends State<MainLayout> {
         },
       ),
     );
-  }
-}
-
-class _FavoritesTab extends StatelessWidget {
-  const _FavoritesTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Favoriti'));
   }
 }
 

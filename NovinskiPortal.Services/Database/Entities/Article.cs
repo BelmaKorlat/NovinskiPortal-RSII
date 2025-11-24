@@ -21,5 +21,6 @@
         public int UserId { get; set; }
         public virtual User User { get; set; } = default!;
         public virtual ICollection<ArticlePhoto> ArticlePhotos { get; set; } = default!;
+        public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     }
 }
