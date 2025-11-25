@@ -19,6 +19,8 @@ namespace NovinskiPortal.Services.Database
         public DbSet<Role> Roles { get; set; }
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<NewsReport> NewsReports { get; set; } = default!;
+        public DbSet<NewsReportFile> NewsReportFiles { get; set; } = default!;
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

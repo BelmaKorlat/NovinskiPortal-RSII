@@ -15,6 +15,7 @@ using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 using NovinskiPortal.Services.Services.EmailService;
 using NovinskiPortal.Services.Services.FavoriteService;
 using NovinskiPortal.Services.Services.JwtService;
+using NovinskiPortal.Services.Services.NewsReportService;
 using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
 using System.Text.Json.Serialization;
@@ -141,6 +142,8 @@ TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
          s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
     .Map(d => d.Article, s => s.Article);
 
+TypeAdapterConfig<NewsReport, NewsReportResponse>.NewConfig()
+.Map(d => d.UserFullName, s => s.User != null ? s.User.FirstName + " " + s.User.LastName: null);
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();
@@ -152,6 +155,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
+builder.Services.AddScoped<INewsReportService, NewsReportService>();
 
 var app = builder.Build();
 
