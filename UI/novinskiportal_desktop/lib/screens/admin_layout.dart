@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/providers/news_report_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/theme_provider.dart';
@@ -18,6 +19,21 @@ class AdminLayout extends StatefulWidget {
 }
 
 class _AdminLayoutState extends State<AdminLayout> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_initialized) {
+      _initialized = true;
+
+      final newsReportProvider = context.read<NewsReportProvider>();
+
+      newsReportProvider.loadPendingCount();
+    }
+  }
+
   void _onSelect(int i) {
     switch (i) {
       case 0:
@@ -36,9 +52,12 @@ class _AdminLayoutState extends State<AdminLayout> {
         Navigator.pushReplacementNamed(context, '/admin/users');
         break;
       case 5:
-        Navigator.pushReplacementNamed(context, '/comments');
+        Navigator.pushReplacementNamed(context, '/newsreport');
         break;
       case 6:
+        Navigator.pushReplacementNamed(context, '/comments');
+        break;
+      case 7:
         context.read<AuthProvider>().logout();
         Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
         break;
@@ -56,6 +75,9 @@ class _AdminLayoutState extends State<AdminLayout> {
     final borderColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF6A6E77)
         : const Color(0xFFBBBEC2);
+
+    final newsReports = context.watch<NewsReportProvider?>();
+    final pendingCount = newsReports?.pendingCount ?? 0;
 
     return Scaffold(
       body: Row(
@@ -138,9 +160,17 @@ class _AdminLayoutState extends State<AdminLayout> {
                           onTap: _onSelect,
                         ),
                         _NavTile(
+                          icon: Icons.report,
+                          label: 'Dojave vijesti',
+                          index: 5,
+                          current: widget.currentIndex,
+                          onTap: _onSelect,
+                          badgeCount: pendingCount,
+                        ),
+                        _NavTile(
                           icon: Icons.chat_bubble,
                           label: 'Komentari',
-                          index: 5,
+                          index: 6,
                           current: widget.currentIndex,
                           onTap: _onSelect,
                         ),
@@ -148,7 +178,7 @@ class _AdminLayoutState extends State<AdminLayout> {
                         _NavTile(
                           icon: Icons.logout,
                           label: 'Odjava',
-                          index: 6,
+                          index: 7,
                           current: widget.currentIndex,
                           onTap: _onSelect,
                         ),
@@ -212,6 +242,7 @@ class _NavTile extends StatelessWidget {
   final int index;
   final int current;
   final void Function(int) onTap;
+  final int? badgeCount;
 
   const _NavTile({
     required this.icon,
@@ -219,15 +250,30 @@ class _NavTile extends StatelessWidget {
     required this.index,
     required this.current,
     required this.onTap,
+    this.badgeCount,
   });
 
   @override
   Widget build(BuildContext context) {
     final selected = index == current;
     final color = selected ? Theme.of(context).colorScheme.primary : null;
+    final showBadge = (badgeCount ?? 0) > 0;
     return ListTile(
       leading: Icon(icon, color: color),
       title: Text(label, style: TextStyle(color: color)),
+      trailing: showBadge
+          ? SizedBox(
+              width: 28, // malo širine da bude pregledno
+              child: Text(
+                (badgeCount! > 99) ? '99+' : '${badgeCount!}',
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            )
+          : null,
       selected: selected,
       onTap: () => onTap(index),
     );

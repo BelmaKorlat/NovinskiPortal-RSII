@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/models/news_report_models.dart';
 import 'package:novinskiportal_desktop/providers/admin_user_provider.dart';
 import 'package:novinskiportal_desktop/providers/article_provider.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
+import 'package:novinskiportal_desktop/providers/news_report_provider.dart';
 import 'package:novinskiportal_desktop/providers/subcategory_provider.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_create_page.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_edit_page.dart';
@@ -11,6 +13,8 @@ import 'package:novinskiportal_desktop/screens/article/article_create_page.dart'
 import 'package:novinskiportal_desktop/screens/article/article_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_list_page.dart';
 import 'package:novinskiportal_desktop/screens/category/category_list_page.dart';
+import 'package:novinskiportal_desktop/screens/news_report/news_report_detail_page.dart';
+import 'package:novinskiportal_desktop/screens/news_report/news_report_list_page.dart';
 import 'package:novinskiportal_desktop/screens/subcategory/subcategory_edit_page.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
@@ -50,6 +54,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => SubcategoryProvider()),
         ChangeNotifierProvider(create: (_) => ArticleProvider()),
         ChangeNotifierProvider(create: (_) => AdminUserProvider()),
+        ChangeNotifierProvider(create: (_) => NewsReportProvider()),
       ],
       child: const App(),
     ),
@@ -103,6 +108,20 @@ class App extends StatelessWidget {
             const AdminLayout(currentIndex: 4, child: EditAdminUserPage()),
         '/admin/users/change-password': (_) =>
             const AdminLayout(currentIndex: 4, child: ResetPasswordPage()),
+
+        '/newsreport': (_) =>
+            const AdminLayout(currentIndex: 5, child: NewsReportListPage()),
+
+        '/news-reports/detail': (ctx) {
+          final report =
+              ModalRoute.of(ctx)!.settings.arguments as NewsReportDto;
+
+          return AdminLayout(
+            currentIndex: 5,
+            child: NewsReportDetailPage(report: report),
+          );
+        },
+
         // privremeni plac: eholderi da sidebar radi bez greške
         '/comments': (_) => const AdminLayout(
           currentIndex: 5,

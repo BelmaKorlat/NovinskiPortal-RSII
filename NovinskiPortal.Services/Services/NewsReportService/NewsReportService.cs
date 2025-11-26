@@ -173,5 +173,12 @@ namespace NovinskiPortal.Services.Services.NewsReportService
 
             return $"/NewsReports/{reportId}/{safeFileName}";
         }
+
+        public async Task<int> GetPendingCountAsync()
+        {
+            return await _context.NewsReports
+                .Where(x => x.Status == NewsReportStatus.Pending)
+                .CountAsync();
+        }
     }
 }

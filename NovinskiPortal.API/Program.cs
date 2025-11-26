@@ -143,7 +143,13 @@ TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
     .Map(d => d.Article, s => s.Article);
 
 TypeAdapterConfig<NewsReport, NewsReportResponse>.NewConfig()
-.Map(d => d.UserFullName, s => s.User != null ? s.User.FirstName + " " + s.User.LastName: null);
+.Map(d => d.UserFullName, s => s.User != null ? s.User.FirstName + " " + s.User.LastName: null)
+.Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+.Map(d => d.ProcessedAt,
+         s => s.ProcessedAt.HasValue
+             ? DateTime.SpecifyKind(s.ProcessedAt.Value, DateTimeKind.Utc)
+             : (DateTime?)null);
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();

@@ -9,6 +9,7 @@ import 'package:novinskiportal_mobile/providers/article/category_articles_provid
 import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
 import 'package:novinskiportal_mobile/providers/category/category_menu_provider.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
+import 'package:novinskiportal_mobile/providers/news_report/news_report_provider.dart';
 import 'package:novinskiportal_mobile/providers/settings/theme_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/home_page.dart';
 import 'package:novinskiportal_mobile/screens/article/news_page.dart';
@@ -54,6 +55,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CategoryMenuProvider()),
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => NewsReportProvider()),
       ],
       child: const NovinskiPortalMobileApp(),
     ),

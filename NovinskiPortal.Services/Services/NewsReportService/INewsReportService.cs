@@ -9,5 +9,6 @@ namespace NovinskiPortal.Services.Services.NewsReportService
     {
         Task<NewsReportResponse> CreateAsync(CreateNewsReportRequest request, int? userId);
         Task<NewsReportResponse?> UpdateStatusAsync(int id, UpdateNewsReportStatusRequest request);
+        Task<int> GetPendingCountAsync();
     }
 }

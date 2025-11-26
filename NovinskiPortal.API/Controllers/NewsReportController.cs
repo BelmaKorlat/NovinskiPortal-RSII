@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.API.Utils;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
+using NovinskiPortal.Services.Services.BaseService;
 using NovinskiPortal.Services.Services.NewsReportService;
 using System.Security.Claims;
 
@@ -83,5 +84,11 @@ namespace NovinskiPortal.API.Controllers
             return Ok(updated);
         }
 
+        [HttpGet("pending-count")]
+        public async Task<ActionResult<int>> GetPendingCount()
+        {
+            var count = await _newsReportService.GetPendingCountAsync();
+            return Ok(count);
+        }
     }
 }
