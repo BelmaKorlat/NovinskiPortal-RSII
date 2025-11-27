@@ -1,11 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NovinskiPortal.Services.Database.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NovinskiPortal.Services.Database
 {
@@ -21,6 +15,9 @@ namespace NovinskiPortal.Services.Database
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<NewsReport> NewsReports { get; set; } = default!;
         public DbSet<NewsReportFile> NewsReportFiles { get; set; } = default!;
+        public DbSet<ArticleComment> ArticleComments { get; set; } = default!;
+        public DbSet<ArticleCommentVote> ArticleCommentVotes { get; set; } = default!;
+        public DbSet<ArticleCommentReport> ArticleCommentReports { get; set; } = default!;
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,6 +67,62 @@ namespace NovinskiPortal.Services.Database
 
                 entity.HasIndex(f => new { f.UserId, f.ArticleId })
                       .IsUnique();
+            });
+
+            modelBuilder.Entity<ArticleComment>(entity =>
+            {
+                entity.HasOne(c => c.Article)
+                      .WithMany(a => a.ArticleComments)
+                      .HasForeignKey(c => c.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(c => c.User)
+                      .WithMany()
+                      .HasForeignKey(c => c.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(c => c.ParentComment)
+                      .WithMany()
+                      .HasForeignKey(c => c.ParentCommentId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ArticleCommentVote>(entity =>
+            {
+                entity.HasKey(v => v.Id);
+
+                entity.HasOne(v => v.ArticleComment)
+                      .WithMany(c => c.Votes)
+                      .HasForeignKey(v => v.ArticleCommentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(v => v.User)
+                      .WithMany()
+                      .HasForeignKey(v => v.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasIndex(v => new { v.ArticleCommentId, v.UserId })
+                      .IsUnique();
+            });
+
+            modelBuilder.Entity<ArticleCommentReport>(entity =>
+            {
+                entity.HasKey(r => r.Id);
+
+                entity.HasOne(r => r.ArticleComment)
+                      .WithMany(c => c.Reports)
+                      .HasForeignKey(r => r.ArticleCommentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.ReporterUser)
+                      .WithMany()
+                      .HasForeignKey(r => r.ReporterUserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(r => r.ProcessedByAdmin)
+                      .WithMany()
+                      .HasForeignKey(r => r.ProcessedByAdminId)
+                      .OnDelete(DeleteBehavior.NoAction);
             });
 
             modelBuilder.Entity<Role>().HasData(

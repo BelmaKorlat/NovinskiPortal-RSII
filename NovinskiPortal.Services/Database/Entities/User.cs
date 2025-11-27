@@ -16,6 +16,10 @@
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAt { get; set; }
         public bool IsDeleted { get; set; } = false;
+        // Ako je null, korisnik može komentarisati., ako je u budućnosti onda je zabranjeno
+        public DateTime? CommentBanUntil { get; set; }
+         // kratko objašnjenje zašto je dobio ban, radi admin-a
+        public string? CommentBanReason { get; set; } = default!;
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     }
 }

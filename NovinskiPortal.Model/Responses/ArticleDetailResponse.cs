@@ -18,6 +18,7 @@ namespace NovinskiPortal.Model.Responses
         public int CategoryId { get; set; }
         public string Category { get; set; } = default!;
         public string Color { get; set; } = default!;
+        public  int CommentsCount { get; set; }
         public int SubcategoryId { get; set; }
         public string Subcategory { get; set; } = default!;
         public string User { get; set; } = default!;

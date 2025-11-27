@@ -7,6 +7,7 @@ import 'package:novinskiportal_mobile/core/dev_http_overrides.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_articles_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
+import 'package:novinskiportal_mobile/providers/article_comment/article_comment_provider.dart';
 import 'package:novinskiportal_mobile/providers/category/category_menu_provider.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:novinskiportal_mobile/providers/news_report/news_report_provider.dart';
@@ -56,6 +57,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => NewsProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => NewsReportProvider()),
+        ChangeNotifierProvider(
+          create: (_) => ArticleCommentProvider(articleId: 0),
+        ),
       ],
       child: const NovinskiPortalMobileApp(),
     ),

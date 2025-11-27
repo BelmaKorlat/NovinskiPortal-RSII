@@ -18,6 +18,8 @@ class StandardArticleCard extends StatelessWidget {
         tryParseHexColor(article.color) ??
         Theme.of(context).colorScheme.primary;
 
+    final commentsCount = article.commentsCount;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       color: cs.surface,
@@ -82,10 +84,28 @@ class StandardArticleCard extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        Icon(
-                          Icons.comment,
-                          size: 14,
-                          color: cs.onSurface.withValues(alpha: 0.6),
+                        // Icon(
+                        //   Icons.comment,
+                        //   size: 14,
+                        //   color: cs.onSurface.withValues(alpha: 0.6),
+                        // ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.comment,
+                              size: 14,
+                              color: cs.onSurface.withValues(alpha: 0.7),
+                            ),
+                            if (commentsCount > 0) ...[
+                              const SizedBox(width: 4),
+                              Text(
+                                article.commentsCount.toString(),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: cs.onSurface.withValues(alpha: 0.8),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ],
                     ),

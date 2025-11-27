@@ -17,5 +17,6 @@ namespace NovinskiPortal.Model.Responses
         public string User { get; set; } = default!;
         public string MainPhotoPath { get; set; } = default!;
         public string Color { get; set; } = default!;
+        public int CommentsCount { get; set; }
     }
 }

@@ -6,7 +6,6 @@ import 'package:novinskiportal_desktop/core/notification_service.dart';
 import 'package:novinskiportal_desktop/widgets/news_report_status_chip.dart';
 import 'package:novinskiportal_desktop/widgets/pagination_bar.dart';
 import 'package:provider/provider.dart';
-
 import '../../models/news_report_models.dart';
 import '../../providers/news_report_provider.dart';
 

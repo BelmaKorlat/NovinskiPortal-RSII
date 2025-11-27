@@ -81,7 +81,8 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 .Include(a => a.Category)
                 .Include(a => a.Subcategory)
                 .Include(a => a.User)
-                .Include(a => a.ArticlePhotos);
+                .Include(a => a.ArticlePhotos)
+                .Include(a => a.ArticleComments);
         }
 
         protected override async Task AfterInsertAsync(Article entity)
@@ -119,6 +120,7 @@ namespace NovinskiPortal.Services.Services.ArticleService
                             HideFullName = a.HideFullName,
                             BreakingNews = a.BreakingNews,
                             Live = a.Live,
+                            CommentsCount = a.ArticleComments.Count(c => !c.IsDeleted && !c.IsHidden),
                             Category = a.Category.Name,
                             Subcategory = a.Subcategory.Name,
                             User = a.HideFullName ? a.User.Nick : a.User.FirstName + " " + a.User.LastName,          

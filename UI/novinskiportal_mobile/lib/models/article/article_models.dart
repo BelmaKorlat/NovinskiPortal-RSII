@@ -16,6 +16,7 @@ class ArticleDto {
   final String user;
   final String mainPhotoPath;
   final String color;
+  final int commentsCount;
 
   ArticleDto({
     required this.id,
@@ -32,6 +33,7 @@ class ArticleDto {
     required this.user,
     required this.mainPhotoPath,
     required this.color,
+    required this.commentsCount,
   });
 
   factory ArticleDto.fromJson(Map<String, dynamic> j) => ArticleDto(
@@ -49,6 +51,7 @@ class ArticleDto {
     user: j['user'] as String,
     mainPhotoPath: j['mainPhotoPath'] as String,
     color: j['color'] as String,
+    commentsCount: j['commentsCount'] as int,
   );
 }
 
@@ -64,6 +67,7 @@ class ArticleDetailDto {
   final bool hideFullName;
   final bool breakingNews;
   final bool live;
+  final int commentsCount;
 
   final int categoryId;
   final String category;
@@ -88,6 +92,7 @@ class ArticleDetailDto {
     required this.hideFullName,
     required this.breakingNews,
     required this.live,
+    required this.commentsCount,
     required this.categoryId,
     required this.category,
     required this.color,
@@ -110,6 +115,7 @@ class ArticleDetailDto {
     hideFullName: j['hideFullName'] as bool,
     breakingNews: j['breakingNews'] as bool,
     live: j['live'] as bool,
+    commentsCount: j['commentsCount'] as int,
     categoryId: j['categoryId'] as int,
     category: j['category'] as String,
     color: j['color'] as String,

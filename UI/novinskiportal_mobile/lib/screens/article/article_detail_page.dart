@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
+import 'package:novinskiportal_mobile/screens/article_comment/article_comment_list_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +38,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     final article = widget.article;
 
     final categoryColor = tryParseHexColor(article.color) ?? cs.primary;
+
+    final commentsCount = article.commentsCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -189,16 +192,57 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: Icon(
-                      Icons.comment,
-                      size: 18,
-                      color: cs.onSurface.withValues(alpha: 0.7),
-                    ),
-                    onPressed: () {
-                      // kasnije: otvori komentare
-                      // za sada možda SnackBar ili ništa
+                  // IconButton(
+                  //   icon: Icon(
+                  //     Icons.comment,
+                  //     size: 18,
+                  //     color: cs.onSurface.withValues(alpha: 0.7),
+                  //   ),
+                  //   onPressed: () {
+                  //     // kasnije: otvori komentare
+                  //     // za sada možda SnackBar ili ništa
+                  //     Navigator.of(context).push(
+                  //       MaterialPageRoute(
+                  //         builder: (_) => ArticleCommentListPage(
+                  //           articleId: article.id,
+                  //           headline: article.headline,
+                  //           categoryColor: categoryColor,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ArticleCommentListPage(
+                            articleId: article.id,
+                            headline: article.headline,
+                            categoryColor: categoryColor,
+                          ),
+                        ),
+                      );
                     },
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.comment,
+                          size: 18,
+                          color: cs.onSurface.withValues(alpha: 0.7),
+                        ),
+                        if (commentsCount > 0) ...[
+                          const SizedBox(width: 4),
+                          Text(
+                            article.commentsCount.toString(),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurface.withValues(alpha: 0.8),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ],
               ),

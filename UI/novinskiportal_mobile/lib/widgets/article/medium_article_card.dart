@@ -20,6 +20,8 @@ class MediumArticleCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
+    final commentsCount = article.commentsCount;
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       color: cs.surface,
@@ -79,10 +81,28 @@ class MediumArticleCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      Icon(
-                        Icons.comment,
-                        size: 16,
-                        color: cs.onSurface.withValues(alpha: 0.6),
+                      // Icon(
+                      //   Icons.comment,
+                      //   size: 16,
+                      //   color: cs.onSurface.withValues(alpha: 0.6),
+                      // ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.comment,
+                            size: 14,
+                            color: cs.onSurface.withValues(alpha: 0.7),
+                          ),
+                          if (commentsCount > 0) ...[
+                            const SizedBox(width: 4),
+                            Text(
+                              article.commentsCount.toString(),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: cs.onSurface.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ),

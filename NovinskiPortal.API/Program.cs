@@ -9,6 +9,8 @@ using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.Services.AdminService;
+using NovinskiPortal.Services.Services.ArticleCommentService;
+using NovinskiPortal.Services.Services.ArticleCommentVoteService;
 using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
@@ -123,7 +125,8 @@ TypeAdapterConfig<Article, ArticleResponse>.NewConfig()
     .Map(d => d.Category, s => s.Category.Name)
     .Map(d => d.Subcategory, s => s.Subcategory.Name)
     .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)
-    .Map(d => d.Color, s => s.Category.Color);
+    .Map(d => d.Color, s => s.Category.Color)
+    .Map(d => d.CommentsCount, s => s.ArticleComments.Count(c => !c.IsDeleted && !c.IsHidden));
 
 TypeAdapterConfig<Article, ArticleDetailResponse>.NewConfig()
      .Map(d => d.CreatedAt,
@@ -134,7 +137,8 @@ TypeAdapterConfig<Article, ArticleDetailResponse>.NewConfig()
     .Map(d => d.Subcategory, s => s.Subcategory.Name)
     .Map(d => d.User, s => s.HideFullName ? s.User.Nick : s.User.FirstName + " " + s.User.LastName)
     .Map(d => d.Color, s => s.Category.Color)
-    .Map(d => d.AdditionalPhotos, s => s.ArticlePhotos.Select(p => p.PhotoPath).ToList());
+    .Map(d => d.AdditionalPhotos, s => s.ArticlePhotos.Select(p => p.PhotoPath).ToList())
+    .Map(d => d.CommentsCount, s => s.ArticleComments.Count(c => !c.IsDeleted && !c.IsHidden));
 
 TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
     .Map(d => d.Id, s => s.Id)
@@ -143,13 +147,20 @@ TypeAdapterConfig<Favorite, FavoriteResponse>.NewConfig()
     .Map(d => d.Article, s => s.Article);
 
 TypeAdapterConfig<NewsReport, NewsReportResponse>.NewConfig()
-.Map(d => d.UserFullName, s => s.User != null ? s.User.FirstName + " " + s.User.LastName: null)
-.Map(d => d.CreatedAt,
+    .Map(d => d.UserFullName, s => s.User != null ? s.User.FirstName + " " + s.User.LastName: null)
+    .Map(d => d.CreatedAt,
          s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
-.Map(d => d.ProcessedAt,
+    .Map(d => d.ProcessedAt,
          s => s.ProcessedAt.HasValue
              ? DateTime.SpecifyKind(s.ProcessedAt.Value, DateTimeKind.Utc)
              : (DateTime?)null);
+
+TypeAdapterConfig<ArticleComment, ArticleCommentResponse>.NewConfig()
+    .Map(d => d.Username, s => s.User != null
+              ? s.User.Username            
+              : null)
+    .Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc));
 
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();
@@ -162,6 +173,8 @@ builder.Services.AddScoped<IArticleService, ArticleService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<INewsReportService, NewsReportService>();
+builder.Services.AddScoped<IArticleCommentService, ArticleCommentService>();
+builder.Services.AddScoped<IArticleCommentVoteService, ArticleCommentVoteService>();
 
 var app = builder.Build();
 
