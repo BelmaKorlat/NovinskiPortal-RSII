@@ -85,4 +85,31 @@ class ArticleCommentService {
       throw _asApi(e, fallback: 'Greška pri glasanju za komentar.');
     }
   }
+
+  Future<ArticleCommentResponse> report({
+    required int commentId,
+    required String reason,
+  }) async {
+    try {
+      final request = ArticleCommentReportRequest(
+        commentId: commentId,
+        reason: reason.trim(),
+      );
+
+      final response = await _dio.post('$_base/report', data: request.toJson());
+
+      return ArticleCommentResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        throw ApiException(
+          message:
+              'Prijava komentara nije prihvaćena. Moguće je da ste ovaj komentar već prijavili.',
+        );
+      }
+
+      throw _asApi(e, fallback: 'Greška pri prijavi komentara.');
+    }
+  }
 }

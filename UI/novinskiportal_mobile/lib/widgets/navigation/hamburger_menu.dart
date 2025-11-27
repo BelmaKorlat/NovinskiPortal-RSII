@@ -51,7 +51,6 @@ class AppDrawer extends StatelessWidget {
 
               const Divider(height: 1),
 
-              // Postavke
               ListTile(
                 leading: Icon(Icons.settings, color: cs.onSurface),
                 title: const Text('Postavke'),

@@ -30,7 +30,6 @@ class SmallArticleCard extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           child: Row(
             children: [
-              // manja slika
               Container(
                 width: 60,
                 height: 60,
@@ -45,7 +44,6 @@ class SmallArticleCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
 
-              // tekst
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

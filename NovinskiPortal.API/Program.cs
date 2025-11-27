@@ -9,6 +9,7 @@ using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.Services.AdminService;
+using NovinskiPortal.Services.Services.ArticleCommentReportService;
 using NovinskiPortal.Services.Services.ArticleCommentService;
 using NovinskiPortal.Services.Services.ArticleCommentVoteService;
 using NovinskiPortal.Services.Services.ArticleService;
@@ -175,6 +176,7 @@ builder.Services.AddScoped<IFavoriteService, FavoriteService>();
 builder.Services.AddScoped<INewsReportService, NewsReportService>();
 builder.Services.AddScoped<IArticleCommentService, ArticleCommentService>();
 builder.Services.AddScoped<IArticleCommentVoteService, ArticleCommentVoteService>();
+builder.Services.AddScoped<IArticleCommentReportService, ArticleCommentReportService>();
 
 var app = builder.Build();
 

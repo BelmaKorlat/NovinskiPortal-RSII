@@ -101,4 +101,34 @@ class ArticleCommentProvider
       notifyListeners();
     }
   }
+
+  Future<bool> reportComment({
+    required int commentId,
+    required String reason,
+  }) async {
+    try {
+      lastError = null;
+      notifyListeners();
+
+      final updated = await _service.report(
+        commentId: commentId,
+        reason: reason,
+      );
+
+      final index = items.indexWhere((c) => c.id == updated.id);
+      if (index != -1) {
+        items[index] = updated;
+        notifyListeners();
+      }
+      return true;
+    } on ApiException catch (ex) {
+      lastError = ex.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      lastError = 'Greška pri prijavi komentara.';
+      notifyListeners();
+      return false;
+    }
+  }
 }

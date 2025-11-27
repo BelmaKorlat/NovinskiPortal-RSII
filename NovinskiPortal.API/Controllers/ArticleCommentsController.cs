@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.Model.Requests.ArticleComment;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
+using NovinskiPortal.Services.Services.ArticleCommentReportService;
 using NovinskiPortal.Services.Services.ArticleCommentService;
 using NovinskiPortal.Services.Services.ArticleCommentVoteService;
 using System.Security.Claims;
@@ -16,11 +17,16 @@ namespace NovinskiPortal.API.Controllers
     {
         private readonly IArticleCommentService _articleCommentService;
         private readonly IArticleCommentVoteService _articleCommentVoteService;
+        private readonly IArticleCommentReportService _articleCommentReportService;
 
-        public ArticleCommentsController(IArticleCommentService articleCommentService, IArticleCommentVoteService articleCommentVoteService)
+
+        public ArticleCommentsController(IArticleCommentService articleCommentService, 
+            IArticleCommentVoteService articleCommentVoteService, 
+            IArticleCommentReportService articleCommentReportService)
         {
             _articleCommentService = articleCommentService;
             _articleCommentVoteService = articleCommentVoteService;
+            _articleCommentReportService = articleCommentReportService;
         }
         private int? GetUserId()
         {
@@ -86,6 +92,26 @@ namespace NovinskiPortal.API.Controllers
                 return BadRequest();
 
             return Ok(result);
+        }
+
+        [HttpPost("report")]
+        public async Task<ActionResult<ArticleCommentResponse>> Report([FromBody] ArticleCommentReportRequest request)
+        {
+            var currentUserId = GetUserId();
+            if (currentUserId == null)
+                return Unauthorized();
+
+             var result = await _articleCommentReportService.ReportAsync(
+                 request,
+                 currentUserId.Value
+             );
+
+             if (result == null)
+                 return BadRequest();
+
+             return Ok(result);
+
+           
         }
 
     }

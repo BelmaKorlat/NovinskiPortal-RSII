@@ -305,6 +305,142 @@ class _ArticleCommentListPageState extends State<ArticleCommentListPage> {
   }
 }
 
+Future<void> _showReportDialog(
+  BuildContext context,
+  ArticleCommentResponse comment,
+) async {
+  final provider = context.read<ArticleCommentProvider>();
+  final otherController = TextEditingController();
+
+  // ponuđeni razlozi
+  const otherKey = 'Drugo';
+  final reasons = <String>[
+    'Uvredljiv ili vulgaran sadržaj',
+    'Govor mržnje ili prijetnje',
+    'Spam ili reklama',
+    'Off-topic',
+    otherKey,
+  ];
+
+  String? selectedReasonKey;
+
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (ctx, setState) {
+          final isOtherSelected = selectedReasonKey == otherKey;
+
+          return AlertDialog(
+            title: const Text('Prijava komentara'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Odaberi jedan razlog prijave. '
+                    'Moderatori će pregledati komentar.',
+                  ),
+                  const SizedBox(height: 12),
+
+                  // radio dugmad, samo jedan se može izabrati
+                  ...reasons.map((r) {
+                    return RadioListTile<String>(
+                      value: r,
+                      groupValue: selectedReasonKey,
+                      onChanged: (v) {
+                        setState(() {
+                          selectedReasonKey = v;
+                        });
+                      },
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(r),
+                    );
+                  }),
+
+                  const SizedBox(height: 8),
+
+                  if (isOtherSelected) ...[
+                    TextField(
+                      controller: otherController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Opiši razlog prijave',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                },
+                child: const Text('Odustani'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (selectedReasonKey == null) {
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      const SnackBar(content: Text('Odaberi razlog prijave.')),
+                    );
+                    return;
+                  }
+
+                  String finalReason;
+
+                  if (selectedReasonKey == otherKey) {
+                    final other = otherController.text.trim();
+                    if (other.isEmpty) {
+                      ScaffoldMessenger.of(ctx).showSnackBar(
+                        const SnackBar(
+                          content: Text('Upiši razlog prijave u polje ispod.'),
+                        ),
+                      );
+                      return;
+                    }
+                    finalReason = 'Drugo: $other';
+                  } else {
+                    finalReason = selectedReasonKey!;
+                  }
+
+                  final ok = await provider.reportComment(
+                    commentId: comment.id,
+                    reason: finalReason,
+                  );
+
+                  if (!ctx.mounted) return;
+
+                  if (!ok) {
+                    final msg =
+                        provider.lastError ?? 'Greška pri prijavi komentara.';
+                    ScaffoldMessenger.of(
+                      ctx,
+                    ).showSnackBar(SnackBar(content: Text(msg)));
+                    return;
+                  }
+
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Prijava komentara je poslana.'),
+                    ),
+                  );
+                },
+                child: const Text('Pošalji prijavu'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
 class _CommentTile extends StatelessWidget {
   final ArticleCommentResponse comment;
   const _CommentTile({required this.comment});
@@ -366,6 +502,28 @@ class _CommentTile extends StatelessWidget {
                         fontStyle: FontStyle.italic,
                         color: cs.primary,
                       ),
+                    ),
+                  ],
+                  // novo
+                  if (!comment.isOwner) ...[
+                    const SizedBox(width: 4),
+                    PopupMenuButton<String>(
+                      icon: Icon(
+                        Icons.more_vert,
+                        size: 18,
+                        color: cs.onSurface.withValues(alpha: 0.6),
+                      ),
+                      onSelected: (value) {
+                        if (value == 'report') {
+                          _showReportDialog(context, comment);
+                        }
+                      },
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(
+                          value: 'report',
+                          child: Text('Prijavi komentar'),
+                        ),
+                      ],
                     ),
                   ],
                 ],

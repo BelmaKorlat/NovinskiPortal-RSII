@@ -20,12 +20,12 @@ class _CategoryMenuSectionState extends State<CategoryMenuSection> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final provider = Provider.of<CategoryMenuProvider>(
-        context,
-        listen: false,
-      );
-      provider.load();
       _initialized = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<CategoryMenuProvider>().load();
+      });
     }
   }
 

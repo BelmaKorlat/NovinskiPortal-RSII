@@ -24,7 +24,9 @@ class FavoriteListPageState extends State<FavoriteListPage> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      context.read<FavoritesProvider>().load();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<FavoritesProvider>().load();
+      });
     }
   }
 

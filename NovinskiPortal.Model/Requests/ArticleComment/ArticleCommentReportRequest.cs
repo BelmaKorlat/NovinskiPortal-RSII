@@ -1,6 +1,4 @@
-﻿
-
-namespace NovinskiPortal.Model.Requests.ArticleComment
+﻿namespace NovinskiPortal.Model.Requests.ArticleComment
 {
     public class ArticleCommentReportRequest
     {

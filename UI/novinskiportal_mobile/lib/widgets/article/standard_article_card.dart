@@ -84,11 +84,6 @@ class StandardArticleCard extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        // Icon(
-                        //   Icons.comment,
-                        //   size: 14,
-                        //   color: cs.onSurface.withValues(alpha: 0.6),
-                        // ),
                         Row(
                           children: [
                             Icon(

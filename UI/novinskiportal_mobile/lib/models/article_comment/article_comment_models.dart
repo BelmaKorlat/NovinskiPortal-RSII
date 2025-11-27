@@ -69,6 +69,17 @@ class ArticleCommentVoteRequest {
   }
 }
 
+class ArticleCommentReportRequest {
+  final int commentId;
+  final String reason;
+
+  ArticleCommentReportRequest({required this.commentId, required this.reason});
+
+  Map<String, dynamic> toJson() {
+    return {'commentId': commentId, 'reason': reason};
+  }
+}
+
 class ArticleCommentSearch extends BaseSearch {
   final int articleId;
 
