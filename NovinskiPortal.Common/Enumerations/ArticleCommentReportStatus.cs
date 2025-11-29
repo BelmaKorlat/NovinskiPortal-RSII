@@ -3,7 +3,7 @@
     public enum ArticleCommentReportStatus
     {
         Pending = 0,
-        Accepted = 1,
+        Approved = 1,
         Rejected = 2
     }
 }

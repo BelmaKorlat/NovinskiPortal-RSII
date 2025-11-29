@@ -12,7 +12,7 @@ namespace NovinskiPortal.Services.Database.Entities
         // Korisnik koji je prijavio komentar.
         public int ReporterUserId { get; set; }
         public User ReporterUser { get; set; } = default!;
-            
+
         public string Reason { get; set; } = default!;
 
         public DateTime CreatedAt { get; set; }

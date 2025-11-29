@@ -5,9 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NovinskiPortal.Commom.PasswordService;
+using NovinskiPortal.Common.Enumerations;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
+using NovinskiPortal.Services.Services.AdminCommentService;
 using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.ArticleCommentReportService;
 using NovinskiPortal.Services.Services.ArticleCommentService;
@@ -163,6 +165,81 @@ TypeAdapterConfig<ArticleComment, ArticleCommentResponse>.NewConfig()
     .Map(d => d.CreatedAt,
          s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc));
 
+TypeAdapterConfig<ArticleComment, AdminCommentReportResponse>.NewConfig()
+    .Map(d => d.ArticleHeadline, s => s.Article.Headline)
+    .Map(d => d.CommentAuthorId, s => s.UserId)
+    .Map(d => d.CommentAuthorUsername, s => s.User.Username)
+    .Map(d => d.ReportsCount, s => s.ReportsCount)
+    .Map(d => d.PendingReportsCount,
+         s => s.Reports == null
+              ? 0
+              : s.Reports.Count(r => r.Status == ArticleCommentReportStatus.Pending))
+    .Map(d => d.FirstReportedAt,
+         s => s.Reports == null || !s.Reports.Any()
+              ? (DateTime?)null
+              : DateTime.SpecifyKind(
+                    s.Reports.Min(r => r.CreatedAt),
+                    DateTimeKind.Utc))
+    .Map(d => d.LastReportedAt,
+         s => s.Reports == null || !s.Reports.Any()
+              ? (DateTime?)null
+              : DateTime.SpecifyKind(
+                    s.Reports.Max(r => r.CreatedAt),
+                    DateTimeKind.Utc))
+    .Map(d => d.HasPendingReports,
+         s => s.Reports != null &&
+              s.Reports.Any(r => r.Status == ArticleCommentReportStatus.Pending));
+
+
+TypeAdapterConfig<ArticleComment, AdminCommentDetailReportResponse>.NewConfig()
+    .Map(d => d.ArticleHeadline, s => s.Article.Headline)
+    .Map(d => d.CommentAuthorId, s => s.UserId)
+    .Map(d => d.CommentAuthorUsername, s => s.User.Username)
+    .Map(d => d.CommentCreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+    .Map(d => d.ReportsCount, s => s.ReportsCount)
+    .Map(d => d.PendingReportsCount,
+         s => s.Reports != null
+              ? s.Reports.Count(r => r.Status == ArticleCommentReportStatus.Pending)
+              : 0)
+    .Map(d => d.FirstReportedAt,
+         s => s.Reports != null && s.Reports.Count > 0
+              ? DateTime.SpecifyKind(
+                    s.Reports.Min(r => r.CreatedAt),
+                    DateTimeKind.Utc)
+              : (DateTime?)null)
+    .Map(d => d.LastReportedAt,
+         s => s.Reports != null && s.Reports.Count > 0
+              ? DateTime.SpecifyKind(
+                    s.Reports.Max(r => r.CreatedAt),
+                    DateTimeKind.Utc)
+              : (DateTime?)null)
+    .Map(d => d.AuthorCommentBanUntil,
+         s => s.User.CommentBanUntil == null
+              ? (DateTime?)null
+              : DateTime.SpecifyKind(
+                    s.User.CommentBanUntil.Value,
+                    DateTimeKind.Utc))
+    .Map(d => d.AuthorCommentBanReason, s => s.User.CommentBanReason)
+    .Map(d => d.Reports,
+         s => (s.Reports ?? new List<ArticleCommentReport>())
+                .OrderByDescending(r => r.CreatedAt)
+                .Adapt<List<AdminCommentItemReportResponse>>());
+
+     
+TypeAdapterConfig<ArticleCommentReport, AdminCommentItemReportResponse>
+    .NewConfig()
+    .Map(d => d.ReporterUsername, s => s.ReporterUser.Username)
+    .Map(d => d.CreatedAt,
+         s => DateTime.SpecifyKind(s.CreatedAt, DateTimeKind.Utc))
+    .Map(d => d.ProcessedAt,
+         s => s.ProcessedAt.HasValue
+              ? DateTime.SpecifyKind(s.ProcessedAt.Value, DateTimeKind.Utc)
+              : (DateTime?)null)
+    .Map(d => d.ProcessedByAdminUsername,
+         s => s.ProcessedByAdmin != null ? s.ProcessedByAdmin.Username : null);
+
+
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ISubcategoryService, SubcategoryService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -177,6 +254,7 @@ builder.Services.AddScoped<INewsReportService, NewsReportService>();
 builder.Services.AddScoped<IArticleCommentService, ArticleCommentService>();
 builder.Services.AddScoped<IArticleCommentVoteService, ArticleCommentVoteService>();
 builder.Services.AddScoped<IArticleCommentReportService, ArticleCommentReportService>();
+builder.Services.AddScoped<IAdminCommentService, AdminCommentService>();
 
 var app = builder.Build();
 

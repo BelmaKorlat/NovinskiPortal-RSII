@@ -7,9 +7,9 @@ using NovinskiPortal.Services.Services.BaseService;
 
 namespace NovinskiPortal.Services.Services.ArticleCommentService
 {
-    public interface IArticleCommentService : IService<ArticleCommentResponse, ArticleCommentSearchObject>
+    public interface IArticleCommentService : IService<ArticleCommentResponse, ArticleCommentReportSearchObject>
     {
         Task<ArticleCommentResponse?> CreateAsync(int articleId, ArticleCommentCreateRequest request, int currentUserId);
-        Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentSearchObject search, int? currentUserId);
+        Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentReportSearchObject search, int? currentUserId);
     }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_desktop/models/news_report_models.dart';
+import 'package:novinskiportal_desktop/providers/admin_comment_detail_provider.dart';
+import 'package:novinskiportal_desktop/providers/admin_comment_provider.dart';
 import 'package:novinskiportal_desktop/providers/admin_user_provider.dart';
 import 'package:novinskiportal_desktop/providers/article_provider.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
 import 'package:novinskiportal_desktop/providers/news_report_provider.dart';
 import 'package:novinskiportal_desktop/providers/subcategory_provider.dart';
+import 'package:novinskiportal_desktop/screens/admin_comment/admin_comment_detail_page.dart';
+import 'package:novinskiportal_desktop/screens/admin_comment/admin_comment_page.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_create_page.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/admin_user/admin_user_page.dart';
@@ -55,6 +59,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => ArticleProvider()),
         ChangeNotifierProvider(create: (_) => AdminUserProvider()),
         ChangeNotifierProvider(create: (_) => NewsReportProvider()),
+        ChangeNotifierProvider(create: (_) => AdminCommentProvider()),
+        ChangeNotifierProvider(create: (_) => AdminCommentDetailProvider()),
       ],
       child: const App(),
     ),
@@ -122,11 +128,11 @@ class App extends StatelessWidget {
           );
         },
 
-        // privremeni plac: eholderi da sidebar radi bez greške
-        '/comments': (_) => const AdminLayout(
-          currentIndex: 5,
-          child: Center(child: Text('Komentari')),
-        ),
+        '/comments': (_) =>
+            const AdminLayout(currentIndex: 6, child: AdminCommentListPage()),
+
+        '/comments/detail': (_) =>
+            const AdminLayout(currentIndex: 6, child: AdminCommentDetailPage()),
       },
     );
   }

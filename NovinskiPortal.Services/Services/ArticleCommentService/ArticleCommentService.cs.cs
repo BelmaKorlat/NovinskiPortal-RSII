@@ -9,7 +9,7 @@ using NovinskiPortal.Services.Services.BaseService;
 
 namespace NovinskiPortal.Services.Services.ArticleCommentService
 {
-    public class ArticleCommentService : BaseService<ArticleCommentResponse, ArticleCommentSearchObject, ArticleComment>, IArticleCommentService
+    public class ArticleCommentService : BaseService<ArticleCommentResponse, ArticleCommentReportSearchObject, ArticleComment>, IArticleCommentService
     {
         private readonly NovinskiPortalDbContext _context;
         private readonly IMapper _mapper;
@@ -20,7 +20,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             _mapper = mapper;
         }
 
-        protected override IQueryable<ArticleComment> ApplyFilter(IQueryable<ArticleComment> query, ArticleCommentSearchObject search)
+        protected override IQueryable<ArticleComment> ApplyFilter(IQueryable<ArticleComment> query, ArticleCommentReportSearchObject search)
         {
             query = query.Where(c => c.ArticleId == search.ArticleId);
 
@@ -29,7 +29,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             return query;
         }
 
-        protected override IOrderedQueryable<ArticleComment>? ApplyOrder(IQueryable<ArticleComment> query, ArticleCommentSearchObject search)
+        protected override IOrderedQueryable<ArticleComment>? ApplyOrder(IQueryable<ArticleComment> query, ArticleCommentReportSearchObject search)
         {
             return query.OrderByDescending(c => c.CreatedAt);
         }
@@ -87,7 +87,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             return dto;
         }
 
-        public async Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentSearchObject search, int? currentUserId)
+        public async Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentReportSearchObject search, int? currentUserId)
         {
             var result = await base.GetAsync(search);
 

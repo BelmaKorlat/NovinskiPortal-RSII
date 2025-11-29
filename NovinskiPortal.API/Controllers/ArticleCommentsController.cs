@@ -43,7 +43,7 @@ namespace NovinskiPortal.API.Controllers
 
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult<PagedResult<ArticleCommentResponse>>> GetAsync([FromQuery] ArticleCommentSearchObject search)
+        public async Task<ActionResult<PagedResult<ArticleCommentResponse>>> GetAsync([FromQuery] ArticleCommentReportSearchObject search)
         {
             var currentUserId = GetUserId();
 
