@@ -7,8 +7,6 @@ import '../../utils/color_utils.dart';
 import 'package:data_table_2/data_table_2.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_chip.dart';
-import '../../core/api_error.dart';
-import '../../core/notification_service.dart';
 
 class CategoryListPage extends StatefulWidget {
   const CategoryListPage({super.key});
@@ -78,7 +76,6 @@ class CategoryListPageState extends State<CategoryListPage> {
           ),
         ),
 
-        // TOOLBAR
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
@@ -98,7 +95,6 @@ class CategoryListPageState extends State<CategoryListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Status
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<bool?>(
@@ -114,7 +110,6 @@ class CategoryListPageState extends State<CategoryListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
                 icon: const Icon(Icons.search),
@@ -126,7 +121,6 @@ class CategoryListPageState extends State<CategoryListPage> {
 
         const SizedBox(height: 8),
 
-        // TABLICA
         Expanded(
           child: vm.isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -140,18 +134,7 @@ class CategoryListPageState extends State<CategoryListPage> {
                       message: 'Jeste li sigurni da želite promijeniti status?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.toggle(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri promjeni statusa kategorije.',
-                      );
-                    }
+                    await vm.toggle(id);
                   },
                   onDelete: (id) async {
                     final ok = await showDestructiveConfirmDialog(
@@ -160,18 +143,7 @@ class CategoryListPageState extends State<CategoryListPage> {
                           'Jeste li sigurni da želite obrisati ovu kategoriju?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.remove(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri brisanju kategorije.',
-                      );
-                    }
+                    await vm.remove(id);
                   },
                   onEdit: (c) {
                     Navigator.pushNamed(

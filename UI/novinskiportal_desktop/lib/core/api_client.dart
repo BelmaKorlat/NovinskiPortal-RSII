@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_error.dart';
+import 'app_config.dart';
 
 class ApiClient {
   static final ApiClient _instance = ApiClient._internal();
@@ -10,12 +11,10 @@ class ApiClient {
 
   late final Dio dio;
 
-  static const String baseUrl = 'https://localhost:7060';
-
   ApiClient._internal() {
     dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 15),
         headers: {'Content-Type': 'application/json'},
@@ -88,13 +87,15 @@ class ApiClient {
   }
 
   static String resolveUrl(String path) {
+    final base = AppConfig.apiBaseUrl;
+
     if (path.isEmpty) return '';
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
     if (path.startsWith('/')) {
-      return '$baseUrl$path';
+      return '$base$path';
     }
-    return '$baseUrl/$path';
+    return '$base/$path';
   }
 }

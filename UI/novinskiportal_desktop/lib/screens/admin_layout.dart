@@ -263,7 +263,7 @@ class _NavTile extends StatelessWidget {
       title: Text(label, style: TextStyle(color: color)),
       trailing: showBadge
           ? SizedBox(
-              width: 28, // malo širine da bude pregledno
+              width: 28,
               child: Text(
                 (badgeCount! > 99) ? '99+' : '${badgeCount!}',
                 textAlign: TextAlign.right,

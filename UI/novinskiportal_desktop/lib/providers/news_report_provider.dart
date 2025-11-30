@@ -10,13 +10,11 @@ class NewsReportProvider
   final _service = NewsReportService();
 
   NewsReportStatus? statusFilter = NewsReportStatus.pending;
-  String fts = '';
 
   int pendingCount = 0;
   @override
   NewsReportSearch buildSearch() => NewsReportSearch(
     status: statusFilter,
-    fts: fts.trim().isEmpty ? null : fts.trim(),
     page: page,
     pageSize: pageSize,
     includeTotalCount: true,

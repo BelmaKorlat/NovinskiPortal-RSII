@@ -43,27 +43,15 @@ class _NewsReportDetailPageState extends State<NewsReportDetailPage> {
     setState(() => _loading = true);
     final vm = context.read<NewsReportProvider>();
 
-    try {
-      final detail = await vm.getById(_reportId);
+    final detail = await vm.getById(_reportId);
 
-      if (!mounted) return;
+    if (!mounted) return;
 
-      setState(() {
-        if (detail != null) {
-          _report = detail;
-        }
-        _report = detail;
-        _adminNote.text = detail?.adminNote ?? '';
-        _loading = false;
-      });
-    } catch (_) {
-      if (!mounted) return;
-      setState(() {
-        _report = null;
-        _adminNote.clear();
-        _loading = false;
-      });
-    }
+    setState(() {
+      _report = detail;
+      _adminNote.text = detail?.adminNote ?? '';
+      _loading = false;
+    });
   }
 
   Future<void> _changeStatus(NewsReportStatus status) async {
@@ -92,7 +80,6 @@ class _NewsReportDetailPageState extends State<NewsReportDetailPage> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-    } catch (_) {
     } finally {
       if (mounted) {
         setState(() => _updating = false);
@@ -131,7 +118,6 @@ class _NewsReportDetailPageState extends State<NewsReportDetailPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // header
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -156,7 +142,6 @@ class _NewsReportDetailPageState extends State<NewsReportDetailPage> {
                       ),
                     ),
 
-                    // tijelo
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -282,7 +267,6 @@ class _NewsReportDetailPageState extends State<NewsReportDetailPage> {
                       ),
                     ),
 
-                    // footer
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),

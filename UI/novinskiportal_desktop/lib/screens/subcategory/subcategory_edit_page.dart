@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../models/subcategory_models.dart';
 import '../../providers/subcategory_provider.dart';
 import 'package:form_validation/form_validation.dart';
-import '../../core/api_error.dart';
 import '../../core/notification_service.dart';
 import '../../models/category_models.dart';
 import '../../services/category_service.dart';
@@ -104,12 +103,6 @@ class _EditSubcategoryPageState extends State<EditSubcategoryPage> {
       await context.read<SubcategoryProvider>().update(_sub.id, req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

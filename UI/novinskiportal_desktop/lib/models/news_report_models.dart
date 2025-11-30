@@ -112,7 +112,6 @@ class NewsReportSearch extends BaseSearch {
 
   const NewsReportSearch({
     this.status,
-    super.fts,
     super.page = 0,
     super.pageSize = 10,
     super.includeTotalCount = true,

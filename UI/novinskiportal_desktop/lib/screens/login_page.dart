@@ -18,7 +18,6 @@ class _LoginPageState extends State<LoginPage> {
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
-  Timer? _revealTimer;
   late final Validator emailValidator;
   late final Validator usernameValidator;
   late final Validator passwordValidator;
@@ -42,7 +41,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    _revealTimer?.cancel();
     _userCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
@@ -57,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       await auth.login(_userCtrl.text.trim(), _passCtrl.text);
       if (!mounted) return;
 
-      NotificationService.success('Notifikacija', 'Prijava uspješan');
+      NotificationService.success('Notifikacija', 'Prijava uspješna');
       Navigator.pushNamedAndRemoveUntil(context, '/admin', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
@@ -77,7 +75,6 @@ class _LoginPageState extends State<LoginPage> {
         : 'assets/novinskiportal_logo_transparent.png';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Prijava')),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 400, maxHeight: 520),

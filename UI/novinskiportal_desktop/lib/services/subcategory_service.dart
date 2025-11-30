@@ -1,41 +1,22 @@
 import 'package:dio/dio.dart';
-import '../core/api_client.dart';
+import 'package:novinskiportal_desktop/services/base_service.dart';
 import '../models/subcategory_models.dart';
 import '../core/paging.dart';
 import '../core/api_error.dart';
 
-class SubcategoryService {
-  final Dio _dio = ApiClient().dio;
+class SubcategoryService extends BaseService {
   static const String _base = '/api/Subcategories';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<PagedResult<SubcategoryDto>> getPage(SubcategorySearch s) async {
     try {
-      final res = await _dio.get(_base, queryParameters: s.toQuery());
+      final res = await dio.get(_base, queryParameters: s.toQuery());
 
-      final data = res.data;
-      final list = readItems(data);
-      final items = list
-          .whereType<Map<String, dynamic>>()
-          .map(SubcategoryDto.fromJson)
-          .toList();
-      final total = readTotalCount(data) ?? items.length;
-      return PagedResult(items: items, totalCount: total);
+      return mapPagedResponse<SubcategoryDto>(
+        res.data,
+        (m) => SubcategoryDto.fromJson(m),
+      );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET.');
+      throw asApi(e, fallback: 'Neuspješan GET.');
     } catch (_) {
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     }
@@ -43,49 +24,34 @@ class SubcategoryService {
 
   Future<List<SubcategoryDto>> getList(SubcategorySearch s) async {
     try {
-      final res = await _dio.get(_base, queryParameters: s.toQuery());
-      final data = res.data;
+      final res = await dio.get(_base, queryParameters: s.toQuery());
 
-      if (data is List) {
-        return data
-            .whereType<Map<String, dynamic>>()
-            .map(SubcategoryDto.fromJson)
-            .toList();
-      }
-
-      if (data is Map<String, dynamic>) {
-        final list =
-            data['items'] ?? data['data'] ?? data['result'] ?? data['records'];
-        if (list is List) {
-          return list
-              .whereType<Map<String, dynamic>>()
-              .map(SubcategoryDto.fromJson)
-              .toList();
-        }
-        if (data.isEmpty) return <SubcategoryDto>[];
-      }
-
-      throw ApiException(message: 'Neočekivan oblik odgovora.');
+      return mapListResponse<SubcategoryDto>(
+        res.data,
+        (m) => SubcategoryDto.fromJson(m),
+      );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET potkategorija.');
+      throw asApi(e, fallback: 'Neuspješan GET potkategorija.');
+    } catch (_) {
+      throw ApiException(message: 'Neočekivan oblik odgovora.');
     }
   }
 
   Future<SubcategoryDto> getById(int id) async {
     try {
-      final res = await _dio.get('$_base/$id');
+      final res = await dio.get('$_base/$id');
       if (res.data is Map<String, dynamic>) {
         return SubcategoryDto.fromJson(res.data as Map<String, dynamic>);
       }
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET by id.');
+      throw asApi(e, fallback: 'Neuspješan GET by id.');
     }
   }
 
   Future<void> create(CreateSubcategoryRequest r) async {
     try {
-      await _dio.post(_base, data: r.toJson());
+      await dio.post(_base, data: r.toJson());
     } on DioException catch (e) {
       final code = e.response?.statusCode;
       final msg = humanMessage(
@@ -99,10 +65,9 @@ class SubcategoryService {
 
   Future<void> update(int id, UpdateSubcategoryRequest r) async {
     try {
-      final res = await _dio.put('$_base/$id', data: r.toJson());
-      final _ = res;
+      await dio.put('$_base/$id', data: r.toJson());
     } on DioException catch (e) {
-      throw _asApi(
+      throw asApi(
         e,
         fallback: 'Došlo je do greške prilikom ažuriranja potkategorije.',
       );
@@ -111,22 +76,21 @@ class SubcategoryService {
 
   Future<SubcategoryDto> toggleStatus(int id) async {
     try {
-      final res = await _dio.patch('$_base/$id/status');
+      final res = await dio.patch('$_base/$id/status');
       if (res.data is Map<String, dynamic>) {
         return SubcategoryDto.fromJson(res.data as Map<String, dynamic>);
       }
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri ažuriranju statusa.');
+      throw asApi(e, fallback: 'Greška pri ažuriranju statusa.');
     }
   }
 
-  Future<bool> delete(int id) async {
+  Future<void> delete(int id) async {
     try {
-      await _dio.delete('$_base/$id');
-      return true;
+      await dio.delete('$_base/$id');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri brisanju potkategorije.');
+      throw asApi(e, fallback: 'Greška pri brisanju potkategorije.');
     }
   }
 }

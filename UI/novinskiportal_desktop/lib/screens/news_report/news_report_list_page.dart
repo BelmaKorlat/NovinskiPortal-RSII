@@ -1,8 +1,6 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:novinskiportal_desktop/core/api_error.dart';
-import 'package:novinskiportal_desktop/core/notification_service.dart';
 import 'package:novinskiportal_desktop/widgets/news_report_status_chip.dart';
 import 'package:novinskiportal_desktop/widgets/pagination_bar.dart';
 import 'package:provider/provider.dart';
@@ -126,22 +124,11 @@ class NewsReportListPageState extends State<NewsReportListPage> {
                   items: vm.items,
                   startIndex: vm.page * vm.pageSize,
                   onView: (r) async {
-                    try {
-                      Navigator.pushNamed(
-                        context,
-                        '/news-reports/detail',
-                        arguments: r,
-                      );
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri otvaranju detalja dojave.',
-                      );
-                    }
+                    Navigator.pushNamed(
+                      context,
+                      '/news-reports/detail',
+                      arguments: r,
+                    );
                   },
                 ),
         ),

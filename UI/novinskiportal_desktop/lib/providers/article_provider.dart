@@ -1,11 +1,13 @@
 import 'package:novinskiportal_desktop/core/notification_service.dart';
+import 'package:novinskiportal_desktop/providers/paged_crud_mixin.dart';
 import '../models/article_models.dart';
 import '../services/article_service.dart';
 import '../providers/paged_provider.dart';
 import '../core/paging.dart';
 import '../core/api_error.dart';
 
-class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
+class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch>
+    with PagedCrud<ArticleDto, ArticleSearch> {
   final _service = ArticleService();
 
   int? categoryId;
@@ -43,31 +45,19 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
   }
 
   Future<void> create(CreateArticleRequest r) async {
-    try {
-      await _service.create(r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno dodano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri dodavanju članka.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.create(r),
+      successMessage: 'Uspješno dodano!',
+      genericError: 'Greška pri dodavanju članka.',
+    );
   }
 
   Future<void> update(int id, UpdateArticleRequest r) async {
-    try {
-      await _service.update(id, r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri ažuriranju članka.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.update(id, r),
+      successMessage: 'Uspješno ažurirano!',
+      genericError: 'Greška pri ažuriranju članka.',
+    );
   }
 
   Future<void> toggle(int id) async {
@@ -90,9 +80,10 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
   }
 
   Future<void> remove(int id) async {
-    await _service.delete(id);
-    items.removeWhere((x) => x.id == id);
-    notifyListeners();
-    NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
+    await runCrud(
+      () => _service.delete(id),
+      successMessage: 'Uspješno izbrisano!',
+      genericError: 'Greška pri brisanju članka.',
+    );
   }
 }

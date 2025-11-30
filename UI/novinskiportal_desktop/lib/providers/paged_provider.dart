@@ -57,7 +57,6 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
     pageSize = size;
     page = 0;
     load();
-    notifyListeners();
   }
 
   void setError(String? err) {

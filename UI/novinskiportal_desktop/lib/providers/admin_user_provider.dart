@@ -1,11 +1,13 @@
 import 'package:novinskiportal_desktop/core/notification_service.dart';
+import 'package:novinskiportal_desktop/providers/paged_crud_mixin.dart';
 import '../models/admin_user_models.dart';
 import '../services/admin_user_service.dart';
 import '../providers/paged_provider.dart';
 import '../core/paging.dart';
 import '../core/api_error.dart';
 
-class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
+class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch>
+    with PagedCrud<UserAdminDto, UserAdminSearch> {
   final _service = AdminUserService();
 
   String fts = '';
@@ -27,48 +29,30 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
   }
 
   Future<void> create(CreateAdminUserRequest r) async {
-    try {
-      await _service.create(r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno dodano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri dodavanju korisnika.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.create(r),
+      successMessage: 'Uspješno dodano!',
+      genericError: 'Greška pri dodavanju korisnika.',
+    );
   }
 
   Future<void> update(int id, UpdateAdminUserRequest r) async {
-    try {
-      await _service.update(id, r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri ažuriranju korisnika.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.update(id, r),
+      successMessage: 'Uspješno ažurirano!',
+      genericError: 'Greška pri ažuriranju korisnika.',
+    );
   }
 
   Future<void> changePasswordForUser(
     int id,
     AdminChangePasswordRequest r,
   ) async {
-    try {
-      await _service.changePasswordForUser(id, r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješan reset lozinke!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri reset-u lozinke.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.changePasswordForUser(id, r),
+      successMessage: 'Uspješan reset lozinke!',
+      genericError: 'Greška pri reset-u lozinke.',
+    );
   }
 
   Future<void> toggle(int id) async {
@@ -107,24 +91,11 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch> {
   }
 
   Future<void> softDelete(int id) async {
-    try {
-      await _service.softDelete(id);
-      items.removeWhere((x) => x.id == id);
-      notifyListeners();
-
-      NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri brisanju korisnika.');
-    }
-  }
-
-  Future<void> remove(int id) async {
-    await _service.delete(id);
-    items.removeWhere((x) => x.id == id);
-    notifyListeners();
-    NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
+    await runCrud(
+      () => _service.softDelete(id),
+      successMessage: 'Uspješno izbrisano!',
+      genericError: 'Greška pri brisanju korisnika.',
+    );
   }
 
   Future<bool> isUsernameTaken(String username) async {

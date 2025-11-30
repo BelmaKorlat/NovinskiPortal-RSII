@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_user_provider.dart';
 import '../../models/admin_user_models.dart';
-import '../../core/api_error.dart';
 import 'package:form_validation/form_validation.dart';
-import '../../core/notification_service.dart';
 
 class ResetPasswordPage extends StatefulWidget {
   const ResetPasswordPage({super.key});
@@ -73,12 +71,6 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       );
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (e) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -185,7 +177,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                                     );
                                 if (error != null) return error;
 
-                                if (v != _confirmPassword.text) {
+                                if (v != _newPassword.text) {
                                   return 'Lozinke se ne poklapaju.';
                                 }
 

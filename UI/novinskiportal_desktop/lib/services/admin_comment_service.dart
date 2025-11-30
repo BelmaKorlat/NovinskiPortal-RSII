@@ -1,47 +1,23 @@
 import 'package:dio/dio.dart';
-import 'package:novinskiportal_desktop/core/api_client.dart';
 import 'package:novinskiportal_desktop/core/api_error.dart';
 import 'package:novinskiportal_desktop/core/paging.dart';
-
+import 'package:novinskiportal_desktop/services/base_service.dart';
 import '../models/admin_comment_models.dart';
 
-class AdminCommentService {
-  final Dio _dio = ApiClient().dio;
+class AdminCommentService extends BaseService {
   static const String _base = '/api/AdminComments';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<PagedResult<AdminCommentReportResponse>> getPage(
     AdminCommentReportSearch search,
   ) async {
     try {
-      final res = await _dio.get(_base, queryParameters: search.toQuery());
-
-      final data = res.data;
-
-      final list = readItems(data);
-      final items = list
-          .whereType<Map<String, dynamic>>()
-          .map(AdminCommentReportResponse.fromJson)
-          .toList();
-
-      final total = readTotalCount(data) ?? items.length;
-
-      return PagedResult(items: items, totalCount: total);
+      final res = await dio.get(_base, queryParameters: search.toQuery());
+      return mapPagedResponse<AdminCommentReportResponse>(
+        res.data,
+        (m) => AdminCommentReportResponse.fromJson(m),
+      );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET prijavljenih komentara.');
+      throw asApi(e, fallback: 'Neuspješan GET prijavljenih komentara.');
     } catch (_) {
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     }
@@ -49,7 +25,7 @@ class AdminCommentService {
 
   Future<AdminCommentDetailReportResponse> getDetail(int commentId) async {
     try {
-      final res = await _dio.get('$_base/$commentId/detail');
+      final res = await dio.get('$_base/$commentId/detail');
 
       if (res.data is Map<String, dynamic>) {
         return AdminCommentDetailReportResponse.fromJson(
@@ -59,23 +35,23 @@ class AdminCommentService {
 
       throw ApiException(message: 'Neočekivan oblik odgovora za detalje.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješno dobavljanje detalja komentara.');
+      throw asApi(e, fallback: 'Neuspješno dobavljanje detalja komentara.');
     }
   }
 
   Future<void> hide(int id) async {
     try {
-      await _dio.post('$_base/$id/hide');
+      await dio.post('$_base/$id/hide');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri sakrivanju komentara.');
+      throw asApi(e, fallback: 'Greška pri sakrivanju komentara.');
     }
   }
 
   Future<void> softDelete(int id) async {
     try {
-      await _dio.delete('$_base/$id/soft-delete');
+      await dio.delete('$_base/$id/soft-delete');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri brisanju komentara.');
+      throw asApi(e, fallback: 'Greška pri brisanju komentara.');
     }
   }
 
@@ -87,17 +63,17 @@ class AdminCommentService {
         body['adminNote'] = note;
       }
 
-      await _dio.post('$_base/$id/reports/reject-pending', data: body);
+      await dio.post('$_base/$id/reports/reject-pending', data: body);
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri odbijanju pending prijava.');
+      throw asApi(e, fallback: 'Greška pri odbijanju pending prijava.');
     }
   }
 
   Future<void> banAuthor(int commentId, BanCommentAuthorRequest request) async {
     try {
-      await _dio.post('$_base/$commentId/ban-author', data: request.toJson());
+      await dio.post('$_base/$commentId/ban-author', data: request.toJson());
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri zabrani komentarisanja.');
+      throw asApi(e, fallback: 'Greška pri zabrani komentarisanja.');
     }
   }
 }

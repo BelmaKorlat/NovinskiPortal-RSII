@@ -4,9 +4,7 @@ import '../../providers/category_provider.dart';
 import '../../models/category_models.dart';
 import '../../utils/color_utils.dart';
 import '../../widgets/dialogs/color_picker.dart';
-import '../../core/api_error.dart';
 import 'package:form_validation/form_validation.dart';
-import '../../core/notification_service.dart';
 
 class CreateCategoryPage extends StatefulWidget {
   const CreateCategoryPage({super.key});
@@ -61,12 +59,6 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
       await context.read<CategoryProvider>().create(req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (e) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

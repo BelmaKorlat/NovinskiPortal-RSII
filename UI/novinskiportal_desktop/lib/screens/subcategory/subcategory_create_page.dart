@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/subcategory_provider.dart';
 import '../../models/subcategory_models.dart';
-import '../../core/api_error.dart';
 import 'package:form_validation/form_validation.dart';
 import '../../core/notification_service.dart';
 import '../../services/category_service.dart';
@@ -85,12 +84,6 @@ class _CreateSubcategoryPageState extends State<CreateSubcategoryPage> {
       await context.read<SubcategoryProvider>().create(req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (e) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

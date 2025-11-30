@@ -5,8 +5,6 @@ import '../../providers/category_provider.dart';
 import '../../utils/color_utils.dart';
 import '../../widgets/dialogs/color_picker.dart';
 import 'package:form_validation/form_validation.dart';
-import '../../core/api_error.dart';
-import '../../core/notification_service.dart';
 
 class EditCategoryPage extends StatefulWidget {
   const EditCategoryPage({super.key});
@@ -75,12 +73,6 @@ class _EditCategoryPageState extends State<EditCategoryPage> {
       await context.read<CategoryProvider>().update(_cat.id, req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

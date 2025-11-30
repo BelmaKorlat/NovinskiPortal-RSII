@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:novinskiportal_desktop/models/admin_user_models.dart';
 import 'package:novinskiportal_desktop/models/subcategory_models.dart';
 import 'package:novinskiportal_desktop/services/admin_user_service.dart';
-import 'package:novinskiportal_desktop/services/article_service.dart';
 import 'package:novinskiportal_desktop/services/subcategory_service.dart';
 import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +11,6 @@ import '../../models/article_models.dart';
 import 'package:data_table_2/data_table_2.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_chip.dart';
-import '../../core/api_error.dart';
 import '../../core/notification_service.dart';
 import '../../models/category_models.dart';
 import '../../services/category_service.dart';
@@ -172,27 +170,25 @@ class ArticleListPageState extends State<ArticleListPage> {
           ),
         ),
 
-        // TOOLBAR
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
             children: [
-              Flexible(
-                flex: 4,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560),
-                  child: TextField(
-                    controller: _fts,
-                    decoration: const InputDecoration(
-                      labelText: 'Pretraga po nazivu',
-                      prefixIcon: Icon(Icons.search),
-                    ),
+              Expanded(
+                flex: 3,
+                child: TextField(
+                  controller: _fts,
+                  decoration: const InputDecoration(
+                    labelText: 'Pretraga po nazivu',
+                    prefixIcon: Icon(Icons.search),
                   ),
                 ),
               ),
+
               const SizedBox(width: 12),
-              SizedBox(
-                width: 280,
+
+              Expanded(
+                flex: 3,
                 child: _categoryLoading
                     ? const LinearProgressIndicator()
                     : DropdownButtonFormField<int?>(
@@ -215,11 +211,11 @@ class ArticleListPageState extends State<ArticleListPage> {
                         onChanged: (v) => setState(() => _categoryId = v),
                       ),
               ),
+
               const SizedBox(width: 12),
 
-              // Potkategorije
-              SizedBox(
-                width: 280,
+              Expanded(
+                flex: 3,
                 child: _subcategoryLoading
                     ? const LinearProgressIndicator()
                     : DropdownButtonFormField<int?>(
@@ -242,10 +238,11 @@ class ArticleListPageState extends State<ArticleListPage> {
                         onChanged: (v) => setState(() => _subcategoryId = v),
                       ),
               ),
+
               const SizedBox(width: 12),
 
-              SizedBox(
-                width: 300,
+              Expanded(
+                flex: 3,
                 child: _userLoading
                     ? const LinearProgressIndicator()
                     : DropdownButtonFormField<int?>(
@@ -268,9 +265,9 @@ class ArticleListPageState extends State<ArticleListPage> {
                         onChanged: (v) => setState(() => _userId = v),
                       ),
               ),
+
               const SizedBox(width: 12),
 
-              // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
                 icon: const Icon(Icons.search),
@@ -282,7 +279,6 @@ class ArticleListPageState extends State<ArticleListPage> {
 
         const SizedBox(height: 8),
 
-        // TABLICA
         Expanded(
           child: vm.isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -296,18 +292,7 @@ class ArticleListPageState extends State<ArticleListPage> {
                       message: 'Jeste li sigurni da želite promijeniti status?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.toggle(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri promjeni statusa članka.',
-                      );
-                    }
+                    await vm.toggle(id);
                   },
                   onDelete: (id) async {
                     final ok = await showDestructiveConfirmDialog(
@@ -316,31 +301,20 @@ class ArticleListPageState extends State<ArticleListPage> {
                           'Jeste li sigurni da želite obrisati ovaj članak?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.remove(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri brisanju članka.',
-                      );
-                    }
+                    await vm.remove(id);
                   },
-
                   onEdit: (c) async {
-                    final svc = ArticleService();
-                    final detail = await svc.getById(c.id);
+                    final vm = context.read<ArticleProvider>();
+                    try {
+                      final detail = await vm.getDetail(c.id);
+                      if (!context.mounted) return;
 
-                    if (!context.mounted) return;
-
-                    await Navigator.pushNamed(
-                      context,
-                      '/articles/edit',
-                      arguments: detail,
-                    );
+                      await Navigator.pushNamed(
+                        context,
+                        '/articles/edit',
+                        arguments: detail,
+                      );
+                    } catch (_) {}
                   },
                 ),
         ),

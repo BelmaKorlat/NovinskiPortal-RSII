@@ -1,4 +1,5 @@
 import 'package:novinskiportal_desktop/core/notification_service.dart';
+import 'package:novinskiportal_desktop/providers/paged_crud_mixin.dart';
 import '../models/subcategory_models.dart';
 import '../services/subcategory_service.dart';
 import '../providers/paged_provider.dart';
@@ -6,7 +7,8 @@ import '../core/paging.dart';
 import '../core/api_error.dart';
 
 class SubcategoryProvider
-    extends PagedProvider<SubcategoryDto, SubcategorySearch> {
+    extends PagedProvider<SubcategoryDto, SubcategorySearch>
+    with PagedCrud<SubcategoryDto, SubcategorySearch> {
   final _service = SubcategoryService();
 
   int? categoryId;
@@ -26,37 +28,19 @@ class SubcategoryProvider
   }
 
   Future<void> create(CreateSubcategoryRequest r) async {
-    try {
-      await _service.create(r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno dodano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error(
-        'Greška',
-        'Greška pri dodavanju potkategorije.',
-      );
-      rethrow;
-    }
+    await runCrud(
+      () => _service.create(r),
+      successMessage: 'Uspješno dodano!',
+      genericError: 'Greška pri dodavanju potkategorije.',
+    );
   }
 
   Future<void> update(int id, UpdateSubcategoryRequest r) async {
-    try {
-      await _service.update(id, r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error(
-        'Greška',
-        'Greška pri ažuriranju potkategorije.',
-      );
-      rethrow;
-    }
+    await runCrud(
+      () => _service.update(id, r),
+      successMessage: 'Uspješno ažurirano!',
+      genericError: 'Greška pri ažuriranju potkategorije.',
+    );
   }
 
   Future<void> toggle(int id) async {
@@ -79,9 +63,10 @@ class SubcategoryProvider
   }
 
   Future<void> remove(int id) async {
-    await _service.delete(id);
-    items.removeWhere((x) => x.id == id);
-    notifyListeners();
-    NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
+    await runCrud(
+      () => _service.delete(id),
+      successMessage: 'Uspješno izbrisano!',
+      genericError: 'Greška pri brisanju potkategorije.',
+    );
   }
 }

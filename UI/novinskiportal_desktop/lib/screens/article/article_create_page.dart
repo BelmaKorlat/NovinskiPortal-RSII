@@ -7,7 +7,6 @@ import 'package:form_validation/form_validation.dart';
 
 import '../../providers/article_provider.dart';
 import '../../models/article_models.dart';
-import '../../core/api_error.dart';
 import '../../core/notification_service.dart';
 
 import '../../services/category_service.dart';
@@ -129,7 +128,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
     }
   }
 
-  // File picker helpers
   Future<PhotoUpload?> _pickOne() async {
     final res = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -252,12 +250,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       await context.read<ArticleProvider>().create(req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }

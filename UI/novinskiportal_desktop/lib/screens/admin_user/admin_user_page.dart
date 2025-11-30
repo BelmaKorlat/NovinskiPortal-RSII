@@ -6,8 +6,6 @@ import '../../models/admin_user_models.dart';
 import 'package:data_table_2/data_table_2.dart';
 import '../../widgets/pagination_bar.dart';
 import '../../widgets/status_chip.dart';
-import '../../core/api_error.dart';
-import '../../core/notification_service.dart';
 import 'package:intl/intl.dart';
 
 class AdminUserListPage extends StatefulWidget {
@@ -82,7 +80,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
           ),
         ),
 
-        // TOOLBAR
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
           child: Row(
@@ -102,7 +99,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Uloga
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<int?>(
@@ -118,7 +114,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Status
               SizedBox(
                 width: 180,
                 child: DropdownButtonFormField<bool?>(
@@ -134,7 +129,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
               ),
               const SizedBox(width: 12),
 
-              // Traži
               FilledButton.icon(
                 onPressed: _applyFilters,
                 icon: const Icon(Icons.search),
@@ -146,7 +140,6 @@ class AdminUserListPageState extends State<AdminUserListPage> {
 
         const SizedBox(height: 8),
 
-        // TABLICA
         Expanded(
           child: vm.isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -167,18 +160,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                       message: 'Jeste li sigurni da želite promijeniti status?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.toggle(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri promjeni statusa korisnika.',
-                      );
-                    }
+                    await vm.toggle(id);
                   },
                   onSoftDelete: (id) async {
                     final ok = await showDestructiveConfirmDialog(
@@ -186,18 +168,7 @@ class AdminUserListPageState extends State<AdminUserListPage> {
                       message: 'Jeste li sigurni da želite obrisati korisnika?',
                     );
                     if (!ok) return;
-                    try {
-                      await vm.softDelete(id);
-                    } on ApiException catch (ex) {
-                      if (!context.mounted) return;
-                      NotificationService.error('Greška', ex.message);
-                    } catch (_) {
-                      if (!context.mounted) return;
-                      NotificationService.error(
-                        'Greška',
-                        'Greška pri brisanju korisnika.',
-                      );
-                    }
+                    await vm.softDelete(id);
                   },
                   onResetPassword: (c) {
                     Navigator.pushNamed(

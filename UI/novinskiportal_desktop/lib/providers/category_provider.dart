@@ -1,12 +1,13 @@
 import 'package:novinskiportal_desktop/core/notification_service.dart';
-
+import 'package:novinskiportal_desktop/providers/paged_crud_mixin.dart';
 import '../models/category_models.dart';
 import '../services/category_service.dart';
 import '../providers/paged_provider.dart';
 import '../core/paging.dart';
 import '../core/api_error.dart';
 
-class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
+class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch>
+    with PagedCrud<CategoryDto, CategorySearch> {
   final _service = CategoryService();
 
   bool? active;
@@ -25,32 +26,34 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
     return _service.getPage(s);
   }
 
+  // Future<void> create(CreateCategoryRequest r) async {
+  //   try {
+  //     await _service.create(r);
+  //     await load();
+  //     NotificationService.success('Notifikacija', 'Uspješno dodano!');
+  //   } on ApiException catch (ex) {
+  //     NotificationService.error('Greška', ex.message);
+  //     rethrow;
+  //   } catch (_) {
+  //     NotificationService.error('Greška', 'Greška pri dodavanju kategorije.');
+  //     rethrow;
+  //   }
+  // }
+
   Future<void> create(CreateCategoryRequest r) async {
-    try {
-      await _service.create(r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno dodano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri dodavanju kategorije.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.create(r),
+      successMessage: 'Uspješno dodano!',
+      genericError: 'Greška pri dodavanju kategorije.',
+    );
   }
 
   Future<void> update(int id, UpdateCategoryRequest r) async {
-    try {
-      await _service.update(id, r);
-      await load();
-      NotificationService.success('Notifikacija', 'Uspješno ažurirano!');
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
-    } catch (_) {
-      NotificationService.error('Greška', 'Greška pri ažuriranju kategorije.');
-      rethrow;
-    }
+    await runCrud(
+      () => _service.update(id, r),
+      successMessage: 'Uspješno ažurirano!',
+      genericError: 'Greška pri ažuriranju kategorije.',
+    );
   }
 
   Future<void> toggle(int id) async {
@@ -73,9 +76,10 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch> {
   }
 
   Future<void> remove(int id) async {
-    await _service.delete(id);
-    items.removeWhere((x) => x.id == id);
-    notifyListeners();
-    NotificationService.success('Notifikacija', 'Uspješno izbrisano!');
+    await runCrud(
+      () => _service.delete(id),
+      successMessage: 'Uspješno izbrisano!',
+      genericError: 'Greška pri brisanju kategorije.',
+    );
   }
 }

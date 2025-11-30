@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/admin_user_provider.dart';
 import '../../models/admin_user_models.dart';
-import '../../core/api_error.dart';
 import 'package:form_validation/form_validation.dart';
-import '../../core/notification_service.dart';
 
 class EditAdminUserPage extends StatefulWidget {
   const EditAdminUserPage({super.key});
@@ -132,12 +130,6 @@ class _EditAdminUserPageState extends State<EditAdminUserPage> {
       await context.read<AdminUserProvider>().update(_userAdminDto.id, req);
       if (!mounted) return;
       Navigator.pop(context);
-    } on ApiException catch (ex) {
-      if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (e) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Greška pri snimanju.');
     } finally {
       if (mounted) setState(() => _saving = false);
     }
