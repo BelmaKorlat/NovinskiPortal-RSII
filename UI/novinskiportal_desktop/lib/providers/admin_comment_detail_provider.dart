@@ -27,11 +27,4 @@ class AdminCommentDetailProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  void clear() {
-    detail = null;
-    error = null;
-    isLoading = false;
-    notifyListeners();
-  }
 }

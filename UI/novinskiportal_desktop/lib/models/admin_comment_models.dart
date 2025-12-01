@@ -95,7 +95,6 @@ class AdminCommentReportSearch extends BaseSearch {
 
   const AdminCommentReportSearch({
     this.status,
-    super.fts,
     super.page = 0,
     super.pageSize = 10,
     super.includeTotalCount = true,
@@ -241,7 +240,6 @@ class BanCommentAuthorRequest {
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
-      // backend očekuje UTC, zato toUtc().toIso8601String()
       'banUntil': banUntil.toUtc().toIso8601String(),
     };
 

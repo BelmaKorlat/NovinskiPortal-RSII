@@ -107,5 +107,12 @@ namespace NovinskiPortal.API.Controllers
             return NoContent();
         }
 
+        [HttpGet("pending-count")]
+        public async Task<ActionResult<int>> GetPendingCount()
+        {
+            var count = await _adminCommentService.GetPendingCountAsync();
+            return Ok(count);
+        }
+
     }
 }

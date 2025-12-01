@@ -1,6 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:novinskiportal_desktop/widgets/comment_status_chip.dart';
 import 'package:novinskiportal_desktop/widgets/dialogs/confirm_dialogs.dart';
 import 'package:provider/provider.dart';
 import 'package:novinskiportal_desktop/models/admin_comment_models.dart';
@@ -22,6 +23,7 @@ class AdminCommentListPageState extends State<AdminCommentListPage> {
     super.initState();
     final vm = context.read<AdminCommentProvider>();
 
+    vm.status ??= ArticleCommentReportStatus.pending;
     _status = vm.status;
 
     Future.microtask(() => vm.load());
@@ -81,18 +83,17 @@ class AdminCommentListPageState extends State<AdminCommentListPage> {
                     labelText: 'Status prijave',
                   ),
                   items: const [
-                    DropdownMenuItem(value: null, child: Text('Sve')),
                     DropdownMenuItem(
                       value: ArticleCommentReportStatus.pending,
-                      child: Text('Samo pending'),
+                      child: Text('Na čekanju'),
                     ),
                     DropdownMenuItem(
                       value: ArticleCommentReportStatus.approved,
-                      child: Text('Samo odobrene'),
+                      child: Text('Prihvaćeni'),
                     ),
                     DropdownMenuItem(
                       value: ArticleCommentReportStatus.rejected,
-                      child: Text('Samo odbijene'),
+                      child: Text('Odbijeni'),
                     ),
                   ],
                   onChanged: (v) => setState(() => _status = v),
@@ -148,6 +149,7 @@ class _AdminCommentTable extends StatelessWidget {
   const _AdminCommentTable({required this.items});
 
   static const double _wActions = 200;
+  static const double _wStatus = 100;
 
   @override
   Widget build(BuildContext context) {
@@ -168,10 +170,17 @@ class _AdminCommentTable extends StatelessWidget {
               DataColumn2(label: Text('Članak'), size: ColumnSize.M),
               DataColumn2(label: Text('Autor'), size: ColumnSize.S),
               DataColumn2(label: Text('Komentar'), size: ColumnSize.L),
-              DataColumn2(label: Text('Prijave'), size: ColumnSize.S),
+              DataColumn2(
+                label: Center(child: Text('Broj prijava')),
+                size: ColumnSize.S,
+              ),
               DataColumn2(label: Text('Prva prijava'), size: ColumnSize.S),
               DataColumn2(label: Text('Zadnja prijava'), size: ColumnSize.S),
-              DataColumn2(label: Text('Status'), size: ColumnSize.S),
+              DataColumn2(
+                label: Center(child: Text('Status')),
+                size: ColumnSize.S,
+                fixedWidth: _wStatus,
+              ),
               DataColumn2(
                 label: Center(child: Text('Akcije')),
                 size: ColumnSize.S,
@@ -179,8 +188,6 @@ class _AdminCommentTable extends StatelessWidget {
               ),
             ],
             rows: items.map((cItem) {
-              final statusText = _buildStatusText(cItem);
-
               return DataRow(
                 cells: [
                   DataCell(
@@ -205,8 +212,12 @@ class _AdminCommentTable extends StatelessWidget {
                     ),
                   ),
                   DataCell(
-                    Text(
-                      '${cItem.reportsCount} (${cItem.pendingReportsCount} pending)',
+                    Center(
+                      child: Text(
+                        '${cItem.reportsCount}',
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                   DataCell(
@@ -227,7 +238,7 @@ class _AdminCommentTable extends StatelessWidget {
                             ).format(cItem.lastReportedAt!),
                     ),
                   ),
-                  DataCell(Text(statusText)),
+                  DataCell(Center(child: CommentStatusChip(comment: cItem))),
                   DataCell(
                     Center(
                       child: Row(
@@ -293,11 +304,5 @@ class _AdminCommentTable extends StatelessWidget {
         },
       ),
     );
-  }
-
-  static String _buildStatusText(AdminCommentReportResponse c) {
-    if (c.isDeleted) return 'Obrisan';
-    if (c.isHidden) return 'Sakriven';
-    return 'Vidljiv';
   }
 }

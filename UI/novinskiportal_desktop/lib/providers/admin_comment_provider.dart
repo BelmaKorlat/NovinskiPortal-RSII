@@ -9,7 +9,8 @@ class AdminCommentProvider
     with PagedCrud<AdminCommentReportResponse, AdminCommentReportSearch> {
   final _service = AdminCommentService();
 
-  ArticleCommentReportStatus? status;
+  ArticleCommentReportStatus? status = ArticleCommentReportStatus.pending;
+  int pendingCount = 0;
 
   @override
   AdminCommentReportSearch buildSearch() => AdminCommentReportSearch(
@@ -29,9 +30,10 @@ class AdminCommentProvider
   Future<void> hide(int id) async {
     await runCrud(
       () => _service.hide(id),
-      successMessage: 'Komentar je sakriven, pending prijave su odobrene.',
+      successMessage: 'Komentar je sakriven, prijave su odobrene.',
       genericError: 'Greška pri sakrivanju komentara.',
     );
+    await loadPendingCount();
   }
 
   Future<void> softDelete(int id) async {
@@ -40,14 +42,16 @@ class AdminCommentProvider
       successMessage: 'Uspješno izbrisano!',
       genericError: 'Greška pri brisanju komentara.',
     );
+    await loadPendingCount();
   }
 
   Future<void> rejectPendingReports(int id, {String? adminNote}) async {
     await runCrud(
       () => _service.rejectPendingReports(id, adminNote: adminNote),
-      successMessage: 'Sve pending prijave su odbijene.',
-      genericError: 'Greška pri odbijanju pending prijava.',
+      successMessage: 'Sve prijave su odbijene.',
+      genericError: 'Greška pri odbijanju prijava.',
     );
+    await loadPendingCount();
   }
 
   Future<void> banAuthor(int id, BanCommentAuthorRequest request) async {
@@ -56,5 +60,13 @@ class AdminCommentProvider
       successMessage: 'Zabrana komentarisanja je postavljena.',
       genericError: 'Greška pri zabrani komentarisanja.',
     );
+    await loadPendingCount();
+  }
+
+  Future<void> loadPendingCount() async {
+    try {
+      pendingCount = await _service.getPendingCount();
+      notifyListeners();
+    } catch (_) {}
   }
 }

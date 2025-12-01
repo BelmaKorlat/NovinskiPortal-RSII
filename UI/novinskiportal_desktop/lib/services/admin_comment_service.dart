@@ -76,4 +76,11 @@ class AdminCommentService extends BaseService {
       throw asApi(e, fallback: 'Greška pri zabrani komentarisanja.');
     }
   }
+
+  Future<int> getPendingCount() async {
+    final res = await dio.get('$_base/pending-count');
+    final data = res.data;
+    if (data is int) return data;
+    return int.tryParse(data.toString()) ?? 0;
+  }
 }

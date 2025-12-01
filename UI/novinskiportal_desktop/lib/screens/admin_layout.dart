@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_desktop/providers/admin_comment_provider.dart';
 import 'package:novinskiportal_desktop/providers/news_report_provider.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
@@ -29,8 +30,10 @@ class _AdminLayoutState extends State<AdminLayout> {
       _initialized = true;
 
       final newsReportProvider = context.read<NewsReportProvider>();
+      final adminCommentProvider = context.read<AdminCommentProvider>();
 
       newsReportProvider.loadPendingCount();
+      adminCommentProvider.loadPendingCount();
     }
   }
 
@@ -78,6 +81,9 @@ class _AdminLayoutState extends State<AdminLayout> {
 
     final newsReports = context.watch<NewsReportProvider?>();
     final pendingCount = newsReports?.pendingCount ?? 0;
+
+    final adminComment = context.watch<AdminCommentProvider?>();
+    final adminCommentPendingCount = adminComment?.pendingCount ?? 0;
 
     return Scaffold(
       body: Row(
@@ -173,6 +179,7 @@ class _AdminLayoutState extends State<AdminLayout> {
                           index: 6,
                           current: widget.currentIndex,
                           onTap: _onSelect,
+                          badgeCount: adminCommentPendingCount,
                         ),
                         Container(height: 1, color: borderColor),
                         _NavTile(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:novinskiportal_desktop/providers/admin_comment_provider.dart';
+import 'package:novinskiportal_desktop/widgets/comment_status_chip.dart';
 import 'package:provider/provider.dart';
 
 import 'package:novinskiportal_desktop/models/admin_comment_models.dart';
@@ -31,8 +32,11 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
     }
 
     if (_commentId != null) {
-      final vm = context.read<AdminCommentDetailProvider>();
-      vm.load(_commentId!);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final vm = context.read<AdminCommentDetailProvider>();
+        vm.load(_commentId!);
+      });
     }
 
     _inited = true;
@@ -44,7 +48,7 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Odbij pending prijave'),
+        title: const Text('Odbij prijave'),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -185,8 +189,6 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
       body = const Center(child: Text('Detalji komentara nisu dostupni.'));
     } else {
       final d = vm.detail!;
-
-      final statusText = _statusText(d);
       final banText = _banText(d);
 
       body = Align(
@@ -218,7 +220,12 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
                             bottom: BorderSide(color: cs.outlineVariant),
                           ),
                         ),
-                        child: const Text('Osnovne informacije'),
+                        child: Row(
+                          children: [
+                            const Expanded(child: Text('Osnovne informacije')),
+                            CommentStatusChip.fromDetail(detail: d),
+                          ],
+                        ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(16),
@@ -245,14 +252,9 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
                             ),
                             const SizedBox(height: 8),
                             _InfoRow(
-                              label: 'Status komentara',
-                              value: statusText,
-                            ),
-                            const SizedBox(height: 8),
-                            _InfoRow(
                               label: 'Prijave',
                               value:
-                                  '${d.reportsCount} (${d.pendingReportsCount} pending)',
+                                  '${d.reportsCount} (${d.pendingReportsCount} na čekanju)',
                             ),
                             const SizedBox(height: 8),
                             _InfoRow(
@@ -272,41 +274,6 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
                                       'd.M.yyyy, HH:mm',
                                     ).format(d.lastReportedAt!),
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Sadržaj komentara',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 6),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: cs.outlineVariant),
-                                color: cs.surfaceContainerHighest.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                              child: Text(
-                                d.content,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            if (banText != null) ...[
-                              Text(
-                                'Zabrana komentarisanja',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                banText,
-                                style: Theme.of(context).textTheme.bodyMedium,
-                              ),
-                            ],
                           ],
                         ),
                       ),
@@ -315,25 +282,6 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
                 ),
 
                 const SizedBox(height: 16),
-
-                Row(
-                  children: [
-                    const Spacer(),
-                    FilledButton.icon(
-                      onPressed: d.pendingReportsCount == 0
-                          ? null
-                          : () => _rejectPendingReports(d),
-                      icon: const Icon(Icons.gavel_outlined),
-                      label: const Text('Odbij sve pending prijave'),
-                    ),
-                    const SizedBox(width: 12),
-                    FilledButton.icon(
-                      onPressed: () => _banAuthor(d),
-                      icon: const Icon(Icons.person_off),
-                      label: const Text('Zabrani komentarisanje'),
-                    ),
-                  ],
-                ),
 
                 Card(
                   clipBehavior: Clip.antiAlias,
@@ -350,7 +298,113 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
                             bottom: BorderSide(color: cs.outlineVariant),
                           ),
                         ),
-                        child: const Text('Prijave na komentar'),
+                        child: const Text('Sadržaj komentara'),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: cs.outlineVariant),
+                            color: cs.surfaceContainerHighest.withValues(
+                              alpha: 0.3,
+                            ),
+                          ),
+                          child: Text(
+                            d.content,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                if (banText != null) ...[
+                  Card(
+                    clipBehavior: Clip.antiAlias,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(color: cs.outlineVariant),
+                            ),
+                          ),
+                          child: const Text('Zabrana komentarisanja'),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            banText,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      FilledButton.icon(
+                        onPressed: d.pendingReportsCount == 0
+                            ? null
+                            : () => _rejectPendingReports(d),
+                        icon: const Icon(Icons.gavel_outlined),
+                        label: Text(
+                          'Odbij sve prijave (${d.pendingReportsCount})',
+                        ),
+                      ),
+                      FilledButton.icon(
+                        onPressed:
+                            d.authorCommentBanUntil != null &&
+                                d.authorCommentBanUntil!.isAfter(DateTime.now())
+                            ? null
+                            : () => _banAuthor(d),
+                        icon: const Icon(Icons.person_off),
+                        label: const Text('Zabrani komentarisanje'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: cs.outlineVariant),
+                          ),
+                        ),
+                        child: Text(
+                          d.reports.isEmpty
+                              ? 'Prijave na komentar'
+                              : 'Prijave na komentar (${d.reports.length})',
+                        ),
                       ),
                       if (d.reports.isEmpty)
                         const Padding(
@@ -474,12 +528,6 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
     return Padding(padding: const EdgeInsets.all(16), child: body);
   }
 
-  String _statusText(AdminCommentDetailReportResponse d) {
-    if (d.isDeleted) return 'Obrisan';
-    if (d.isHidden) return 'Sakriven';
-    return 'Vidljiv';
-  }
-
   String? _banText(AdminCommentDetailReportResponse d) {
     final hasReason =
         d.authorCommentBanReason != null &&
@@ -506,7 +554,7 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
   String _reportStatusText(ArticleCommentReportStatus status) {
     switch (status) {
       case ArticleCommentReportStatus.pending:
-        return 'Pending';
+        return 'Na čekanju';
       case ArticleCommentReportStatus.approved:
         return 'Prihvaćena';
       case ArticleCommentReportStatus.rejected:

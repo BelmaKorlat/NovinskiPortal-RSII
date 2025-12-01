@@ -256,6 +256,16 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
             await _context.SaveChangesAsync();
             return true;
         }
+
+
+        public async Task<int> GetPendingCountAsync()
+        {
+            return await _context.ArticleCommentReports
+                .Where(r => r.Status == ArticleCommentReportStatus.Pending)
+                .Select(r => r.Id)
+                .Distinct()
+                .CountAsync();
+        }
     }
 }
 
