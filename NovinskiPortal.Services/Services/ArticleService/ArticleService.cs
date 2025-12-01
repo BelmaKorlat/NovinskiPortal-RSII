@@ -65,8 +65,7 @@ namespace NovinskiPortal.Services.Services.ArticleService
                     case "mostread":
                         // za sada isto što i latest, dok ne dodaš ViewCount
                         // kasnije: return query.OrderByDescending(a => a.ViewCount);
-                        return query.OrderByDescending(a => a.PublishedAt);
-
+                        return query.OrderByDescending(a => a.Statistics != null ? a.Statistics.TotalViews: 0);
                     case "live":
                         // live članci, opet sortirani po datumu objave
                         return query.OrderByDescending(a => a.PublishedAt);
@@ -82,7 +81,8 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 .Include(a => a.Subcategory)
                 .Include(a => a.User)
                 .Include(a => a.ArticlePhotos)
-                .Include(a => a.ArticleComments);
+                .Include(a => a.ArticleComments)
+                .Include(a => a.Statistics);
         }
 
         protected override async Task AfterInsertAsync(Article entity)
@@ -123,9 +123,9 @@ namespace NovinskiPortal.Services.Services.ArticleService
                             CommentsCount = a.ArticleComments.Count(c => !c.IsDeleted && !c.IsHidden),
                             Category = a.Category.Name,
                             Subcategory = a.Subcategory.Name,
-                            User = a.HideFullName ? a.User.Nick : a.User.FirstName + " " + a.User.LastName,          
+                            User = a.HideFullName ? a.User.Nick : a.User.FirstName + " " + a.User.LastName,
                             MainPhotoPath = a.MainPhotoPath,
-                            Color = a.Category.Color,    
+                            Color = a.Category.Color,
                         })
                         .ToList()
                 })
@@ -162,16 +162,16 @@ namespace NovinskiPortal.Services.Services.ArticleService
             await AfterInsertAsync(article);
             return _mapper.Map<ArticleResponse>(article);
         }
-       
+
         protected override Task BeforeInsert(Article entity, CreateArticleRequest request)
-        {  
+        {
             entity.CreatedAt = DateTime.UtcNow;
 
             var uploads = EnsureUploadsFolder();
 
             entity.MainPhotoPath = SavePhoto(request.MainPhoto, uploads);
 
-            if(request.AdditionalPhotos != null && request.AdditionalPhotos.Any())
+            if (request.AdditionalPhotos != null && request.AdditionalPhotos.Any())
             {
                 entity.ArticlePhotos = new List<ArticlePhoto>();
 
@@ -185,20 +185,20 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 }
             }
 
-           return Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
         protected override Task BeforeUpdate(Article entity, UpdateArticleRequest request)
         {
             var uploads = EnsureUploadsFolder();
 
-            if(request.MainPhoto != null)
+            if (request.MainPhoto != null)
             {
                 DeleteIfExists(entity.MainPhotoPath);
                 entity.MainPhotoPath = SavePhoto(request.MainPhoto, uploads);
             }
 
-            if(request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
+            if (request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
             {
                 entity.ArticlePhotos = new List<ArticlePhoto>();
                 foreach (var item in request.AdditionalPhotos)
@@ -233,7 +233,7 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 return;
 
             var oldPhotoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", webPath.TrimStart('/'));
-            if (File.Exists(oldPhotoPath)) 
+            if (File.Exists(oldPhotoPath))
                 File.Delete(oldPhotoPath);
         }
 
@@ -253,7 +253,7 @@ namespace NovinskiPortal.Services.Services.ArticleService
             File.WriteAllBytes(photoFilePath, photo.Content);
 
             return $"/Photos/{photoFileName}";
-           
+
         }
 
         private static string EnsureUploadsFolder()
@@ -263,9 +263,32 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 Directory.CreateDirectory(uploadsFolder);
             return uploadsFolder;
         }
-     
-    }
 
+        public async Task TrackViewAsync(int articleId, DateTime viewedAtUtc, CancellationToken ct = default)
+        {
+            var stat = await _context.ArticleStatistics
+                .FirstOrDefaultAsync(s => s.ArticleId == articleId, ct);
+
+            if (stat == null)
+            {
+                stat = new ArticleStatistics
+                {
+                    ArticleId = articleId,
+                    TotalViews = 1,
+                    LastViewedAt = viewedAtUtc
+                };
+
+                _context.ArticleStatistics.Add(stat);
+            }
+            else
+            {
+                stat.TotalViews += 1;
+                stat.LastViewedAt = viewedAtUtc;
+            }
+
+            await _context.SaveChangesAsync(ct);
+        }
+    }
 }
 
 

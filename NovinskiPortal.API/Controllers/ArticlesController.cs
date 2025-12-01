@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using NovinskiPortal.API.Utils;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Model.SearchObjects;
+using NovinskiPortal.Services.Services.ArticleReadService;
 using NovinskiPortal.Services.Services.ArticleService;
 using System.Security.Claims;
 
@@ -15,12 +16,26 @@ namespace NovinskiPortal.API.Controllers
     public class ArticlesController : ControllerBase //BaseCRUDController<ArticleResponse, ArticleSearchObject, Model.Requests.Article.CreateArticleRequest, Model.Requests.Article.UpdateArticleRequest>
     {
         private readonly IArticleService _articleService;
-        public ArticlesController(IArticleService articleService)// : //base(articleService)
+        private readonly IArticleReadService _articleReadService;
+
+        public ArticlesController(IArticleService articleService, IArticleReadService articleReadService)// : //base(articleService)
         {
             _articleService = articleService;
+            _articleReadService = articleReadService;
+        }
+        private int? GetUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
+                return null;
+
+            if (!int.TryParse(claim.Value, out var id))
+                return null;
+
+            return id;
         }
 
-       [HttpGet("category-articles")]
+        [HttpGet("category-articles")]
        public async Task<ActionResult<List<CategoryArticlesResponse>>> GetCategoryArticles([FromQuery] int perCategory = 5)
        {
             var items = await _articleService.GetCategoryArticlesAsync(perCategory);
@@ -156,6 +171,17 @@ namespace NovinskiPortal.API.Controllers
         {
             var deleted = await _articleService.DeleteAsync(id);
             return deleted ? NoContent() : NotFound();
+        }
+
+        [HttpPost("{id}/track-view")]
+        [AllowAnonymous]
+        public async Task<IActionResult> TrackViewAsync(int id)
+        {
+            var userId = GetUserId();
+
+            await _articleReadService.TrackViewAsync(id, userId);
+
+            return Accepted();
         }
     }
 }

@@ -18,6 +18,8 @@ namespace NovinskiPortal.Services.Database
         public DbSet<ArticleComment> ArticleComments { get; set; } = default!;
         public DbSet<ArticleCommentVote> ArticleCommentVotes { get; set; } = default!;
         public DbSet<ArticleCommentReport> ArticleCommentReports { get; set; } = default!;
+        public DbSet<ArticleStatistics> ArticleStatistics { get; set; } = default!;
+
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -123,6 +125,19 @@ namespace NovinskiPortal.Services.Database
                       .WithMany()
                       .HasForeignKey(r => r.ProcessedByAdminId)
                       .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<ArticleStatistics>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.HasOne(x => x.Article)
+                      .WithOne(a => a.Statistics)
+                      .HasForeignKey<ArticleStatistics>(x => x.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(x => x.ArticleId)
+                      .IsUnique();
             });
 
             modelBuilder.Entity<Role>().HasData(

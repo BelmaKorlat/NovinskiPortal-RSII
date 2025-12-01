@@ -20,6 +20,7 @@
         public virtual Subcategory Subcategory { get; set; } = default!;
         public int UserId { get; set; }
         public virtual User User { get; set; } = default!;
+        public ArticleStatistics? Statistics { get; set; }
         public virtual ICollection<ArticlePhoto> ArticlePhotos { get; set; } = default!;
         public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
         public ICollection<ArticleComment> ArticleComments { get; set; } = new List<ArticleComment>();

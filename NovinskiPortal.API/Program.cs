@@ -6,14 +6,19 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NovinskiPortal.Commom.PasswordService;
 using NovinskiPortal.Common.Enumerations;
+using NovinskiPortal.Common.Messaging;
+using NovinskiPortal.Common.Settings;
 using NovinskiPortal.Model.Responses;
 using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
+using NovinskiPortal.Services.Implementations;
+using NovinskiPortal.Services.Messaging;
 using NovinskiPortal.Services.Services.AdminCommentService;
 using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.ArticleCommentReportService;
 using NovinskiPortal.Services.Services.ArticleCommentService;
 using NovinskiPortal.Services.Services.ArticleCommentVoteService;
+using NovinskiPortal.Services.Services.ArticleReadService;
 using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
@@ -102,7 +107,10 @@ builder.Services.AddRazorPages();
 // reset - password email dio
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 
+builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
+
 builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
+builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
 builder.Services.AddScoped<IMapper, ServiceMapper>();
 
 TypeAdapterConfig<Subcategory, SubcategoryResponse>.NewConfig()
@@ -255,6 +263,7 @@ builder.Services.AddScoped<IArticleCommentService, ArticleCommentService>();
 builder.Services.AddScoped<IArticleCommentVoteService, ArticleCommentVoteService>();
 builder.Services.AddScoped<IArticleCommentReportService, ArticleCommentReportService>();
 builder.Services.AddScoped<IAdminCommentService, AdminCommentService>();
+builder.Services.AddScoped<IArticleReadService, ArticleReadService>();
 
 var app = builder.Build();
 
