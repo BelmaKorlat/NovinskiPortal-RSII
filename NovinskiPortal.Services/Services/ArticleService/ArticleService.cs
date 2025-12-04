@@ -38,11 +38,11 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 query = query.Where(a => a.UserId == search.UserId.Value);
 
             // ako je mod "live", filtriraj samo live članke
-            if (!string.IsNullOrWhiteSpace(search.Mode) &&
+            /*if (!string.IsNullOrWhiteSpace(search.Mode) &&
                 search.Mode.Equals("live", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(a => a.Live);
-            }
+            }*/
 
             if (!search.IncludeFuture)
             {
@@ -66,9 +66,9 @@ namespace NovinskiPortal.Services.Services.ArticleService
                         // za sada isto što i latest, dok ne dodaš ViewCount
                         // kasnije: return query.OrderByDescending(a => a.ViewCount);
                         return query.OrderByDescending(a => a.Statistics != null ? a.Statistics.TotalViews: 0);
-                    case "live":
+                   /* case "live":
                         // live članci, opet sortirani po datumu objave
-                        return query.OrderByDescending(a => a.PublishedAt);
+                        return query.OrderByDescending(a => a.Live);*/
                 }
             }
             // default, ako Mode nije poslan

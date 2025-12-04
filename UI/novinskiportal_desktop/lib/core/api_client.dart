@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:novinskiportal_desktop/core/token_storage.dart';
 import 'api_error.dart';
 import 'app_config.dart';
 
@@ -35,8 +35,7 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final p = await SharedPreferences.getInstance();
-          final token = p.getString('jwt');
+          final token = await TokenStorage.loadToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }

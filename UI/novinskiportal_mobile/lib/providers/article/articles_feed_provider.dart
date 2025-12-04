@@ -3,12 +3,12 @@ import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/providers/page/paged_provider.dart';
 import 'package:novinskiportal_mobile/services/article_service.dart';
 
-class CategoryFeedProvider extends PagedProvider<ArticleDto, ArticleSearch> {
+class ArticlesFeedProvider extends PagedProvider<ArticleDto, ArticleSearch> {
   final ArticleService _service;
   final int? categoryId;
   final int? subcategoryId;
 
-  CategoryFeedProvider({
+  ArticlesFeedProvider({
     this.categoryId,
     this.subcategoryId,
     ArticleService? service,

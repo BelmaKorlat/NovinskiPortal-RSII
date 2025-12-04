@@ -1,31 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:novinskiportal_mobile/models/category/category_articles_models.dart';
-import '../core/api_client.dart';
+import 'package:novinskiportal_mobile/services/base_service.dart';
 import '../models/article/article_models.dart';
 import '../models/common/paging.dart';
 import '../core/api_error.dart';
 
-class ArticleService {
-  final Dio _dio = ApiClient().dio;
+class ArticleService extends BaseService {
   static const String _base = '/api/Articles';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<PagedResult<ArticleDto>> getPage(ArticleSearch s) async {
     try {
-      final res = await _dio.get(_base, queryParameters: s.toQuery());
+      final res = await dio.get(_base, queryParameters: s.toQuery());
 
       final data = res.data;
       final list = readItems(data);
@@ -36,7 +21,7 @@ class ArticleService {
       final total = readTotalCount(data) ?? items.length;
       return PagedResult(items: items, totalCount: total);
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET.');
+      throw asApi(e, fallback: 'Neuspješan GET.');
     } catch (_) {
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     }
@@ -44,7 +29,7 @@ class ArticleService {
 
   Future<List<ArticleDto>> getList(ArticleSearch s) async {
     try {
-      final res = await _dio.get(_base, queryParameters: s.toQuery());
+      final res = await dio.get(_base, queryParameters: s.toQuery());
       final data = res.data;
 
       if (data is List) {
@@ -68,19 +53,19 @@ class ArticleService {
 
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET članaka.');
+      throw asApi(e, fallback: 'Neuspješan GET članaka.');
     }
   }
 
   Future<ArticleDetailDto> getById(int id) async {
     try {
-      final res = await _dio.get('$_base/$id/detail');
+      final res = await dio.get('$_base/$id/detail');
       if (res.data is Map<String, dynamic>) {
         return ArticleDetailDto.fromJson(res.data as Map<String, dynamic>);
       }
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET by id.');
+      throw asApi(e, fallback: 'Neuspješan GET by id.');
     }
   }
 
@@ -88,7 +73,7 @@ class ArticleService {
     int perCategory = 5,
   }) async {
     try {
-      final res = await _dio.get(
+      final res = await dio.get(
         '$_base/category-articles',
         queryParameters: {'perCategory': perCategory},
       );
@@ -98,7 +83,16 @@ class ArticleService {
           .map((e) => CategoryArticlesDto.fromJson(e as Map<String, dynamic>))
           .toList();
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješno dobavljanje članaka.');
+      throw asApi(e, fallback: 'Neuspješno dobavljanje članaka.');
+    }
+  }
+
+  Future<void> trackView(int id) async {
+    try {
+      await dio.post('$_base/$id/track-view');
+      // ne moraš ništa vraćati
+    } on DioException catch (_) {
+      // po želji: možeš ignorisati grešku, da ne ruši UI
     }
   }
 }

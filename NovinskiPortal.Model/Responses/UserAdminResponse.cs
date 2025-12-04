@@ -15,5 +15,7 @@ namespace NovinskiPortal.Model.Responses
         public bool Active { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastLoginAt { get; set; }
+        public DateTime? CommentBanUntil { get; set; }
+        public string? CommentBanReason { get; set; }
     }
 }

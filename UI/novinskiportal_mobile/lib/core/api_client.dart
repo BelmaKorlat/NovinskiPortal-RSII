@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:novinskiportal_mobile/core/app_config.dart';
+import 'package:novinskiportal_mobile/core/token_storage.dart';
 import 'api_error.dart';
 
 class ApiClient {
@@ -10,14 +11,15 @@ class ApiClient {
   late final Dio dio;
 
   //static const String baseUrl = 'https://localhost:7060';
-  static const String baseUrl = 'https://10.0.2.2:7060';
+  //static const String baseUrl = 'https://10.0.2.2:7060';
   // Ako koristiš fizički telefon na istoj WiFi mreži, onda umjesto 10.0.2.2 stavi IP svog računara,
-  //static const String baseUrl = 'http://192.168.0.37:5182';
+  //static const String baseUrl = 'http://192.168.0.27:5182';
+  // static const String baseUrl = 'http://192.168.128.1:5182';
 
   ApiClient._internal() {
     dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: AppConfig.apiBaseUrl,
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 15),
         headers: {'Content-Type': 'application/json'},
@@ -28,11 +30,12 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final p = await SharedPreferences.getInstance();
-          final token = p.getString('jwt');
+          final token = await TokenStorage.loadToken();
+
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
+
           handler.next(options);
         },
         onResponse: (response, handler) => handler.next(response),
@@ -41,7 +44,6 @@ class ApiClient {
           int? status;
           final req = err.requestOptions;
 
-          // mreža
           if (err.type == DioExceptionType.connectionTimeout ||
               err.type == DioExceptionType.sendTimeout ||
               err.type == DioExceptionType.receiveTimeout) {
@@ -50,7 +52,6 @@ class ApiClient {
               err.error is SocketException) {
             message = 'Nema veze sa serverom. Provjerite internet.';
           } else {
-            // HTTP
             final resp = err.response;
             status = resp?.statusCode;
             final data = resp?.data;
@@ -59,10 +60,15 @@ class ApiClient {
                 path.endsWith('/api/auth/login') ||
                 path.contains('/auth/login');
 
+            // ima li Authorization header
+            final hadAuthHeader = req.headers['Authorization'] != null;
+
             if (status == 401 && isLogin) {
               message = 'Pogrešan username ili lozinka.';
-            } else if ((status == 400 || status == 401) && isLogin) {
-              message = 'Pogrešan username ili lozinka.';
+            } //else if ((status == 400 || status == 401) && isLogin) {
+            else if (status == 401 && !hadAuthHeader) {
+              // message = 'Pogrešan username ili lozinka.';
+              message = '';
             } else {
               message = humanMessage(status, data, 'Došlo je do greške.');
             }
@@ -83,9 +89,10 @@ class ApiClient {
     if (path.startsWith('http://') || path.startsWith('https://')) {
       return path;
     }
+    final base = AppConfig.apiBaseUrl;
     if (path.startsWith('/')) {
-      return '$baseUrl$path';
+      return '$base$path';
     }
-    return '$baseUrl/$path';
+    return '$base/$path';
   }
 }

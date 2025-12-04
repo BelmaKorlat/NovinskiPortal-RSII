@@ -35,7 +35,8 @@ namespace NovinskiPortal.API.Controllers
             return id;
         }
 
-        [HttpGet("category-articles")]
+       [HttpGet("category-articles")]
+       [AllowAnonymous]
        public async Task<ActionResult<List<CategoryArticlesResponse>>> GetCategoryArticles([FromQuery] int perCategory = 5)
        {
             var items = await _articleService.GetCategoryArticlesAsync(perCategory);
@@ -43,6 +44,7 @@ namespace NovinskiPortal.API.Controllers
             return Ok(items);
        }
         [HttpGet()]
+        [AllowAnonymous]
         public async Task<ActionResult<PagedResult<ArticleResponse>>> GetAsync([FromQuery] ArticleSearchObject articleSearchObject)
         {
             if (articleSearchObject == null)
@@ -59,11 +61,11 @@ namespace NovinskiPortal.API.Controllers
                 }
             }*/
             return Ok(result);
-       }
+        }
 
 
 
-        [HttpPost]
+       [HttpPost]
         //[Consumes("multipart/form-data")]
        public async Task<IActionResult> CreateArticleAsync([FromForm] Requests.Article.CreateArticleRequest createArticleRequest)
         {
@@ -97,6 +99,7 @@ namespace NovinskiPortal.API.Controllers
        }
 
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<ArticleResponse>> GetById(int id)
         {
             var item = await _articleService.GetByIdAsync(id);
@@ -107,6 +110,7 @@ namespace NovinskiPortal.API.Controllers
         }
 
         [HttpGet("{id}/detail")]
+        [AllowAnonymous]
         public async Task<ActionResult<ArticleDetailResponse>> GetDetailById(int id)
         {
             var item = await _articleService.GetDetailByIdAsync(id);

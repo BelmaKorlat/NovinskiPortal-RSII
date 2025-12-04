@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
-import 'package:novinskiportal_mobile/core/notification_service.dart';
 import 'package:novinskiportal_mobile/models/favorite/favorite_models.dart';
 import 'package:novinskiportal_mobile/services/favorite_service.dart';
 
@@ -13,9 +12,15 @@ class FavoritesProvider extends ChangeNotifier {
   String? _error;
   final List<FavoriteDto> _items = [];
 
+  final int _pageSize = 10;
+  int _visibleCount = 0;
+
   bool get isLoading => _isLoading;
   String? get error => _error;
   List<FavoriteDto> get items => List.unmodifiable(_items);
+
+  int get visibleCount => _visibleCount;
+  bool get hasMore => _visibleCount < _items.length;
 
   Future<void> load() async {
     _isLoading = true;
@@ -27,16 +32,36 @@ class FavoritesProvider extends ChangeNotifier {
       _items
         ..clear()
         ..addAll(list);
+      if (_items.isEmpty) {
+        _visibleCount = 0;
+      } else if (_items.length <= _pageSize) {
+        _visibleCount = _items.length;
+      } else {
+        _visibleCount = _pageSize;
+      }
     } on ApiException catch (ex) {
       _error = ex.message;
-      NotificationService.error('Greška', ex.message);
     } catch (_) {
       _error = 'Došlo je do greške pri učitavanju spremljenih članaka.';
-      NotificationService.error('Greška', _error!);
     } finally {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  Future<void> refresh() => load();
+
+  Future<void> loadMore() async {
+    if (!hasMore || _isLoading) return;
+
+    _isLoading = true;
+    notifyListeners();
+    await Future.delayed(const Duration(milliseconds: 300));
+    final newCount = _visibleCount + _pageSize;
+    _visibleCount = newCount > _items.length ? _items.length : newCount;
+
+    _isLoading = false;
+    notifyListeners();
   }
 
   bool isFavorite(int articleId) {
@@ -62,12 +87,10 @@ class FavoritesProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (ex) {
       _error = ex.message;
-      NotificationService.error('Greška', ex.message);
       notifyListeners();
       return false;
     } catch (_) {
       _error = 'Neuspješno spremanje članka.';
-      NotificationService.error('Greška', _error!);
       notifyListeners();
       return false;
     }
@@ -81,27 +104,34 @@ class FavoritesProvider extends ChangeNotifier {
       if (!ok) return false;
 
       _items.removeWhere((f) => f.articleId == articleId);
+      if (_visibleCount > _items.length) {
+        _visibleCount = _items.length;
+      }
+
       notifyListeners();
       return true;
     } on ApiException catch (ex) {
       _error = ex.message;
-      NotificationService.error('Greška', ex.message);
       notifyListeners();
       return false;
     } catch (_) {
       _error = 'Neuspješno uklanjanje članka.';
-      NotificationService.error('Greška', _error!);
       notifyListeners();
       return false;
     }
   }
 
+  void clearError() {
+    _error = null;
+  }
+
   Future<bool> toggleFavorite(int articleId) async {
     if (isFavorite(articleId)) {
-      await removeFavorite(articleId);
-    } else {
-      await createFavorite(articleId);
+      final removed = await removeFavorite(articleId);
+      return removed;
     }
-    return isFavorite(articleId);
+
+    final created = await createFavorite(articleId);
+    return created;
   }
 }

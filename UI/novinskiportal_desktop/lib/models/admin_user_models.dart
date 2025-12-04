@@ -12,6 +12,8 @@ class UserAdminDto {
   final bool active;
   final DateTime createdAt;
   final DateTime? lastLoginAt;
+  final DateTime? commentBanUntil;
+  final String? commentBanReason;
 
   UserAdminDto({
     required this.id,
@@ -25,6 +27,8 @@ class UserAdminDto {
     required this.active,
     required this.createdAt,
     this.lastLoginAt,
+    this.commentBanUntil,
+    this.commentBanReason,
   });
 
   factory UserAdminDto.fromJson(Map<String, dynamic> j) {
@@ -42,6 +46,10 @@ class UserAdminDto {
       lastLoginAt: j['lastLoginAt'] != null
           ? DateTime.parse(j['lastLoginAt'] as String).toLocal()
           : null,
+      commentBanUntil: j['commentBanUntil'] != null
+          ? DateTime.parse(j['commentBanUntil'] as String).toLocal()
+          : null,
+      commentBanReason: j['commentBanReason'] as String?,
     );
   }
 }

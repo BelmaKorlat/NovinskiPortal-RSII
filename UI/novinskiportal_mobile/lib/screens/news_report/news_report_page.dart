@@ -19,7 +19,7 @@ class NewsReportPageState extends State<NewsReportPage> {
   late final Validator textValidator;
   late final Validator emailValidator;
 
-  AutovalidateMode _autoValidateMode = AutovalidateMode.onUserInteraction;
+  AutovalidateMode _autoValidateMode = AutovalidateMode.disabled;
 
   @override
   void initState() {
@@ -59,20 +59,18 @@ class NewsReportPageState extends State<NewsReportPage> {
   }
 
   Future<void> submit() async {
+    FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     final auth = context.read<AuthProvider>();
     final provider = context.read<NewsReportProvider>();
+    if (provider.isSubmitting) return;
     final messenger = ScaffoldMessenger.of(context);
 
     final bool isLoggedIn = auth.isAuthenticated;
 
     final String text = _textController.text.trim();
-    final String? email = isLoggedIn
-        ? null
-        : (_emailController.text.trim().isEmpty
-              ? null
-              : _emailController.text.trim());
+    final String? email = isLoggedIn ? null : _emailController.text.trim();
 
     final ok = await provider.submit(text: text, email: email);
 
@@ -164,7 +162,10 @@ class NewsReportPageState extends State<NewsReportPage> {
                   alignLabelWithHint: true,
                 ),
                 validator: (value) {
-                  return textValidator.validate(label: 'Text', value: value);
+                  return textValidator.validate(
+                    label: 'Tekst dojave',
+                    value: value,
+                  );
                 },
                 onChanged: (_) => _enableAutovalidation(),
               ),

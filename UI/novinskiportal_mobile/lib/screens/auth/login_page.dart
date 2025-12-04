@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_validation/form_validation.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
-import 'package:novinskiportal_mobile/core/notification_service.dart';
 import 'package:provider/provider.dart';
-
 import '../../models/auth/auth_models.dart';
 import '../../providers/auth/auth_provider.dart';
 
@@ -55,6 +53,8 @@ class _LoginPageState extends State<LoginPage> {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
 
+    FocusScope.of(context).unfocus();
+
     final auth = context.read<AuthProvider>();
 
     final req = LoginRequest(
@@ -65,16 +65,12 @@ class _LoginPageState extends State<LoginPage> {
     try {
       await auth.login(req);
       if (!mounted) return;
-
-      //NotificationService.success('Notifikacija', 'Login uspješan');
-      // ruta na home page kasnije
       Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      if (!mounted) return;
-      NotificationService.error('Greška', 'Došlo je do greške pri prijavi.');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ex.message)));
     }
   }
 
@@ -149,7 +145,6 @@ class _LoginPageState extends State<LoginPage> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      //appBar: AppBar(title: const Text('Prijava')),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -172,7 +167,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // card sa formom
                   Container(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     decoration: BoxDecoration(
@@ -207,7 +201,6 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 16),
 
-                          // email / username
                           TextFormField(
                             controller: _emailOrUsernameController,
                             keyboardType: TextInputType.emailAddress,
@@ -233,7 +226,6 @@ class _LoginPageState extends State<LoginPage> {
 
                           const SizedBox(height: 14),
 
-                          // lozinka
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,

@@ -9,7 +9,6 @@ class NewsProvider extends PagedProvider<ArticleDto, ArticleSearch> {
 
   NewsMode _mode = NewsMode.latest;
   NewsMode get mode => _mode;
-
   NewsProvider({ArticleService? service})
     : _service = service ?? ArticleService();
 
@@ -28,9 +27,9 @@ class NewsProvider extends PagedProvider<ArticleDto, ArticleSearch> {
       case NewsMode.mostread:
         modeString = 'mostread';
         break;
-      case NewsMode.live:
-        modeString = 'live';
-        break;
+      // case NewsMode.live:
+      //   modeString = 'live';
+      //   break;
     }
 
     return ArticleSearch(page: page, pageSize: pageSize, mode: modeString);

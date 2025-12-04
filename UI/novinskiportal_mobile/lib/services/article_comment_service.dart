@@ -1,32 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:novinskiportal_mobile/models/article_comment/article_comment_models.dart';
 import 'package:novinskiportal_mobile/models/common/paging.dart';
-import '../core/api_client.dart';
+import 'package:novinskiportal_mobile/services/base_service.dart';
 import '../core/api_error.dart';
 
-class ArticleCommentService {
-  final Dio _dio = ApiClient().dio;
+class ArticleCommentService extends BaseService {
   static const String _base = '/api/ArticleComments';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<PagedResult<ArticleCommentResponse>> get(
     ArticleCommentSearch search,
   ) async {
     try {
-      final response = await _dio.get(_base, queryParameters: search.toQuery());
+      final response = await dio.get(_base, queryParameters: search.toQuery());
 
       final data = response.data as Map<String, dynamic>;
       final itemsJson = data['items'] as List<dynamic>;
@@ -43,7 +28,7 @@ class ArticleCommentService {
         totalCount: totalCount,
       );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri dobavljanju komentara.');
+      throw asApi(e, fallback: 'Greška pri dobavljanju komentara.');
     }
   }
 
@@ -52,7 +37,7 @@ class ArticleCommentService {
     required ArticleCommentCreateRequest request,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await dio.post(
         _base,
         queryParameters: {'articleId': articleId},
         data: request.toJson(),
@@ -62,7 +47,7 @@ class ArticleCommentService {
         response.data as Map<String, dynamic>,
       );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri slanju komentara.');
+      throw asApi(e, fallback: 'Greška pri slanju komentara.');
     }
   }
 
@@ -76,13 +61,13 @@ class ArticleCommentService {
         value: value,
       );
 
-      final response = await _dio.post('$_base/vote', data: request.toJson());
+      final response = await dio.post('$_base/vote', data: request.toJson());
 
       return ArticleCommentResponse.fromJson(
         response.data as Map<String, dynamic>,
       );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška pri glasanju za komentar.');
+      throw asApi(e, fallback: 'Greška pri glasanju za komentar.');
     }
   }
 
@@ -96,7 +81,7 @@ class ArticleCommentService {
         reason: reason.trim(),
       );
 
-      final response = await _dio.post('$_base/report', data: request.toJson());
+      final response = await dio.post('$_base/report', data: request.toJson());
 
       return ArticleCommentResponse.fromJson(
         response.data as Map<String, dynamic>,
@@ -109,7 +94,7 @@ class ArticleCommentService {
         );
       }
 
-      throw _asApi(e, fallback: 'Greška pri prijavi komentara.');
+      throw asApi(e, fallback: 'Greška pri prijavi komentara.');
     }
   }
 }

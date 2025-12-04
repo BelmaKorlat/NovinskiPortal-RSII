@@ -3,8 +3,30 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth/auth_provider.dart';
 
-class WelcomePage extends StatelessWidget {
+class WelcomePage extends StatefulWidget {
   const WelcomePage({super.key});
+
+  @override
+  State<WelcomePage> createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final auth = context.read<AuthProvider>();
+    await auth.loadToken();
+
+    if (!mounted) return;
+
+    // if (auth.isAuthenticated) {
+    //   Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +34,6 @@ class WelcomePage extends StatelessWidget {
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
-
-    // ako želiš, ovdje kasnije možeš provjeriti token pa preskočiti na home
-    context.read<AuthProvider>().loadToken();
 
     return Scaffold(
       body: Stack(
@@ -54,7 +73,6 @@ class WelcomePage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // krug sa logom
                         Container(
                           width: 40,
                           height: 40,
@@ -151,6 +169,23 @@ class WelcomePage extends StatelessWidget {
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Kreiraj račun'),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  TextButton(
+                    onPressed: () async {
+                      final navigator = Navigator.of(context);
+                      final auth = context.read<AuthProvider>();
+
+                      await auth.logout();
+
+                      navigator.pushNamedAndRemoveUntil('/main', (_) => false);
+                    },
+                    child: const Text(
+                      'Preskoči i nastavi bez prijave',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
 

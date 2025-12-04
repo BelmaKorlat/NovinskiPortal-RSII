@@ -51,5 +51,17 @@ namespace NovinskiPortal.API.Controllers
 
             return NoContent();
         }
+
+        [HttpPost("{id}/unban-comments")]
+        public async Task<IActionResult> UnbanUserComments(int id)
+        {
+            var result = await _adminService.UnbanUserCommentsAsync(id);
+
+            if (!result)
+                return NotFound(); 
+
+            return NoContent();
+        }
+
     }
 }

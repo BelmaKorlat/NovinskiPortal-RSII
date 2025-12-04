@@ -1,1 +1,1 @@
-enum NewsMode { latest, mostread, live }
+enum NewsMode { latest, mostread }

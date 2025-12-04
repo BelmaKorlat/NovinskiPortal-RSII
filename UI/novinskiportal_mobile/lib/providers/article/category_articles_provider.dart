@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import '../../models/category/category_articles_models.dart';
 import '../../services/article_service.dart';
 import '../../core/api_error.dart';
-import '../../core/notification_service.dart';
 
 class CategoryArticlesProvider extends ChangeNotifier {
   final ArticleService _service = ArticleService();
@@ -24,11 +23,11 @@ class CategoryArticlesProvider extends ChangeNotifier {
       final list = await _service.getCategoryArticles(perCategory: perCategory);
       _items = list;
     } on ApiException catch (ex) {
+      _items = [];
       _error = ex.message;
-      NotificationService.error('Greška', ex.message);
     } catch (_) {
+      _items = [];
       _error = 'Došlo je do greške pri učitavanju vijesti.';
-      NotificationService.error('Greška', _error!);
     } finally {
       _loading = false;
       notifyListeners();

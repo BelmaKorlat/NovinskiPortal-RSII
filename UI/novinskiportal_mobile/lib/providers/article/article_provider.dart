@@ -1,10 +1,7 @@
-import 'package:novinskiportal_mobile/core/notification_service.dart';
-
 import '../../models/article/article_models.dart';
 import '../../services/article_service.dart';
 import '../page/paged_provider.dart';
 import '../../models/common/paging.dart';
-import '../../core/api_error.dart';
 
 class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
   final _service = ArticleService();
@@ -30,15 +27,19 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
     return _service.getPage(s);
   }
 
+  // Future<ArticleDetailDto> getDetail(int id) async {
+  //   return await _service.getById(id);
+  // }
   Future<ArticleDetailDto> getDetail(int id) async {
     try {
-      return await _service.getById(id);
-    } on ApiException catch (ex) {
-      NotificationService.error('Greška', ex.message);
-      rethrow;
+      // prvo pošaljemo track view
+      await _service.trackView(id);
     } catch (_) {
-      NotificationService.error('Greška', 'Greška pri učitavanju članka.');
-      rethrow;
+      // ako pukne statistika, ignoriramo
+      // korisnik i dalje treba da vidi članak
     }
+
+    // onda učitamo detalje
+    return await _service.getById(id);
   }
 }

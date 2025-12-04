@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_validation/form_validation.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
-import 'package:novinskiportal_mobile/core/notification_service.dart';
 import 'package:provider/provider.dart';
-
 import '../../models/auth/auth_models.dart';
 import '../../providers/auth/auth_provider.dart';
 
@@ -147,6 +145,8 @@ class _RegisterPageState extends State<RegisterPage> {
     final ok = _formKey.currentState?.validate() ?? false;
     if (!ok) return;
 
+    FocusScope.of(context).unfocus();
+
     final auth = context.read<AuthProvider>();
 
     final req = RegisterRequest(
@@ -162,17 +162,16 @@ class _RegisterPageState extends State<RegisterPage> {
       await auth.register(req);
       if (!mounted) return;
 
-      NotificationService.success('Notifikacija', 'Registracija uspješna');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Registracija uspješna')));
+
       Navigator.pushNamedAndRemoveUntil(context, '/login', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;
-      NotificationService.error('Greška', ex.message);
-    } catch (_) {
-      if (!mounted) return;
-      NotificationService.error(
-        'Greška',
-        'Došlo je do greške pri registraciji.',
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ex.message)));
     }
   }
 
@@ -186,7 +185,6 @@ class _RegisterPageState extends State<RegisterPage> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      //appBar: AppBar(title: const Text('Registracija')),
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -209,7 +207,6 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // kartica sa formom
                   Container(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
                     decoration: BoxDecoration(
@@ -244,7 +241,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 16),
 
-                          // ime
                           TextFormField(
                             controller: _firstNameController,
                             textInputAction: TextInputAction.next,
@@ -259,7 +255,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          // prezime
                           TextFormField(
                             controller: _lastNameController,
                             textInputAction: TextInputAction.next,
@@ -274,7 +269,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          //nadimak
                           TextFormField(
                             controller: _nickController,
                             readOnly: true,
@@ -286,7 +280,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          // username
                           TextFormField(
                             controller: _usernameController,
                             textInputAction: TextInputAction.next,
@@ -301,7 +294,6 @@ class _RegisterPageState extends State<RegisterPage> {
                               );
                               if (error != null) return error;
 
-                              // ako backend kaže da je zauzeto
                               if (_usernameExist != null) {
                                 return _usernameExist;
                               }
@@ -312,7 +304,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          // email
                           TextFormField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
@@ -338,7 +329,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          // lozinka
                           TextFormField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
@@ -366,7 +356,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
 
-                          // potvrda lozinke
                           TextFormField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirm,

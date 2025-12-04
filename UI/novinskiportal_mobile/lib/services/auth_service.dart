@@ -1,54 +1,39 @@
 import 'package:dio/dio.dart';
-import '../core/api_client.dart';
+import 'package:novinskiportal_mobile/services/base_service.dart';
 import '../models/auth/auth_models.dart';
 import '../core/api_error.dart';
 
-class AuthService {
+class AuthService extends BaseService {
   static const String loginPath = '/api/auth/login';
   static const String registerPath = '/api/auth/register';
   static const String checkUsernamePath = '/api/auth/check-username';
   static const String checkEmailPath = '/api/auth/check-email';
   static const String forgotPasswordPath = '/api/auth/forgot-password';
 
-  final Dio _dio = ApiClient().dio;
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
-
   Future<AuthResponseDto> login(LoginRequest request) async {
     try {
-      final res = await _dio.post(loginPath, data: request.toJson());
+      final res = await dio.post(loginPath, data: request.toJson());
 
       if (res.data is Map<String, dynamic>) {
         return AuthResponseDto.fromJson(res.data as Map<String, dynamic>);
       }
       throw ApiException(message: 'Neočekivan odgovor servera.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Pogrešan email/username ili lozinka.');
+      throw asApi(e, fallback: 'Pogrešan email/username ili lozinka.');
     }
   }
 
   Future<void> register(RegisterRequest request) async {
     try {
-      await _dio.post(registerPath, data: request.toJson());
+      await dio.post(registerPath, data: request.toJson());
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješna registracija.');
+      throw asApi(e, fallback: 'Neuspješna registracija.');
     }
   }
 
   Future<bool> isUsernameTaken(String username) async {
     try {
-      final res = await _dio.get(
+      final res = await dio.get(
         checkUsernamePath,
         queryParameters: {'username': username},
       );
@@ -65,7 +50,7 @@ class AuthService {
 
   Future<bool> isEmailTaken(String email) async {
     try {
-      final res = await _dio.get(
+      final res = await dio.get(
         checkEmailPath,
         queryParameters: {'email': email},
       );
@@ -82,9 +67,9 @@ class AuthService {
 
   Future<void> forgotPassword(String email) async {
     try {
-      await _dio.post(forgotPasswordPath, data: {'email': email});
+      await dio.post(forgotPasswordPath, data: {'email': email});
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan reset lozinke.');
+      throw asApi(e, fallback: 'Neuspješan reset lozinke.');
     }
   }
 }

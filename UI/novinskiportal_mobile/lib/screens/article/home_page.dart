@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/models/article/news_mode.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/category_articles_provider.dart';
-import 'package:novinskiportal_mobile/providers/article/category_feed_provider.dart';
-import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
+import 'package:novinskiportal_mobile/providers/article/articles_feed_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
-import 'package:novinskiportal_mobile/screens/article/category_articles_feed_page.dart';
+import 'package:novinskiportal_mobile/screens/article/articles_feed_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/widgets/article/medium_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/small_article_card.dart';
@@ -16,8 +16,8 @@ import 'package:provider/provider.dart';
 import 'package:novinskiportal_mobile/models/category/category_articles_models.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
+  final void Function(NewsMode mode) onOpenNewsTab;
+  const HomePage({super.key, required this.onOpenNewsTab});
   @override
   State<HomePage> createState() => HomePageState();
 }
@@ -49,9 +49,20 @@ class HomePageState extends State<HomePage> {
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
       );
+    } on ApiException catch (ex) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ex.message)));
     } catch (_) {
       if (!mounted) return;
       Navigator.of(context).pop();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Greška pri učitavanju članka.')),
+      );
     }
   }
 
@@ -88,19 +99,17 @@ class HomePageState extends State<HomePage> {
           if (index == 0) {
             return TopTabs(
               currentIndex: _topTabIndex,
-              labels: const ['Najnovije', 'Najčitanije', 'Uživo'],
+              labels: const ['Najnovije', 'Najčitanije'],
               onChanged: (i) {
-                final latestProvider = context.read<NewsProvider>();
+                setState(() {
+                  _topTabIndex = i;
+                });
 
                 if (i == 0) {
-                  latestProvider.changeMode(NewsMode.latest);
+                  widget.onOpenNewsTab(NewsMode.latest);
                 } else if (i == 1) {
-                  latestProvider.changeMode(NewsMode.mostread);
-                } else if (i == 2) {
-                  latestProvider.changeMode(NewsMode.live);
+                  widget.onOpenNewsTab(NewsMode.mostread);
                 }
-
-                Navigator.pushNamed(context, '/newsScreen');
               },
             );
           }
@@ -136,7 +145,6 @@ class HomeCategorySection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // header kategorije
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
@@ -163,11 +171,10 @@ class HomeCategorySection extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (_) => ChangeNotifierProvider(
                           create: (_) =>
-                              CategoryFeedProvider(categoryId: category.id),
-                          child: CategoryArticlesFeedPage(
-                            categoryId: category.id,
-                            categoryName: category.name,
-                            categoryColor: color,
+                              ArticlesFeedProvider(categoryId: category.id),
+                          child: ArticlesFeedPage(
+                            title: category.name,
+                            accentColor: color,
                           ),
                         ),
                       ),

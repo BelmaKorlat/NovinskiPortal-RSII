@@ -237,7 +237,7 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
 
             var user = comment.User;
             if (user == null || user.IsDeleted)
-                return false; 
+                return false;  
 
             if (request.BanUntil <= DateTime.UtcNow)
             {
@@ -262,7 +262,7 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
         {
             return await _context.ArticleCommentReports
                 .Where(r => r.Status == ArticleCommentReportStatus.Pending)
-                .Select(r => r.Id)
+                .Select(r => r.ArticleCommentId)
                 .Distinct()
                 .CountAsync();
         }

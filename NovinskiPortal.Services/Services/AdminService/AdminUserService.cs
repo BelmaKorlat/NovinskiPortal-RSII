@@ -155,5 +155,22 @@ namespace NovinskiPortal.Services.Services.AdminService
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> UnbanUserCommentsAsync(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null || user.IsDeleted)
+                return false;
+
+            if (user.CommentBanUntil == null && string.IsNullOrWhiteSpace(user.CommentBanReason))
+                return true;
+
+            user.CommentBanUntil = null;
+            user.CommentBanReason = null;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

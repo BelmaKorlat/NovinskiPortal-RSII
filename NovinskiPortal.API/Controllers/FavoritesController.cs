@@ -42,7 +42,7 @@ namespace NovinskiPortal.API.Controllers
             return Ok(items);
         }
 
-        [HttpPost("{articleId:int}")]
+        [HttpPost("{articleId}")]
         public async Task<IActionResult> Add(int articleId)
         {
             var userId = GetUserId();
@@ -57,7 +57,7 @@ namespace NovinskiPortal.API.Controllers
         }
 
 
-        [HttpDelete("{articleId:int}")]
+        [HttpDelete("{articleId}")]
         public async Task<IActionResult> Remove(int articleId)
         {
             var userId = GetUserId();
@@ -71,7 +71,7 @@ namespace NovinskiPortal.API.Controllers
         }
 
 
-        [HttpGet("{articleId:int}/is-favorite")]
+        [HttpGet("{articleId}/is-favorite")]
         public async Task<IActionResult> IsFavorite(int articleId)
         {
             var userId = GetUserId();

@@ -1,30 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/models/article/news_mode.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
-import 'package:novinskiportal_mobile/screens/main/news_tabs_layout.dart';
 import 'package:novinskiportal_mobile/widgets/article/medium_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/standard_article_card.dart';
+import 'package:novinskiportal_mobile/widgets/common/top_tabs.dart';
 import 'package:provider/provider.dart';
 
-class NewsPage extends StatefulWidget {
-  const NewsPage({super.key});
+abstract class BaseNewsPage extends StatefulWidget {
+  final NewsMode initialMode;
+  final ValueChanged<NewsMode>? onModeChanged;
 
-  @override
-  State<NewsPage> createState() => _NewsPage();
+  const BaseNewsPage({
+    super.key,
+    required this.initialMode,
+    this.onModeChanged,
+  });
 }
 
-class _NewsPage extends State<NewsPage> {
+abstract class BaseNewsPageState<T extends BaseNewsPage> extends State<T>
+    with AutomaticKeepAliveClientMixin {
+  late final ScrollController _scrollController;
+  int _topIndex = 0;
+
   @override
   void initState() {
     super.initState();
+    _topIndex = _indexFromMode(widget.initialMode);
+
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+
     Future.microtask(() {
       if (!mounted) return;
-      context.read<NewsProvider>().loadInitial();
+      final provider = context.read<NewsProvider>();
+      provider.changeMode(widget.initialMode);
+      provider.loadInitial();
     });
   }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 
   int _indexFromMode(NewsMode mode) {
     switch (mode) {
@@ -32,8 +58,6 @@ class _NewsPage extends State<NewsPage> {
         return 0;
       case NewsMode.mostread:
         return 1;
-      case NewsMode.live:
-        return 2;
     }
   }
 
@@ -43,11 +67,38 @@ class _NewsPage extends State<NewsPage> {
         return NewsMode.latest;
       case 1:
         return NewsMode.mostread;
-      case 2:
-        return NewsMode.live;
       default:
         return NewsMode.latest;
     }
+  }
+
+  void _onScroll() {
+    final provider = context.read<NewsProvider>();
+
+    if (!_scrollController.hasClients) return;
+    if (!provider.hasMore || provider.isLoading) return;
+
+    final max = _scrollController.position.maxScrollExtent;
+    final current = _scrollController.position.pixels;
+
+    if (current >= max - 300) {
+      provider.loadMore();
+    }
+  }
+
+  void _onTopChanged(int index) {
+    if (index == _topIndex) return;
+
+    setState(() {
+      _topIndex = index;
+    });
+
+    final newMode = _modeFromIndex(index);
+    final provider = context.read<NewsProvider>();
+
+    provider.changeMode(newMode);
+
+    widget.onModeChanged?.call(newMode);
   }
 
   Future<void> _openArticleDetail(ArticleDto article) async {
@@ -68,9 +119,18 @@ class _NewsPage extends State<NewsPage> {
       await Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
       );
+    } on ApiException catch (ex) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(ex.message)));
     } catch (_) {
       if (!mounted) return;
       Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Greška pri učitavanju članka.')),
+      );
     }
   }
 
@@ -101,18 +161,17 @@ class _NewsPage extends State<NewsPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final theme = Theme.of(context);
     final provider = context.watch<NewsProvider>();
 
-    final mode = provider.mode;
-    final currentIndex = _indexFromMode(mode);
-
-    Widget content;
+    Widget listContent;
 
     if (provider.isLoading && provider.items.isEmpty) {
-      content = const Center(child: CircularProgressIndicator());
+      listContent = const Center(child: CircularProgressIndicator());
     } else if (provider.error != null && provider.items.isEmpty) {
-      content = Center(
+      listContent = Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
@@ -123,35 +182,34 @@ class _NewsPage extends State<NewsPage> {
         ),
       );
     } else {
-      content = RefreshIndicator(
+      listContent = RefreshIndicator(
         onRefresh: provider.loadInitial,
         child: ListView(
+          controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(top: 8, bottom: 16),
-          children: _buildArticles(context, provider),
+          children: [
+            ..._buildArticles(context, provider),
+            if (provider.hasMore)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          ],
         ),
       );
     }
 
-    return NewsTabsLayout(
-      title: _titleForMode(mode),
-      currentTopIndex: currentIndex,
-      topLabels: const ['Najnovije', 'Najčitanije', 'Uživo'],
-      onTopChanged: (i) {
-        final newMode = _modeFromIndex(i);
-        context.read<NewsProvider>().changeMode(newMode);
-      },
-      child: content,
+    return Column(
+      children: [
+        TopTabs(
+          currentIndex: _topIndex,
+          labels: const ['Najnovije', 'Najčitanije'],
+          onChanged: _onTopChanged,
+        ),
+        const SizedBox(height: 8),
+        Expanded(child: listContent),
+      ],
     );
-  }
-
-  String _titleForMode(NewsMode mode) {
-    switch (mode) {
-      case NewsMode.latest:
-        return 'Najnovije';
-      case NewsMode.mostread:
-        return 'Najčitanije';
-      case NewsMode.live:
-        return 'Uživo';
-    }
   }
 }

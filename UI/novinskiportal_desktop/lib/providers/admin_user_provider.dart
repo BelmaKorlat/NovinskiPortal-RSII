@@ -113,4 +113,34 @@ class AdminUserProvider extends PagedProvider<UserAdminDto, UserAdminSearch>
       return false;
     }
   }
+
+  Future<UserAdminDto?> unbanComments(int id) async {
+    try {
+      await _service.unbanComments(id);
+
+      final fresh = await _service.getById(id);
+
+      final i = items.indexWhere((x) => x.id == id);
+      if (i != -1) {
+        items[i] = fresh;
+        notifyListeners();
+      }
+
+      NotificationService.success(
+        'Notifikacija',
+        'Zabrana komentarisanja je uklonjena.',
+      );
+
+      return fresh;
+    } on ApiException catch (ex) {
+      NotificationService.error('Greška', ex.message);
+      return null;
+    } catch (_) {
+      NotificationService.error(
+        'Greška',
+        'Greška pri uklanjanju zabrane komentarisanja.',
+      );
+      return null;
+    }
+  }
 }

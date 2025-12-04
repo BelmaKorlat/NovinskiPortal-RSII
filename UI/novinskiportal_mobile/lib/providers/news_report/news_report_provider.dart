@@ -83,14 +83,13 @@ class NewsReportProvider extends ChangeNotifier {
       return true;
     } on ApiException catch (ex) {
       _error = ex.message;
-      _isSubmitting = false;
-      notifyListeners();
       return false;
     } catch (_) {
       _error = 'Došlo je do greške pri slanju dojave.';
+      return false;
+    } finally {
       _isSubmitting = false;
       notifyListeners();
-      return false;
     }
   }
 }

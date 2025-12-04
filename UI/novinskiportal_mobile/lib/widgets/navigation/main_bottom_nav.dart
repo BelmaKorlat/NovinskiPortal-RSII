@@ -28,14 +28,14 @@ class MainBottomNav extends StatelessWidget {
           label: 'Početna',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_border),
-          activeIcon: Icon(Icons.favorite),
-          label: 'Favoriti',
+          icon: Icon(Icons.fiber_new_outlined),
+          activeIcon: Icon(Icons.fiber_new),
+          label: 'Najnovije',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.add_circle_outline),
-          activeIcon: Icon(Icons.add_circle),
-          label: 'Dojava',
+          icon: Icon(Icons.trending_up_outlined),
+          activeIcon: Icon(Icons.trending_up),
+          label: 'Najčitanije',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),

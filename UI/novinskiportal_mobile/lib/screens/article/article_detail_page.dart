@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
+import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:novinskiportal_mobile/screens/article_comment/article_comment_list_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
@@ -18,21 +19,13 @@ class ArticleDetailPage extends StatefulWidget {
 }
 
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
-  bool _isFavorite = false;
   late ArticleDetailDto _article;
+  bool _isTogglingFavorite = false;
 
   @override
   void initState() {
     super.initState();
     _article = widget.article;
-    Future.microtask(() {
-      if (!mounted) return;
-      final favorites = context.read<FavoritesProvider>();
-      final isFavorite = favorites.isFavorite(widget.article.id);
-      setState(() {
-        _isFavorite = isFavorite;
-      });
-    });
   }
 
   Future<void> _reloadArticle() async {
@@ -53,6 +46,9 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final article = _article;
+
+    final favorites = context.watch<FavoritesProvider>();
+    final isFavorite = favorites.isFavorite(article.id);
 
     final categoryColor = tryParseHexColor(article.color) ?? cs.primary;
 
@@ -122,30 +118,84 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                           shape: const CircleBorder(),
                           child: IconButton(
                             icon: Icon(
-                              _isFavorite
+                              isFavorite
                                   ? Icons.bookmark
                                   : Icons.bookmark_border,
                               color: cs.primary,
                             ),
                             onPressed: () async {
-                              final favorites = context
-                                  .read<FavoritesProvider>();
-
-                              final nowFavorite = await favorites
-                                  .toggleFavorite(widget.article.id);
+                              if (_isTogglingFavorite) return;
 
                               setState(() {
-                                _isFavorite = nowFavorite;
+                                _isTogglingFavorite = true;
                               });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    nowFavorite
-                                        ? 'Članak je spremljen u favorite.'
-                                        : 'Članak je uklonjen iz favorita.',
-                                  ),
-                                ),
-                              );
+
+                              final messenger = ScaffoldMessenger.of(context);
+                              final auth = context.read<AuthProvider>();
+
+                              try {
+                                if (!auth.isAuthenticated) {
+                                  messenger
+                                    ..clearSnackBars()
+                                    ..showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Za spremanje članka u favorite potrebna je prijava.',
+                                        ),
+                                        duration: Duration(seconds: 2),
+                                      ),
+                                    );
+                                  return;
+                                }
+
+                                final favorites = context
+                                    .read<FavoritesProvider>();
+                                final ok = await favorites.toggleFavorite(
+                                  article.id,
+                                );
+
+                                if (!mounted) return;
+
+                                if (!ok) {
+                                  final error =
+                                      favorites.error ?? 'Došlo je do greške.';
+
+                                  messenger
+                                    ..clearSnackBars()
+                                    ..showSnackBar(
+                                      SnackBar(
+                                        content: Text(error),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+
+                                  favorites.clearError();
+                                  return;
+                                }
+
+                                final nowFavorite = favorites.isFavorite(
+                                  article.id,
+                                );
+
+                                final text = nowFavorite
+                                    ? 'Članak je spremljen u favorite.'
+                                    : 'Članak je uklonjen iz favorita.';
+
+                                messenger
+                                  ..clearSnackBars()
+                                  ..showSnackBar(
+                                    SnackBar(
+                                      content: Text(text),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                              } finally {
+                                if (mounted) {
+                                  setState(() {
+                                    _isTogglingFavorite = false;
+                                  });
+                                }
+                              }
                             },
                           ),
                         ),
@@ -245,7 +295,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                 const SizedBox(height: 16),
 
-                // kratki tekst
                 Text(
                   article.shortText,
                   style: theme.textTheme.bodyMedium?.copyWith(
@@ -260,7 +309,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                 const SizedBox(height: 16),
 
-                // glavni tekst
                 Text(
                   article.text,
                   style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
@@ -268,7 +316,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                 const SizedBox(height: 24),
 
-                // dodatne slike
                 if (article.additionalPhotos.isNotEmpty)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

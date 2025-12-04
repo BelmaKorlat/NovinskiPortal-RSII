@@ -163,4 +163,12 @@ class AdminUserService extends BaseService {
       return false;
     }
   }
+
+  Future<void> unbanComments(int id) async {
+    try {
+      await dio.post('$_base/$id/unban-comments');
+    } on DioException catch (e) {
+      throw asApi(e, fallback: 'Greška pri uklanjanju zabrane komentarisanja.');
+    }
+  }
 }

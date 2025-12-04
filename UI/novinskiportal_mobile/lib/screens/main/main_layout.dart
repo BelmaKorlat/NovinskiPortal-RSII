@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
+import 'package:novinskiportal_mobile/screens/user/user_page.dart';
+import 'package:novinskiportal_mobile/models/article/news_mode.dart';
+import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/home_page.dart';
-import 'package:novinskiportal_mobile/screens/favorite/favorite_list_page.dart';
-import 'package:novinskiportal_mobile/screens/news_report/news_report_page.dart';
+import 'package:novinskiportal_mobile/screens/latest%20and%20most%20read/latest_news_page.dart';
+import 'package:novinskiportal_mobile/screens/latest%20and%20most%20read/mostread_news_page.dart';
 import 'package:novinskiportal_mobile/widgets/common/app_main_app_bar.dart';
 import 'package:novinskiportal_mobile/widgets/navigation/hamburger_menu.dart';
 import 'package:novinskiportal_mobile/widgets/navigation/main_bottom_nav.dart';
+import 'package:provider/provider.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -15,43 +20,67 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final GlobalKey<HomePageState> _homeKey = GlobalKey<HomePageState>();
-  final GlobalKey<FavoriteListPageState> _favoritesKey =
-      GlobalKey<FavoriteListPageState>();
-  final GlobalKey<NewsReportPageState> _reportKey =
-      GlobalKey<NewsReportPageState>();
 
-  late final List<Widget> _pages;
   int _currentIndex = 0;
 
-  static const List<String> _titles = [
+  final List<String> _titles = [
     'Novinski portal',
-    'Spremljeni članci',
-    'Dojava vijesti',
+    'Najnovije',
+    'Najčitanije',
     'Profil',
   ];
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      HomePage(key: _homeKey),
-      FavoriteListPage(key: _favoritesKey),
-      NewsReportPage(key: _reportKey),
-      const _ProfileTab(),
-    ];
+
+  int _indexFromMode(NewsMode mode) {
+    switch (mode) {
+      case NewsMode.latest:
+        return 1;
+      case NewsMode.mostread:
+        return 2;
+    }
   }
 
-  void _onFavoritesMore() {
-    _favoritesKey.currentState?.enterSelectionMode();
+  void _handleOpenNewsTab(NewsMode mode) {
+    final index = _indexFromMode(mode);
+
+    setState(() {
+      _currentIndex = index;
+    });
   }
 
-  void _onReportSubmit() {
-    _reportKey.currentState?.submit();
+  void _handleNewsModeChanged(NewsMode mode) {
+    final index = _indexFromMode(mode);
+
+    if (_currentIndex != index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
   }
 
-  void _resetReportIfLeaving(int newIndex) {
-    if (_currentIndex == 2 && newIndex != 2) {
-      _reportKey.currentState?.resetForm();
+  Widget _buildBody() {
+    switch (_currentIndex) {
+      case 0:
+        return HomePage(
+          key: const Key('home_page'),
+          onOpenNewsTab: _handleOpenNewsTab,
+        );
+      case 1:
+        return ChangeNotifierProvider(
+          create: (_) => NewsProvider(),
+          child: LatestNewsPage(onModeChanged: _handleNewsModeChanged),
+        );
+      case 2:
+        return ChangeNotifierProvider(
+          create: (_) => NewsProvider(),
+          child: MostReadNewsPage(onModeChanged: _handleNewsModeChanged),
+        );
+      case 3:
+        return const UserPage();
+      default:
+        return HomePage(
+          key: const Key('home_default'),
+          onOpenNewsTab: _handleOpenNewsTab,
+        );
     }
   }
 
@@ -64,34 +93,40 @@ class _MainLayoutState extends State<MainLayout> {
         onMenuTap: () {
           _scaffoldKey.currentState?.openDrawer();
         },
-        onSearchTap: _currentIndex == 2
-            ? _onReportSubmit
-            : (_currentIndex == 1 ? null : () {}),
-        actionIcon: _currentIndex == 2 ? Icons.send : Icons.search,
-        onMoreTap: _currentIndex == 1 ? _onFavoritesMore : null,
+        onSearchTap: _currentIndex == 3
+            ? null
+            : () {
+                // ovdje kasnije ide search
+              },
+        actionIcon: Icons.search,
       ),
       drawer: const AppDrawer(),
-      body: SafeArea(
-        child: IndexedStack(index: _currentIndex, children: _pages),
-      ),
+      body: SafeArea(child: _buildBody()),
+      // bottomNavigationBar: MainBottomNav(
+      //   currentIndex: _currentIndex,
+      //   onTap: (index) {
+      //     setState(() {
+      //       _currentIndex = index;
+      //     });
+      //   },
+      // ),
       bottomNavigationBar: MainBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) {
+          final auth = context.read<AuthProvider>();
+
+          // ako user klikne na profil, a NIJE prijavljen → šaljemo na welcome
+          if (index == 3 && !auth.isAuthenticated) {
+            Navigator.pushNamed(context, '/welcome');
+            return; // ne mijenjamo _currentIndex
+          }
+
+          // u svim ostalim slučajevima normalno mijenjamo tab
           setState(() {
-            _resetReportIfLeaving(index);
             _currentIndex = index;
           });
         },
       ),
     );
-  }
-}
-
-class _ProfileTab extends StatelessWidget {
-  const _ProfileTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Profil'));
   }
 }

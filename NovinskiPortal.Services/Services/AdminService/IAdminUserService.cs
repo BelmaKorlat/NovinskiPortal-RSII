@@ -13,6 +13,7 @@ namespace NovinskiPortal.Services.Services.AdminService
         Task<UserAdminResponse?> ChangeRoleAsync(int id, int role);
         Task<bool> SoftDeleteAsync(int id);
         Task<bool> AdminChangePasswordAsync(int id, AdminChangePasswordRequest adminChangePasswordRequest);
-      
+        Task<bool> UnbanUserCommentsAsync(int id);
+
     }
 }

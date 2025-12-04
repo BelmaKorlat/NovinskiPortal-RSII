@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/admin_user_provider.dart';
 import '../../models/admin_user_models.dart';
 import 'package:form_validation/form_validation.dart';
+import 'package:intl/intl.dart';
 
 class EditAdminUserPage extends StatefulWidget {
   const EditAdminUserPage({super.key});
@@ -132,6 +133,26 @@ class _EditAdminUserPageState extends State<EditAdminUserPage> {
       Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  Future<void> _unbanComments() async {
+    setState(() => _saving = true);
+    try {
+      final provider = context.read<AdminUserProvider>();
+      final fresh = await provider.unbanComments(_userAdminDto.id);
+
+      if (!mounted) return;
+
+      if (fresh != null) {
+        setState(() {
+          _userAdminDto = fresh;
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
@@ -306,6 +327,59 @@ class _EditAdminUserPageState extends State<EditAdminUserPage> {
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ],
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            Text(
+                              'Zabrana komentarisanja',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Builder(
+                              builder: (context) {
+                                final banUntil = _userAdminDto.commentBanUntil;
+                                final banReason =
+                                    _userAdminDto.commentBanReason;
+                                final now = DateTime.now();
+
+                                final hasActiveBan =
+                                    banUntil != null && banUntil.isAfter(now);
+
+                                if (!hasActiveBan) {
+                                  return const Text(
+                                    'Korisnik nema aktivnu zabranu komentarisanja.',
+                                  );
+                                }
+
+                                final formattedDate = DateFormat(
+                                  'dd.MM.yyyy. HH:mm',
+                                ).format(banUntil.toLocal());
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Zabranjen do: $formattedDate'),
+                                    if (banReason != null &&
+                                        banReason.trim().isNotEmpty)
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 4),
+                                        child: Text('Razlog: $banReason'),
+                                      ),
+                                    const SizedBox(height: 8),
+                                    FilledButton.tonal(
+                                      onPressed: _saving
+                                          ? null
+                                          : _unbanComments,
+                                      child: const Text(
+                                        'Ukloni zabranu komentarisanja',
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
                             ),
                           ],
                         ),

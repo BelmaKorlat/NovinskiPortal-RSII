@@ -36,8 +36,11 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
       _totalCount = pr.totalCount ?? (_items.length + page * pageSize);
     } on ApiException catch (ex) {
       _error = ex.message;
-    } catch (_) {
-      _error = 'Greška pri učitavanju.';
+    } catch (e, s) {
+      _error = e.toString();
+      if (kDebugMode) {
+        print('PagedProvider error: $e\n$s');
+      }
     } finally {
       _loading = false;
       notifyListeners();

@@ -12,17 +12,13 @@ import 'package:novinskiportal_mobile/providers/category/category_menu_provider.
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:novinskiportal_mobile/providers/news_report/news_report_provider.dart';
 import 'package:novinskiportal_mobile/providers/settings/theme_provider.dart';
-import 'package:novinskiportal_mobile/screens/article/home_page.dart';
-import 'package:novinskiportal_mobile/screens/article/news_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/login_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/register_page.dart';
 import 'package:novinskiportal_mobile/screens/auth/welcome_page.dart';
 import 'package:novinskiportal_mobile/screens/main/main_layout.dart';
 import 'package:novinskiportal_mobile/screens/settings/settings_page.dart';
 import 'package:provider/provider.dart';
-
 import 'core/api_client.dart';
-import 'core/notification_service.dart';
 import 'providers/auth/auth_provider.dart';
 
 void main() async {
@@ -76,19 +72,16 @@ class NovinskiPortalMobileApp extends StatelessWidget {
     return MaterialApp(
       title: 'Novinski portal',
       debugShowCheckedModeBanner: false,
-      navigatorKey: NotificationService.navigatorKey,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: themeProvider.mode,
-      home: const WelcomePage(),
+      home: const MainLayout(),
       routes: {
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
         '/welcome': (_) => const WelcomePage(),
-        '/home': (_) => const HomePage(),
         '/settings': (_) => const SettingsPage(),
         '/main': (_) => const MainLayout(),
-        '/newsScreen': (_) => const NewsPage(),
       },
     );
   }

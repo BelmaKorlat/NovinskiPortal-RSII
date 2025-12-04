@@ -1,62 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
 import 'package:novinskiportal_mobile/widgets/article/big_article_card.dart';
 import 'package:novinskiportal_mobile/widgets/article/standard_article_card.dart';
 import 'package:provider/provider.dart';
-import 'package:novinskiportal_mobile/providers/article/category_feed_provider.dart';
+import 'package:novinskiportal_mobile/providers/article/articles_feed_provider.dart';
 
-class CategoryArticlesFeedPage extends StatefulWidget {
-  final int categoryId;
-  final String categoryName;
-  final Color categoryColor;
+class ArticlesFeedPage extends StatefulWidget {
+  final String title;
+  final Color accentColor;
 
-  const CategoryArticlesFeedPage({
+  const ArticlesFeedPage({
     super.key,
-    required this.categoryId,
-    required this.categoryName,
-    required this.categoryColor,
+    required this.title,
+    required this.accentColor,
   });
 
   @override
-  State<CategoryArticlesFeedPage> createState() => _CategoryArticlesFeedPage();
+  State<ArticlesFeedPage> createState() => _ArticlesFeedPageState();
 }
 
-class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
+class _ArticlesFeedPageState extends State<ArticlesFeedPage> {
   late final ScrollController _scrollController;
   late final PageController _pageController;
   int _currentPage = 0;
-
-  void onSearchTap() {
-    // za sada samo placeholder
-    // kasnije ovdje otvoriš search za članke
-    // npr. Navigator.of(context).push(...);
-  }
-
-  Future<void> _openArticleDetail(ArticleDto article) async {
-    final articleProvider = context.read<ArticleProvider>();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final detail = await articleProvider.getDetail(article.id);
-
-      if (!mounted) return;
-      Navigator.of(context).pop();
-
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
-      );
-    } catch (_) {
-      if (!mounted) return;
-      Navigator.of(context).pop();
-    }
-  }
 
   @override
   void initState() {
@@ -77,15 +46,56 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<CategoryFeedProvider>();
+      final provider = context.read<ArticlesFeedProvider>();
       provider.loadInitial();
     });
   }
 
-  void _onScroll() {
-    final provider = context.read<CategoryFeedProvider>();
+  void onSearchTap() {
+    // za sada samo placeholder
+    // kasnije ovdje otvoriš search za članke
+    // npr. Navigator.of(context).push(...);
+  }
 
+  Future<void> _openArticleDetail(ArticleDto article) async {
+    final articleProvider = context.read<ArticleProvider>();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final detail = await articleProvider.getDetail(article.id);
+
+      if (!mounted) return;
+      navigator.pop();
+
+      await navigator.push(
+        MaterialPageRoute(builder: (_) => ArticleDetailPage(article: detail)),
+      );
+    } on ApiException catch (ex) {
+      if (!mounted) return;
+      navigator.pop();
+      if (ex.message.isNotEmpty) {
+        messenger.showSnackBar(SnackBar(content: Text(ex.message)));
+      }
+    } catch (_) {
+      if (!mounted) return;
+      navigator.pop();
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Greška pri učitavanju članka.')),
+      );
+    }
+  }
+
+  void _onScroll() {
     if (!_scrollController.hasClients) return;
+
+    final provider = context.read<ArticlesFeedProvider>();
 
     if (!provider.hasMore || provider.isLoading) return;
 
@@ -106,7 +116,7 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<CategoryFeedProvider>();
+    final provider = context.watch<ArticlesFeedProvider>();
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final cardWidth = MediaQuery.of(context).size.width - 24;
@@ -122,11 +132,19 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          widget.categoryName.toUpperCase(),
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: cs.onSurface,
+        title: RichText(
+          text: TextSpan(
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: cs.onSurface,
+            ),
+            children: [
+              const TextSpan(text: 'Novinski portal - '),
+              TextSpan(
+                text: widget.title,
+                style: TextStyle(color: widget.accentColor),
+              ),
+            ],
           ),
         ),
         actions: [
@@ -180,7 +198,7 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
                         final article = provider.items[index];
                         return BigArticleCard(
                           article: article,
-                          categoryColor: widget.categoryColor,
+                          categoryColor: widget.accentColor,
                           onTap: () => _openArticleDetail(article),
                         );
                       },
@@ -189,7 +207,6 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
 
                   const SizedBox(height: 8),
 
-                  // indikator tačkica
                   Center(
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -215,11 +232,19 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
                 ],
 
                 ..._buildStandardList(provider),
-
                 if (provider.hasMore)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Center(child: CircularProgressIndicator()),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: provider.isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : provider.error != null
+                        ? Center(
+                            child: Text(
+                              'Greška pri učitavanju dodatnih članaka.',
+                              style: theme.textTheme.bodySmall,
+                            ),
+                          )
+                        : const SizedBox.shrink(),
                   ),
               ],
             ),
@@ -229,7 +254,7 @@ class _CategoryArticlesFeedPage extends State<CategoryArticlesFeedPage> {
     );
   }
 
-  List<Widget> _buildStandardList(CategoryFeedProvider provider) {
+  List<Widget> _buildStandardList(ArticlesFeedProvider provider) {
     final widgets = <Widget>[];
 
     final startIndex = provider.items.length >= 3 ? 3 : 0;

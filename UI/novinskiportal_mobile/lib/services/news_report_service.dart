@@ -1,30 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:novinskiportal_mobile/models/news_report/news_report_models.dart';
+import 'package:novinskiportal_mobile/services/base_service.dart';
 
-import '../core/api_client.dart';
-import '../core/api_error.dart';
-
-class NewsReportService {
-  final Dio _dio = ApiClient().dio;
+class NewsReportService extends BaseService {
   static const String _base = '/api/NewsReport';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<void> create(CreateNewsReportRequest r) async {
     try {
-      await _dio.post(
+      await dio.post(
         _base,
         data: r.toFormData(),
         options: Options(
@@ -33,7 +16,7 @@ class NewsReportService {
         ),
       );
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Greška prilikom slanja dojave.');
+      throw asApi(e, fallback: 'Greška prilikom slanja dojave.');
     }
   }
 }

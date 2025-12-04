@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/app_assets.dart';
+import 'package:novinskiportal_mobile/screens/news_report/news_report_page_scaffold.dart';
 import 'package:novinskiportal_mobile/widgets/navigation/category_menu_section.dart';
+import 'package:novinskiportal_mobile/screens/favorite/favorite_page_scaffold.dart';
 
 class AppDrawer extends StatelessWidget {
   const AppDrawer({super.key});
@@ -45,8 +47,39 @@ class AppDrawer extends StatelessWidget {
               ),
 
               const Divider(height: 1),
+
               Expanded(
                 child: SingleChildScrollView(child: CategoryMenuSection()),
+              ),
+
+              const Divider(height: 1),
+
+              ListTile(
+                leading: Icon(Icons.bookmark, color: cs.onSurface),
+                title: const Text('Favoriti'),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const FavoritePageScaffold(),
+                    ),
+                  );
+                },
+              ),
+
+              ListTile(
+                leading: Icon(Icons.add_circle_outline, color: cs.onSurface),
+                title: const Text('Dojava vijesti'),
+                onTap: () {
+                  Navigator.pop(context);
+
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const NewsReportPageScaffold(),
+                    ),
+                  );
+                },
               ),
 
               const Divider(height: 1),

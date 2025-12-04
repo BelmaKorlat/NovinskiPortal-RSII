@@ -1,31 +1,16 @@
 import 'package:dio/dio.dart';
-import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/models/favorite/favorite_models.dart';
+import 'package:novinskiportal_mobile/services/base_service.dart';
 
-class FavoriteService {
+class FavoriteService extends BaseService {
   FavoriteService();
 
-  final Dio _dio = ApiClient().dio;
   static const String _base = '/api/Favorites';
-
-  ApiException _asApi(
-    DioException e, {
-    String fallback = 'Došlo je do greške.',
-  }) {
-    if (e.error is ApiException) return e.error as ApiException;
-
-    final code = e.response?.statusCode;
-    final data = e.response?.data;
-    return ApiException(
-      statusCode: code,
-      message: humanMessage(code, data, fallback),
-    );
-  }
 
   Future<List<FavoriteDto>> get() async {
     try {
-      final res = await _dio.get(_base);
+      final res = await dio.get(_base);
       final data = res.data;
 
       if (data is List) {
@@ -37,22 +22,36 @@ class FavoriteService {
 
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješan GET spremljenih članaka.');
+      if (e.response?.statusCode == 401) {
+        throw ApiException(
+          statusCode: 401,
+          message: 'Za pregled spremljenih članaka potrebna je prijava.',
+        );
+      }
+
+      throw asApi(e, fallback: 'Neuspješan GET spremljenih članaka.');
     }
   }
 
   Future<bool> create(int articleId) async {
     try {
-      await _dio.post('$_base/$articleId');
+      await dio.post('$_base/$articleId');
       return true;
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješno spremanje članka.');
+      if (e.response?.statusCode == 401) {
+        throw ApiException(
+          statusCode: 401,
+          message: 'Za spremanje članka u favorite potrebna je prijava.',
+        );
+      }
+
+      throw asApi(e, fallback: 'Neuspješno spremanje članka.');
     }
   }
 
   Future<bool> remove(int articleId) async {
     try {
-      final res = await _dio.delete('$_base/$articleId');
+      final res = await dio.delete('$_base/$articleId');
 
       if (res.statusCode == 204 || res.statusCode == 200) {
         return true;
@@ -60,21 +59,36 @@ class FavoriteService {
 
       return false;
     } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw ApiException(
+          statusCode: 401,
+          message: 'Za uklanjanje članka iz favorita potrebna je prijava.',
+        );
+      }
+
       if (e.response?.statusCode == 404) {
         return false;
       }
-      throw _asApi(e, fallback: 'Neuspješno uklanjanje članka.');
+
+      throw asApi(e, fallback: 'Neuspješno uklanjanje članka.');
     }
   }
 
   Future<bool> isFavorite(int articleId) async {
     try {
-      final res = await _dio.get('$_base/$articleId/is-favorite');
+      final res = await dio.get('$_base/$articleId/is-favorite');
       final data = res.data;
       if (data is bool) return data;
       throw ApiException(message: 'Neočekivan oblik odgovora.');
     } on DioException catch (e) {
-      throw _asApi(e, fallback: 'Neuspješna provjera spremljenog članka.');
+      if (e.response?.statusCode == 401) {
+        throw ApiException(
+          statusCode: 401,
+          message: 'Za provjeru favorita potrebna je prijava.',
+        );
+      }
+
+      throw asApi(e, fallback: 'Neuspješna provjera spremljenog članka.');
     }
   }
 }
