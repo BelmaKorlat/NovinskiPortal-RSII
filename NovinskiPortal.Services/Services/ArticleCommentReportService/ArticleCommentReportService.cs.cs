@@ -19,10 +19,10 @@ namespace NovinskiPortal.Services.Services.ArticleCommentReportService
             _mapper = mapper;
         }
 
-        public async Task<ArticleCommentResponse?> ReportAsync(ArticleCommentReportRequest request, int currentUserId)
+        public async Task<(ArticleCommentResponse? Comment, string? ErrorCode)> ReportAsync(ArticleCommentReportRequest request, int currentUserId)
         {
             if (string.IsNullOrWhiteSpace(request.Reason))
-                return null;
+                return (null, "COMMENT_REPORT_REASON_REQUIRED");
 
             var comment = await _context.ArticleComments
                 .FirstOrDefaultAsync(c =>
@@ -31,10 +31,10 @@ namespace NovinskiPortal.Services.Services.ArticleCommentReportService
                     !c.IsHidden);
 
             if (comment == null)
-                return null;
+                return (null, "COMMENT_REPORT_NOT_FOUND");
 
             if (comment.UserId == currentUserId)
-                return null;
+                return (null, "COMMENT_REPORT_OWN_COMMENT");
 
             var existing = await _context.ArticleCommentReports
                 .FirstOrDefaultAsync(r =>
@@ -42,7 +42,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentReportService
                     r.ReporterUserId == currentUserId);
 
             if (existing != null)
-                return null;
+                return (null, "COMMENT_REPORT_ALREADY_REPORTED");
 
             var report = new ArticleCommentReport
             {
@@ -76,7 +76,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentReportService
 
             dto.userVote = vote?.Value;
 
-            return dto;
+            return (dto, null);
         }
     }
 }

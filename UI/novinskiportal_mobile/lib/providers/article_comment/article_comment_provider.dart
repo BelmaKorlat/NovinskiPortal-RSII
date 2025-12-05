@@ -65,7 +65,7 @@ class ArticleCommentProvider
 
       return true;
     } on ApiException catch (ex) {
-      lastError = ex.message;
+      lastError = _mapCommentError(ex);
       notifyListeners();
       return false;
     } catch (e) {
@@ -122,13 +122,52 @@ class ArticleCommentProvider
       }
       return true;
     } on ApiException catch (ex) {
-      lastError = ex.message;
+      lastError = _mapCommentError(ex);
       notifyListeners();
       return false;
     } catch (_) {
       lastError = 'Greška pri prijavi komentara.';
       notifyListeners();
       return false;
+    }
+  }
+
+  String _mapCommentError(ApiException ex) {
+    switch (ex.code) {
+      case 'COMMENT_BANNED':
+        return 'Zabranjeno komentarisanje. Obratite se administratoru.';
+
+      case 'COMMENT_ARTICLE_NOT_FOUND':
+        return 'Članak koji pokušavate komentarisati ne postoji.';
+
+      case 'COMMENT_USER_NOT_FOUND':
+        return 'Korisnik ne postoji ili je deaktiviran.';
+
+      case 'COMMENT_CREATE_FAILED':
+        return 'Neuspješno slanje komentara. Pokušajte ponovo.';
+
+      // REPORT
+      case 'COMMENT_REPORT_REASON_REQUIRED':
+        return 'Razlog prijave je obavezan.';
+
+      case 'COMMENT_REPORT_NOT_FOUND':
+        return 'Komentar koji pokušavate prijaviti ne postoji.';
+
+      case 'COMMENT_REPORT_OWN_COMMENT':
+        return 'Ne možete prijaviti vlastiti komentar.';
+
+      case 'COMMENT_REPORT_ALREADY_REPORTED':
+        return 'Već ste prijavili ovaj komentar.';
+
+      case 'COMMENT_REPORT_FAILED':
+        return 'Neuspješna prijava komentara. Pokušajte ponovo.';
+
+      default:
+        final msg = ex.message.trim();
+        if (msg.isEmpty) {
+          return 'Došlo je do greške. Pokušajte ponovo.';
+        }
+        return msg;
     }
   }
 }

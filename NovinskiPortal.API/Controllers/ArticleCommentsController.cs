@@ -62,18 +62,27 @@ namespace NovinskiPortal.API.Controllers
             if (currentUserId == null)
                 return Unauthorized();
 
-            var result = await _articleCommentService.CreateAsync(
-                articleId,
-                request,
-                currentUserId.Value
-            );
+             var (result, errorCode) = await _articleCommentService.CreateAsync(
+                  articleId,
+                  request,
+                  currentUserId.Value
+             );
 
-            if (result == null)
+             /* if (result == null)
+              {
+                  return BadRequest();
+              }*/
+
+            if(result == null)
             {
-                return BadRequest();
+                return BadRequest(new ApiError
+                {
+                    Code = errorCode ?? "COMMENT_CREATE_FAILED",
+                    Message = null // ne moraš slati poruku
+                });
             }
-
-            return Ok(result);
+              return Ok(result);
+        
         }
 
         [HttpPost("vote")]
@@ -101,15 +110,32 @@ namespace NovinskiPortal.API.Controllers
             if (currentUserId == null)
                 return Unauthorized();
 
-             var result = await _articleCommentReportService.ReportAsync(
+             var (result, errorCode) = await _articleCommentReportService.ReportAsync(
                  request,
                  currentUserId.Value
              );
 
-             if (result == null)
-                 return BadRequest();
+            if (!string.IsNullOrEmpty(errorCode))
+            {
+                
+                return BadRequest(new ApiError 
+                { 
+                    Code = errorCode, 
+                    Message = null
+                });
+            }
 
-             return Ok(result);
+            if (result == null)
+            {
+                return BadRequest(new ApiError 
+                { 
+                    Code = errorCode ?? "COMMENT_REPORT_FAILED", 
+                    Message = null 
+                });
+             
+            }
+
+            return Ok(result);
 
            
         }

@@ -27,19 +27,11 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
     return _service.getPage(s);
   }
 
-  // Future<ArticleDetailDto> getDetail(int id) async {
-  //   return await _service.getById(id);
-  // }
   Future<ArticleDetailDto> getDetail(int id) async {
     try {
-      // prvo pošaljemo track view
       await _service.trackView(id);
-    } catch (_) {
-      // ako pukne statistika, ignoriramo
-      // korisnik i dalje treba da vidi članak
-    }
+    } catch (_) {}
 
-    // onda učitamo detalje
     return await _service.getById(id);
   }
 }

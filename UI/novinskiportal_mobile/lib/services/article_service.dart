@@ -90,9 +90,6 @@ class ArticleService extends BaseService {
   Future<void> trackView(int id) async {
     try {
       await dio.post('$_base/$id/track-view');
-      // ne moraš ništa vraćati
-    } on DioException catch (_) {
-      // po želji: možeš ignorisati grešku, da ne ruši UI
-    }
+    } on DioException catch (_) {}
   }
 }

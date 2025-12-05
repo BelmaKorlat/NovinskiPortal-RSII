@@ -27,9 +27,6 @@ class NewsProvider extends PagedProvider<ArticleDto, ArticleSearch> {
       case NewsMode.mostread:
         modeString = 'mostread';
         break;
-      // case NewsMode.live:
-      //   modeString = 'live';
-      //   break;
     }
 
     return ArticleSearch(page: page, pageSize: pageSize, mode: modeString);

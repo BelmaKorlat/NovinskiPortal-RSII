@@ -5,6 +5,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentReportService
 {
     public interface IArticleCommentReportService
     {
-        Task<ArticleCommentResponse?> ReportAsync(ArticleCommentReportRequest request, int currentUserId);
+        Task<(ArticleCommentResponse? Comment, string? ErrorCode)> ReportAsync(ArticleCommentReportRequest request, int currentUserId);
     }
 }

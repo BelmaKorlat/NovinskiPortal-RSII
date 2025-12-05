@@ -10,6 +10,4 @@ class MostReadNewsPage extends BaseNewsPage {
   State<MostReadNewsPage> createState() => MostReadNewsPageState();
 }
 
-class MostReadNewsPageState extends BaseNewsPageState<MostReadNewsPage> {
-  // Možeš dodati dodatne metode specifične za MostReadNewsPage ako treba
-}
+class MostReadNewsPageState extends BaseNewsPageState<MostReadNewsPage> {}

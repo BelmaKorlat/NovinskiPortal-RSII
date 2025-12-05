@@ -47,6 +47,10 @@ class ArticleCommentService extends BaseService {
         response.data as Map<String, dynamic>,
       );
     } on DioException catch (e) {
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
+      }
+
       throw asApi(e, fallback: 'Greška pri slanju komentara.');
     }
   }
@@ -87,11 +91,8 @@ class ArticleCommentService extends BaseService {
         response.data as Map<String, dynamic>,
       );
     } on DioException catch (e) {
-      if (e.response?.statusCode == 400) {
-        throw ApiException(
-          message:
-              'Prijava komentara nije prihvaćena. Moguće je da ste ovaj komentar već prijavili.',
-        );
+      if (e.error is ApiException) {
+        throw e.error as ApiException;
       }
 
       throw asApi(e, fallback: 'Greška pri prijavi komentara.');

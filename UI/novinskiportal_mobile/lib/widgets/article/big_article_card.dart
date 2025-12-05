@@ -116,11 +116,6 @@ class BigArticleCard extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          // Icon(
-                          //   Icons.comment,
-                          //   size: 16,
-                          //   color: Colors.white.withValues(alpha: 0.8),
-                          // ),
                           Row(
                             children: [
                               Icon(

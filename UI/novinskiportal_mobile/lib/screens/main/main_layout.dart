@@ -102,26 +102,16 @@ class _MainLayoutState extends State<MainLayout> {
       ),
       drawer: const AppDrawer(),
       body: SafeArea(child: _buildBody()),
-      // bottomNavigationBar: MainBottomNav(
-      //   currentIndex: _currentIndex,
-      //   onTap: (index) {
-      //     setState(() {
-      //       _currentIndex = index;
-      //     });
-      //   },
-      // ),
       bottomNavigationBar: MainBottomNav(
         currentIndex: _currentIndex,
         onTap: (index) {
           final auth = context.read<AuthProvider>();
 
-          // ako user klikne na profil, a NIJE prijavljen → šaljemo na welcome
           if (index == 3 && !auth.isAuthenticated) {
             Navigator.pushNamed(context, '/welcome');
-            return; // ne mijenjamo _currentIndex
+            return;
           }
 
-          // u svim ostalim slučajevima normalno mijenjamo tab
           setState(() {
             _currentIndex = index;
           });

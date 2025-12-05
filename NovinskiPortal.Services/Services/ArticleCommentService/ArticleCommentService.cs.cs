@@ -39,24 +39,35 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             return query.Include(c => c.User);
         }
 
-        public async Task<ArticleCommentResponse?> CreateAsync(int articleId, ArticleCommentCreateRequest request, int currentUserId)
+        public async Task<(ArticleCommentResponse? Result, string? ErrorCode)> CreateAsync(int articleId, ArticleCommentCreateRequest request, int currentUserId)
         {
             var user = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == currentUserId && !u.IsDeleted && u.Active);
 
+            /*  if (user == null)
+                  return null;
+
+
+
+             if (user.CommentBanUntil.HasValue && user.CommentBanUntil > DateTime.UtcNow)
+                  return null;*/
+
             if (user == null)
-                return null;
+                return (null, "COMMENT_USER_NOT_FOUND");
 
             if (user.CommentBanUntil.HasValue && user.CommentBanUntil > DateTime.UtcNow)
-                return null;
+                return (null, "COMMENT_BANNED");
 
             var article = await _context.Articles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.Id == articleId && a.Active);
 
+            /*  if (article == null)
+                  return null;*/
+
             if (article == null)
-                return null;
+                return (null, "COMMENT_ARTICLE_NOT_FOUND");
 
             var entity = new ArticleComment
             {
@@ -84,7 +95,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             dto.IsOwner = true;        
             dto.userVote = null;       
 
-            return dto;
+            return (dto, null);
         }
 
         public async Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentReportSearchObject search, int? currentUserId)

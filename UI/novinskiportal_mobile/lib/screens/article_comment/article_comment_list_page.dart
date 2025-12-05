@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/models/article_comment/article_comment_models.dart';
 import 'package:novinskiportal_mobile/providers/article_comment/article_comment_provider.dart';
+import 'package:novinskiportal_mobile/screens/article_comment/article_comment_report_page.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 import 'package:novinskiportal_mobile/widgets/common/user_avatar.dart';
 import 'package:provider/provider.dart';
@@ -58,6 +59,7 @@ class _ArticleCommentListPageState extends State<ArticleCommentListPage> {
 
   Future<void> _sendComment() async {
     final text = _commentController.text.trim();
+
     if (text.isEmpty || _sending) return;
 
     final provider = context.read<ArticleCommentProvider>();
@@ -85,8 +87,14 @@ class _ArticleCommentListPageState extends State<ArticleCommentListPage> {
         );
       }
     } else {
-      final msg =
-          provider.lastError ?? 'Greška pri slanju komentara. Pokušaj ponovo.';
+      _commentController.clear();
+
+      FocusScope.of(context).unfocus();
+
+      final error = provider.lastError;
+      final msg = (error == null || error.trim().isEmpty)
+          ? 'Greška pri slanju komentara. Pokušaj ponovo.'
+          : error;
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
@@ -305,142 +313,6 @@ class _ArticleCommentListPageState extends State<ArticleCommentListPage> {
   }
 }
 
-Future<void> _showReportDialog(
-  BuildContext context,
-  ArticleCommentResponse comment,
-) async {
-  final provider = context.read<ArticleCommentProvider>();
-  final otherController = TextEditingController();
-
-  // ponuđeni razlozi
-  const otherKey = 'Drugo';
-  final reasons = <String>[
-    'Uvredljiv ili vulgaran sadržaj',
-    'Govor mržnje ili prijetnje',
-    'Spam ili reklama',
-    'Off-topic',
-    otherKey,
-  ];
-
-  String? selectedReasonKey;
-
-  await showDialog<void>(
-    context: context,
-    builder: (ctx) {
-      return StatefulBuilder(
-        builder: (ctx, setState) {
-          final isOtherSelected = selectedReasonKey == otherKey;
-
-          return AlertDialog(
-            title: const Text('Prijava komentara'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Odaberi jedan razlog prijave. '
-                    'Moderatori će pregledati komentar.',
-                  ),
-                  const SizedBox(height: 12),
-
-                  // radio dugmad, samo jedan se može izabrati
-                  ...reasons.map((r) {
-                    return RadioListTile<String>(
-                      value: r,
-                      groupValue: selectedReasonKey,
-                      onChanged: (v) {
-                        setState(() {
-                          selectedReasonKey = v;
-                        });
-                      },
-                      dense: true,
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(r),
-                    );
-                  }),
-
-                  const SizedBox(height: 8),
-
-                  if (isOtherSelected) ...[
-                    TextField(
-                      controller: otherController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Opiši razlog prijave',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(ctx).pop();
-                },
-                child: const Text('Odustani'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (selectedReasonKey == null) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      const SnackBar(content: Text('Odaberi razlog prijave.')),
-                    );
-                    return;
-                  }
-
-                  String finalReason;
-
-                  if (selectedReasonKey == otherKey) {
-                    final other = otherController.text.trim();
-                    if (other.isEmpty) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(
-                          content: Text('Upiši razlog prijave u polje ispod.'),
-                        ),
-                      );
-                      return;
-                    }
-                    finalReason = 'Drugo: $other';
-                  } else {
-                    finalReason = selectedReasonKey!;
-                  }
-
-                  final ok = await provider.reportComment(
-                    commentId: comment.id,
-                    reason: finalReason,
-                  );
-
-                  if (!ctx.mounted) return;
-
-                  if (!ok) {
-                    final msg =
-                        provider.lastError ?? 'Greška pri prijavi komentara.';
-                    ScaffoldMessenger.of(
-                      ctx,
-                    ).showSnackBar(SnackBar(content: Text(msg)));
-                    return;
-                  }
-
-                  Navigator.of(ctx).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Prijava komentara je poslana.'),
-                    ),
-                  );
-                },
-                child: const Text('Pošalji prijavu'),
-              ),
-            ],
-          );
-        },
-      );
-    },
-  );
-}
-
 class _CommentTile extends StatelessWidget {
   final ArticleCommentResponse comment;
   const _CommentTile({required this.comment});
@@ -504,7 +376,6 @@ class _CommentTile extends StatelessWidget {
                       ),
                     ),
                   ],
-                  // novo
                   if (!comment.isOwner) ...[
                     const SizedBox(width: 4),
                     PopupMenuButton<String>(
@@ -515,7 +386,12 @@ class _CommentTile extends StatelessWidget {
                       ),
                       onSelected: (value) {
                         if (value == 'report') {
-                          _showReportDialog(context, comment);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  ArticleCommentReportPage(comment: comment),
+                            ),
+                          );
                         }
                       },
                       itemBuilder: (ctx) => [

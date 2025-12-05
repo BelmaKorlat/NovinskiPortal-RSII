@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
 
@@ -38,7 +39,18 @@ class UserPage extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () async {
+                final auth = context.read<AuthProvider>();
+                final favs = context.read<FavoritesProvider>();
+
                 await auth.logout();
+                favs.clearAll();
+
+                // po želji odmah vrati korisnika na welcome
+                // Navigator.pushNamedAndRemoveUntil(
+                //   context,
+                //   '/welcome',
+                //   (_) => false,
+                // );
               },
               icon: const Icon(Icons.logout),
               label: const Text('Odjava'),

@@ -20,10 +20,12 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
   Future<PagedResult<T>> fetch(S search);
 
   S buildSearch();
+
   Future<void> load({bool append = false}) async {
     _loading = true;
     _error = null;
     notifyListeners();
+
     try {
       final pr = await fetch(buildSearch());
 

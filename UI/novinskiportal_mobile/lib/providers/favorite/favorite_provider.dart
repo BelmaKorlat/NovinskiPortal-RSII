@@ -41,6 +41,10 @@ class FavoritesProvider extends ChangeNotifier {
       }
     } on ApiException catch (ex) {
       _error = ex.message;
+      if (ex.statusCode == 401) {
+        _items.clear();
+        _visibleCount = 0;
+      }
     } catch (_) {
       _error = 'Došlo je do greške pri učitavanju spremljenih članaka.';
     } finally {
@@ -50,6 +54,14 @@ class FavoritesProvider extends ChangeNotifier {
   }
 
   Future<void> refresh() => load();
+
+  void clearAll() {
+    _items.clear();
+    _visibleCount = 0;
+    _error = null;
+    _isLoading = false;
+    notifyListeners();
+  }
 
   Future<void> loadMore() async {
     if (!hasMore || _isLoading) return;

@@ -42,6 +42,7 @@ class ApiClient {
         onError: (err, handler) {
           String message;
           int? status;
+          String? code;
           final req = err.requestOptions;
 
           if (err.type == DioExceptionType.connectionTimeout ||
@@ -60,15 +61,16 @@ class ApiClient {
                 path.endsWith('/api/auth/login') ||
                 path.contains('/auth/login');
 
-            // ima li Authorization header
             final hadAuthHeader = req.headers['Authorization'] != null;
+
+            if (data is Map && data['code'] is String) {
+              code = data['code'] as String;
+            }
 
             if (status == 401 && isLogin) {
               message = 'Pogrešan username ili lozinka.';
-            } //else if ((status == 400 || status == 401) && isLogin) {
-            else if (status == 401 && !hadAuthHeader) {
-              // message = 'Pogrešan username ili lozinka.';
-              message = '';
+            } else if (status == 401 && !hadAuthHeader) {
+              message = 'Za ovu akciju je potrebna prijava.';
             } else {
               message = humanMessage(status, data, 'Došlo je do greške.');
             }
@@ -77,7 +79,11 @@ class ApiClient {
           handler.reject(
             DioException(
               requestOptions: req,
-              error: ApiException(statusCode: status, message: message),
+              error: ApiException(
+                statusCode: status,
+                message: message,
+                code: code,
+              ),
             ),
           );
         },

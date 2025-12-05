@@ -10,6 +10,4 @@ class LatestNewsPage extends BaseNewsPage {
   State<LatestNewsPage> createState() => LatestNewsPageState();
 }
 
-class LatestNewsPageState extends BaseNewsPageState<LatestNewsPage> {
-  // Možeš dodati dodatne metode specifične za LatestNewsPage ako treba
-}
+class LatestNewsPageState extends BaseNewsPageState<LatestNewsPage> {}

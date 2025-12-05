@@ -20,12 +20,6 @@ class _WelcomePageState extends State<WelcomePage> {
   Future<void> _checkAuth() async {
     final auth = context.read<AuthProvider>();
     await auth.loadToken();
-
-    if (!mounted) return;
-
-    // if (auth.isAuthenticated) {
-    //   Navigator.pushNamedAndRemoveUntil(context, '/main', (_) => false);
-    // }
   }
 
   @override

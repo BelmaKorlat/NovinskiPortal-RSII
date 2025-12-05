@@ -9,7 +9,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
 {
     public interface IArticleCommentService : IService<ArticleCommentResponse, ArticleCommentReportSearchObject>
     {
-        Task<ArticleCommentResponse?> CreateAsync(int articleId, ArticleCommentCreateRequest request, int currentUserId);
+        Task<(ArticleCommentResponse? Result, string? ErrorCode)> CreateAsync(int articleId, ArticleCommentCreateRequest request, int currentUserId);
         Task<PagedResult<ArticleCommentResponse>> GetArticleCommentAsync(ArticleCommentReportSearchObject search, int? currentUserId);
     }
 }
