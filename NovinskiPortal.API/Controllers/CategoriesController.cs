@@ -21,13 +21,6 @@ namespace NovinskiPortal.API.Controllers
             return Ok(await _categoryService.GetCategoriesMenuAsync());
         }
 
-        /*[HttpPatch("{id}/status")]
-        public async Task<IActionResult> ToggleCategoryStatusAsync(int id, UpdateCategoryStatusRequest updateCategoryStatusRequest)
-        {
-            var category = await categoryService.ToggleCategoryStatusAsync(id, updateCategoryStatusRequest);
-            return category is null ? NotFound() : Ok();
-        }*/
-
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> ToggleCategoryStatusAsync(int id)
         {

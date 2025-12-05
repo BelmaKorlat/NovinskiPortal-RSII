@@ -45,7 +45,6 @@ namespace NovinskiPortal.Workers.Statistics
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
 
-            // CreateChannelAsync prima prvo options, pa onda cancellationToken
             _channel = await _connection.CreateChannelAsync(
                 options: null,
                 cancellationToken: cancellationToken);
@@ -89,7 +88,6 @@ namespace NovinskiPortal.Workers.Statistics
             {
                 try
                 {
-                    // čeka poruku iz queue-a
                     var result = await _channel.BasicGetAsync(
                         queue: QueueName,
                         autoAck: false,
@@ -97,7 +95,6 @@ namespace NovinskiPortal.Workers.Statistics
 
                     if (result == null)
                     {
-                        // nema poruke trenutno, malo odspavaj
                         await Task.Delay(1000, stoppingToken);
                         continue;
                     }
@@ -118,7 +115,6 @@ namespace NovinskiPortal.Workers.Statistics
                     }
                     else
                     {
-                        // neuspjela deserializacija, nack + requeue=false
                         await _channel.BasicNackAsync(
                             deliveryTag: result.DeliveryTag,
                             multiple: false,
@@ -128,13 +124,11 @@ namespace NovinskiPortal.Workers.Statistics
                 }
                 catch (OperationCanceledException)
                 {
-                    // prekid rada, izađi iz petlje
                     break;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Greška prilikom obrade poruke u ArticleViewedWorker");
-                    // mala pauza da se ne vrti u krug ako je veći problem
                     await Task.Delay(2000, stoppingToken);
                 }
             }
@@ -147,7 +141,7 @@ namespace NovinskiPortal.Workers.Statistics
             var articleService = scope.ServiceProvider
                 .GetRequiredService<IArticleService>();
 
-            await articleService.TrackViewAsync(evt.ArticleId, evt.ViewedAtUtc, ct);
+            await articleService.TrackViewAsync(evt.ArticleId, evt.UserId, evt.ViewedAtUtc, ct);
 
             _logger.LogInformation(
                 "Obrađen view za article {ArticleId} u {Time}",

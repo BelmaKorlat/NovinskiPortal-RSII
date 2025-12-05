@@ -19,7 +19,8 @@ namespace NovinskiPortal.Services.Database
         public DbSet<ArticleCommentVote> ArticleCommentVotes { get; set; } = default!;
         public DbSet<ArticleCommentReport> ArticleCommentReports { get; set; } = default!;
         public DbSet<ArticleStatistics> ArticleStatistics { get; set; } = default!;
-
+        public DbSet<UserCategoryPreference> UserCategoryPreferences { get; set; } = default!;
+        public DbSet<UserArticleView> UserArticleViews { get; set; } = default!;
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -139,6 +140,44 @@ namespace NovinskiPortal.Services.Database
                 entity.HasIndex(x => x.ArticleId)
                       .IsUnique();
             });
+
+            modelBuilder.Entity<UserCategoryPreference>(entity =>
+            {
+                entity.HasIndex(x => new { x.UserId, x.CategoryId, x.SubcategoryId })
+                      .IsUnique();
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(x => x.Category)
+                      .WithMany()
+                      .HasForeignKey(x => x.CategoryId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(x => x.Subcategory)
+                      .WithMany()
+                      .HasForeignKey(x => x.SubcategoryId)
+                      .OnDelete(DeleteBehavior.NoAction);
+            });
+
+            modelBuilder.Entity<UserArticleView>(entity =>
+            {
+                entity.HasIndex(x => new { x.UserId, x.ArticleId })
+                      .IsUnique();
+
+                entity.HasOne(x => x.User)
+                      .WithMany()
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(x => x.Article)
+                      .WithMany()
+                      .HasForeignKey(x => x.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
 
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Admin", Active = true },

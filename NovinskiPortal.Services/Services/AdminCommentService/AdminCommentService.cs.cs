@@ -62,23 +62,6 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
             return detail;
         }
 
-        /*public async Task<bool> HideAsync(int id)
-        {
-            var comment = await _context.ArticleComments
-            .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (comment is null)
-                return false;
-
-            if (comment.IsHidden)
-                return true;
-
-            comment.IsHidden = true;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }*/
-
         public async Task<bool> HideAsync(int id, int adminUserId)
         {
             var comment = await _context.ArticleComments
@@ -108,7 +91,6 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
                     report.Status = ArticleCommentReportStatus.Approved;
                     report.ProcessedAt = now;
                     report.ProcessedByAdminId = adminUserId;
-                    // AdminNote možeš kasnije dodati kroz request ako želiš
                     changed = true;
                 }
             }
@@ -120,24 +102,6 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
             return true;
         }
 
-
-        /*public async Task<bool> SoftDeleteAsync(int id)
-        {
-            var comment = await _context.ArticleComments
-            .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (comment is null)
-                return false;
-
-            if (comment.IsDeleted)
-                return true;
-
-            comment.IsDeleted = true;
-            comment.IsHidden = true;
-
-            await _context.SaveChangesAsync();
-            return true;
-        }*/
 
         public async Task<bool> SoftDeleteAsync(int id, int adminUserId)
         {

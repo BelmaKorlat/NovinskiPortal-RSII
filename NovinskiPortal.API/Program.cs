@@ -21,11 +21,13 @@ using NovinskiPortal.Services.Services.ArticleCommentVoteService;
 using NovinskiPortal.Services.Services.ArticleReadService;
 using NovinskiPortal.Services.Services.ArticleService;
 using NovinskiPortal.Services.Services.AuthService;
+using NovinskiPortal.Services.Services.BaseService;
 using NovinskiPortal.Services.Services.CategoryService.CategoryService;
 using NovinskiPortal.Services.Services.EmailService;
 using NovinskiPortal.Services.Services.FavoriteService;
 using NovinskiPortal.Services.Services.JwtService;
 using NovinskiPortal.Services.Services.NewsReportService;
+using NovinskiPortal.Services.Services.RecommendationService;
 using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
 using System.Text.Json.Serialization;
@@ -38,11 +40,9 @@ var issuer = jwtSection["Issuer"];
 var audience = jwtSection["Audience"];
 var expiresInHours = int.Parse(jwtSection["ExpiresInHours"] ?? "2");
 
-// Connection string iz appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<NovinskiPortalDbContext>(options => options.UseSqlServer(connectionString));
 
-// Add services to the container.
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -78,7 +78,6 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
-    // Dodajemo security definiciju
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -89,7 +88,6 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer"
     });
 
-    // Dodajemo globalni security requirement - da se na sve endpointe koji traže auth automatski primjenjuje
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
     {
        new OpenApiSecurityScheme {
@@ -104,7 +102,6 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddRazorPages();
 
-// reset - password email dio
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
@@ -264,10 +261,10 @@ builder.Services.AddScoped<IArticleCommentVoteService, ArticleCommentVoteService
 builder.Services.AddScoped<IArticleCommentReportService, ArticleCommentReportService>();
 builder.Services.AddScoped<IAdminCommentService, AdminCommentService>();
 builder.Services.AddScoped<IArticleReadService, ArticleReadService>();
+builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();

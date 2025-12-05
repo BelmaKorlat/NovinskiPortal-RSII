@@ -128,7 +128,6 @@ namespace NovinskiPortal.Services.Services.NewsReportService
 
             entity.Status = request.Status;
             entity.AdminNote = request.AdminNote;
-            // entity.ArticleId = request.ArticleId;
             if (request.ArticleId.HasValue && request.ArticleId.Value > 0)
             {
                 entity.ArticleId = request.ArticleId.Value;

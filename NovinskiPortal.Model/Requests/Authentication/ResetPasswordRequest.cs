@@ -4,13 +4,6 @@ namespace NovinskiPortal.Model.Requests.Authentication
 {
     public class ResetPasswordRequest
     {
-        /*  [Required]
-          public string Token { get; set; } = default!;
-          [Required, MinLength(6), MaxLength(100)]
-          public string NewPassword { get; set; } = default!;
-          [Required, MinLength(6), MaxLength(100)]
-          public string ConfirmPassword { get; set; } = default!;*/
-
         [Required(ErrorMessage = "Token nedostaje ili je neispravan.")]
         public string Token { get; set; } = default!;
 

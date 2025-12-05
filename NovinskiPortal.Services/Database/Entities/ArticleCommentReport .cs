@@ -9,7 +9,6 @@ namespace NovinskiPortal.Services.Database.Entities
         public int ArticleCommentId { get; set; }
         public ArticleComment ArticleComment { get; set; } = default!;
 
-        // Korisnik koji je prijavio komentar.
         public int ReporterUserId { get; set; }
         public User ReporterUser { get; set; } = default!;
 
@@ -20,7 +19,6 @@ namespace NovinskiPortal.Services.Database.Entities
         public ArticleCommentReportStatus Status { get; set; }
 
         public DateTime? ProcessedAt { get; set; }
-        // Popunjava admin kada odluči šta radi sa prijavama.
         public int? ProcessedByAdminId { get; set; }
         public User? ProcessedByAdmin { get; set; } = default!;
 

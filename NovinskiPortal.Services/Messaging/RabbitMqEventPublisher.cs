@@ -18,7 +18,6 @@ namespace NovinskiPortal.Services.Messaging
         private IConnection? _connection;
         private IChannel? _channel;
 
-        // da spriječiš da se više threadova istovremeno inicijalizuje channel
         private readonly SemaphoreSlim _initLock = new(1, 1);
 
         public RabbitMqEventPublisher(IOptions<RabbitMqSettings> options)
@@ -35,7 +34,6 @@ namespace NovinskiPortal.Services.Messaging
             };
         }
 
-        // Lazy async init konekcije i kanala
         private async Task<IChannel> GetOrCreateChannelAsync()
         {
             if (_channel != null && _channel.IsOpen)
@@ -46,20 +44,17 @@ namespace NovinskiPortal.Services.Messaging
             await _initLock.WaitAsync();
             try
             {
-                // provjeri opet, možda je neko drugi već napravio channel
                 if (_channel != null && _channel.IsOpen)
                 {
                     return _channel;
                 }
 
-                // ubij staru konekciju ako postoji
                 _channel?.Dispose();
                 _connection?.Dispose();
 
                 _connection = await _factory.CreateConnectionAsync();
                 _channel = await _connection.CreateChannelAsync();
 
-                // kreiraj exchange ako ne postoji
                 await _channel.ExchangeDeclareAsync(
                     exchange: _settings.Exchange,
                     type: ExchangeType.Topic,
@@ -82,7 +77,6 @@ namespace NovinskiPortal.Services.Messaging
             var json = JsonSerializer.Serialize(@event);
             var body = Encoding.UTF8.GetBytes(json);
 
-            // u v7 BasicPublishAsync je generic, koristi BasicProperties
             var props = new BasicProperties();
 
             await channel.BasicPublishAsync(

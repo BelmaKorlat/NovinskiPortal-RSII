@@ -10,7 +10,6 @@
         public int UserId { get; set; }
         public User User { get; set; } = default!;
 
-        // 1 = like, -1 = dislike
         public int Value { get; set; }
 
         public DateTime CreatedAt { get; set; }

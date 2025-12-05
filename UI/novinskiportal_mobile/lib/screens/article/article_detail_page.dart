@@ -4,9 +4,11 @@ import 'package:novinskiportal_mobile/models/article/article_models.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
+import 'package:novinskiportal_mobile/providers/recommendation/recommendation_provider.dart';
 import 'package:novinskiportal_mobile/screens/article_comment/article_comment_list_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
+import 'package:novinskiportal_mobile/widgets/article/recommended_article_card.dart';
 import 'package:provider/provider.dart';
 
 class ArticleDetailPage extends StatefulWidget {
@@ -21,11 +23,29 @@ class ArticleDetailPage extends StatefulWidget {
 class _ArticleDetailPageState extends State<ArticleDetailPage> {
   late ArticleDetailDto _article;
   bool _isTogglingFavorite = false;
+  bool _loadedRecommendations = false;
 
   @override
   void initState() {
     super.initState();
     _article = widget.article;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_loadedRecommendations) {
+      _loadedRecommendations = true;
+
+      // Sačuvaj referencu da ne zoveš read iz callbacka direktno
+      final rec = context.read<RecommendationProvider>();
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        rec.load(take: 6);
+      });
+    }
   }
 
   Future<void> _reloadArticle() async {
@@ -366,6 +386,72 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                       ),
                     ],
                   ),
+
+                const SizedBox(height: 24),
+
+                Consumer<RecommendationProvider>(
+                  builder: (context, rec, _) {
+                    if (rec.isLoading) {
+                      // možeš vratiti SizedBox.shrink() ili mali loader
+                      return const SizedBox.shrink();
+                    }
+
+                    if (rec.items.isEmpty) {
+                      // nema preporuka ili user nije prijavljen
+                      return const SizedBox.shrink();
+                    }
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Možda vas zanima',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: cs.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: rec.items.length,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.9,
+                              ),
+                          itemBuilder: (ctx, index) {
+                            final a = rec.items[index];
+                            return RecommendedArticleCard(
+                              article: a,
+                              onTap: () async {
+                                final articleProvider = context
+                                    .read<ArticleProvider>();
+                                try {
+                                  final detail = await articleProvider
+                                      .getDetail(a.id);
+                                  if (!mounted) return;
+
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          ArticleDetailPage(article: detail),
+                                    ),
+                                  );
+                                } catch (_) {
+                                  // možeš dodati snackbar ako želiš
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ],
             ),
           ),

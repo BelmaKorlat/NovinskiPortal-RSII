@@ -21,7 +21,6 @@ namespace NovinskiPortal.API.Controllers
             _newsReportService = newsReportService;
         }
 
-        // 1) Kreiranje dojave (korisnik, može biti guest)
         [HttpPost]
         [AllowAnonymous]
         public async Task<ActionResult<NewsReportResponse>> Create([FromForm] Requests.NewsReport.CreateNewsReportRequest request)
@@ -49,7 +48,6 @@ namespace NovinskiPortal.API.Controllers
             return Ok(created);
         }
 
-        // 2) Lista dojava (admin dio)
         [HttpGet]
         public async Task<ActionResult<PagedResult<NewsReportResponse>>> Get([FromQuery] NewsReportSearchObject? search)
         {
@@ -61,7 +59,6 @@ namespace NovinskiPortal.API.Controllers
             return Ok(result);
         }
 
-        // 3) Detalji dojave po Id (admin dio)
         [HttpGet("{id}")]
         public async Task<ActionResult<NewsReportResponse>> GetById(int id)
         {

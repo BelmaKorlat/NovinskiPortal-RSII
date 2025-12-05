@@ -27,8 +27,6 @@ namespace NovinskiPortal.API.Controllers
                 return null;
 
             return id;
-
-
         }
 
         [HttpGet]

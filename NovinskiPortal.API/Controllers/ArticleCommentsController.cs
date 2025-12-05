@@ -68,17 +68,12 @@ namespace NovinskiPortal.API.Controllers
                   currentUserId.Value
              );
 
-             /* if (result == null)
-              {
-                  return BadRequest();
-              }*/
-
             if(result == null)
             {
                 return BadRequest(new ApiError
                 {
                     Code = errorCode ?? "COMMENT_CREATE_FAILED",
-                    Message = null // ne moraš slati poruku
+                    Message = null 
                 });
             }
               return Ok(result);

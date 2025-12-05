@@ -23,7 +23,6 @@ namespace NovinskiPortal.Services.Services.BaseCRUDService
             _mapper = mapper;
         }
 
-        // u BaseCRUDService<TResp, TSearch, TEntity, TCreate, TUpdate>
         protected virtual Task AfterInsertAsync(TEntity entity) => Task.CompletedTask;
 
         public virtual async Task<T> CreateAsync(TInsert request)

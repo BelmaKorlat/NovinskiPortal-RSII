@@ -13,12 +13,12 @@ namespace NovinskiPortal.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class ArticlesController : ControllerBase //BaseCRUDController<ArticleResponse, ArticleSearchObject, Model.Requests.Article.CreateArticleRequest, Model.Requests.Article.UpdateArticleRequest>
+    public class ArticlesController : ControllerBase 
     {
         private readonly IArticleService _articleService;
         private readonly IArticleReadService _articleReadService;
 
-        public ArticlesController(IArticleService articleService, IArticleReadService articleReadService)// : //base(articleService)
+        public ArticlesController(IArticleService articleService, IArticleReadService articleReadService)
         {
             _articleService = articleService;
             _articleReadService = articleReadService;
@@ -50,23 +50,13 @@ namespace NovinskiPortal.API.Controllers
             if (articleSearchObject == null)
                 articleSearchObject = new ArticleSearchObject();
             var result = await _articleService.GetAsync(articleSearchObject);
-           /* if(result?.Items != null)
-            {
-                foreach (var item in result.Items)
-                {
-                    if (!string.IsNullOrEmpty(item.MainPhotoPath))
-                    {
-                        item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
-                    }
-                }
-            }*/
+
             return Ok(result);
         }
 
 
 
        [HttpPost]
-        //[Consumes("multipart/form-data")]
        public async Task<IActionResult> CreateArticleAsync([FromForm] Requests.Article.CreateArticleRequest createArticleRequest)
         {
             var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -95,7 +85,6 @@ namespace NovinskiPortal.API.Controllers
             var created = await _articleService.CreateAsync(newArticle);
 
             return Ok(created);
-            //return CreatedAtAction(nameof(GetDetailById), new { id = created.Id }, created);
        }
 
         [HttpGet("{id}")]
@@ -105,7 +94,6 @@ namespace NovinskiPortal.API.Controllers
             var item = await _articleService.GetByIdAsync(id);
             if (item is null)
                 return NotFound();
-            // item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
             return Ok(item);
         }
 
@@ -116,18 +104,8 @@ namespace NovinskiPortal.API.Controllers
             var item = await _articleService.GetDetailByIdAsync(id);
             if( item is null )
                 return NotFound();
-            /*item.MainPhotoPath = ToAbsolute(item.MainPhotoPath);
-            if (item.AdditionalPhotos != null && item.AdditionalPhotos.Count > 0)
-                item.AdditionalPhotos = item.AdditionalPhotos.Select(ToAbsolute).ToList();*/
             return Ok(item);
         }
-
-        /*private string ToAbsolute(string? path)
-        {
-            if (string.IsNullOrWhiteSpace(path)) return "";
-            var request = HttpContext.Request;
-            return $"{request.Scheme}://{request.Host}{request.PathBase}{path}";
-        }*/
 
 
         [HttpPut("{id}")]

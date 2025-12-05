@@ -17,7 +17,7 @@ namespace NovinskiPortal.Model.Requests.User
         [Required, EmailAddress, MaxLength(100)]
         public string Email { get; set; } = default!;
         [Required]
-        public int RoleId { get; set; }  // 1/2
+        public int RoleId { get; set; } 
         public bool Active { get; set; } = true;
        
     }

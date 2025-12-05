@@ -46,7 +46,6 @@ namespace NovinskiPortal.Services.Services.AuthService
 
             var token = _jwtService.GenerateToken(user);
 
-            //await _usersService.SetLastLoginAt(user.Id, DateTime.UtcNow);
 
             var authResponse = new AuthResponse
             {

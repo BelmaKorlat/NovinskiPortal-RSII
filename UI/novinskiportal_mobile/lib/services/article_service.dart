@@ -92,4 +92,30 @@ class ArticleService extends BaseService {
       await dio.post('$_base/$id/track-view');
     } on DioException catch (_) {}
   }
+
+  Future<List<ArticleDto>> getPersonalized({int take = 6}) async {
+    try {
+      final res = await dio.get(
+        '/api/recommendation/personalized',
+        queryParameters: {'take': take},
+      );
+
+      final data = res.data;
+      if (data is List) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map(ArticleDto.fromJson)
+            .toList();
+      }
+
+      throw ApiException(message: 'Neočekivan oblik odgovora (preporuke).');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        return <ArticleDto>[];
+      }
+      throw asApi(e, fallback: 'Neuspješno dobavljanje preporuka.');
+    } catch (_) {
+      throw ApiException(message: 'Neočekivan oblik odgovora (preporuke).');
+    }
+  }
 }

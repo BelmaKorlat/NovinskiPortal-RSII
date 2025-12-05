@@ -45,13 +45,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.Id == currentUserId && !u.IsDeleted && u.Active);
 
-            /*  if (user == null)
-                  return null;
-
-
-
-             if (user.CommentBanUntil.HasValue && user.CommentBanUntil > DateTime.UtcNow)
-                  return null;*/
 
             if (user == null)
                 return (null, "COMMENT_USER_NOT_FOUND");
@@ -62,9 +55,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
             var article = await _context.Articles
                 .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.Id == articleId && a.Active);
-
-            /*  if (article == null)
-                  return null;*/
 
             if (article == null)
                 return (null, "COMMENT_ARTICLE_NOT_FOUND");
@@ -122,7 +112,7 @@ namespace NovinskiPortal.Services.Services.ArticleCommentService
                 dto.IsOwner = dto.UserId == userId;
 
                 if (votesByCommentId.TryGetValue(dto.Id, out var value))
-                    dto.userVote = value;   // 1 ili -1
+                    dto.userVote = value;  
                 else
                     dto.userVote = null;
             }

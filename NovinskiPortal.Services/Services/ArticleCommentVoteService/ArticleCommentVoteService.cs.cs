@@ -20,18 +20,15 @@ namespace NovinskiPortal.Services.Services.ArticleCommentVoteService
 
         public async Task<ArticleCommentResponse?> VoteAsync(ArticleCommentVoteRequest request, int currentUserId)
         {
-            // 1) validacija vrijednosti
             if (request.Value != 1 && request.Value != -1)
                 return null;
 
-            // 2) nadji komentar
             var comment = await _context.ArticleComments
                 .FirstOrDefaultAsync(c => c.Id == request.CommentId && !c.IsDeleted && !c.IsHidden);
 
             if (comment == null)
                 return null;
 
-            // 3) nadji postojeci glas korisnika za ovaj komentar
             var vote = await _context.ArticleCommentVotes
                 .FirstOrDefaultAsync(v =>
                     v.ArticleCommentId == request.CommentId &&
@@ -41,7 +38,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentVoteService
 
             if (vote == null)
             {
-                // korisnik prvi put glasa
                 vote = new ArticleCommentVote
                 {
                     ArticleCommentId = request.CommentId,
@@ -61,7 +57,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentVoteService
             }
             else if (vote.Value == request.Value)
             {
-                // korisnik kliknuo isto dugme drugi put - uklanja se glas
                 if (vote.Value == 1)
                     comment.LikesCount--;
                 else
@@ -72,7 +67,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentVoteService
             }
             else
             {
-                // korisnik mijenja glas sa like na dislike ili obrnuto
                 if (vote.Value == 1)
                 {
                     comment.LikesCount--;
@@ -90,7 +84,6 @@ namespace NovinskiPortal.Services.Services.ArticleCommentVoteService
 
             await _context.SaveChangesAsync();
 
-            // 4) ucitaj User radi Username u DTO-u
             await _context.Entry(comment)
                 .Reference(c => c.User)
                 .LoadAsync();

@@ -59,19 +59,15 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 switch (search.Mode.ToLower())
                 {
                     case "latest":
-                        // najnovije po datumu objave
                         return query.OrderByDescending(a => a.PublishedAt);
 
                     case "mostread":
-                        // za sada isto što i latest, dok ne dodaš ViewCount
-                        // kasnije: return query.OrderByDescending(a => a.ViewCount);
                         return query.OrderByDescending(a => a.Statistics != null ? a.Statistics.TotalViews: 0);
                    /* case "live":
                         // live članci, opet sortirani po datumu objave
                         return query.OrderByDescending(a => a.Live);*/
                 }
             }
-            // default, ako Mode nije poslan
             return query.OrderByDescending(a => a.PublishedAt);
         }
         protected override IQueryable<Article> ApplyIncludes(IQueryable<Article> query)
@@ -264,7 +260,7 @@ namespace NovinskiPortal.Services.Services.ArticleService
             return uploadsFolder;
         }
 
-        public async Task TrackViewAsync(int articleId, DateTime viewedAtUtc, CancellationToken ct = default)
+        public async Task TrackViewAsync(int articleId, int? userId, DateTime viewedAtUtc, CancellationToken ct = default)
         {
             var stat = await _context.ArticleStatistics
                 .FirstOrDefaultAsync(s => s.ArticleId == articleId, ct);
@@ -284,6 +280,62 @@ namespace NovinskiPortal.Services.Services.ArticleService
             {
                 stat.TotalViews += 1;
                 stat.LastViewedAt = viewedAtUtc;
+            }
+
+            if (userId.HasValue)
+            {
+                var article = await _context.Articles
+                    .Where(a => a.Id == articleId)
+                    .Select(a => new { a.Id, a.CategoryId, a.SubcategoryId })
+                    .FirstOrDefaultAsync(ct);
+
+                if (article != null)
+                {
+                    var pref = await _context.UserCategoryPreferences
+                        .FirstOrDefaultAsync(x => x.UserId == userId.Value
+                                               && x.CategoryId == article.CategoryId
+                                               && x.SubcategoryId == article.SubcategoryId,
+                                              ct);
+
+                    if (pref == null)
+                    {
+                        pref = new UserCategoryPreference
+                        {
+                            UserId = userId.Value,
+                            CategoryId = article.CategoryId,
+                            SubcategoryId = article.SubcategoryId,
+                            ViewCount = 1,
+                            LastViewedAt = viewedAtUtc
+                        };
+                        _context.UserCategoryPreferences.Add(pref);
+                    }
+                    else
+                    {
+                        pref.ViewCount++;
+                        pref.LastViewedAt = viewedAtUtc;
+                    }
+
+                    var view = await _context.UserArticleViews
+                        .FirstOrDefaultAsync(v =>
+                            v.UserId == userId.Value &&
+                            v.ArticleId == article.Id,
+                            ct);
+
+                    if (view == null)
+                    {
+                        view = new UserArticleView
+                        {
+                            UserId = userId.Value,
+                            ArticleId = article.Id,
+                            ViewedAt = viewedAtUtc
+                        };
+                        _context.UserArticleViews.Add(view);
+                    }
+                    else
+                    {
+                        view.ViewedAt = viewedAtUtc;
+                    }
+                }
             }
 
             await _context.SaveChangesAsync(ct);

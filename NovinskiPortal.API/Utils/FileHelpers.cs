@@ -57,8 +57,5 @@ namespace NovinskiPortal.API.Utils
 
             return list;
         }
-
-
-
     }
 }

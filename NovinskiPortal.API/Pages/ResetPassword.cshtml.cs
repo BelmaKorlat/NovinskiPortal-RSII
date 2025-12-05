@@ -15,29 +15,6 @@ namespace NovinskiPortal.API.Pages
             _authService = authService;
         }
 
-        /*[BindProperty]
-        public string Token { get; set; } = string.Empty;
-
-        [BindProperty]
-        [Required(ErrorMessage = "Lozinka je obavezna")]
-        [StringLength(100, ErrorMessage = "Lozinka mora imati najmanje 6 znakova", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        public string NewPassword { get; set; } = string.Empty;
-
-        [BindProperty]
-        [Required(ErrorMessage = "Potvrda lozinke je obavezna")]
-        [DataType(DataType.Password)]
-        [Compare("NewPassword", ErrorMessage = "Lozinke se ne podudaraju")]
-        public string ConfirmPassword { get; set; } = string.Empty;
-
-        public string? Message { get; set; }
-
-        public void OnGet(string token)
-        {
-            Token = token;
-        }*/
-
-
         [BindProperty]
         public ResetPasswordRequest Input { get; set; } = new();
 
