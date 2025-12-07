@@ -85,7 +85,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Articles");
+                    b.ToTable("Articles", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleComment", b =>
@@ -135,7 +135,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ArticleComments");
+                    b.ToTable("ArticleComments", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleCommentReport", b =>
@@ -180,7 +180,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("ReporterUserId");
 
-                    b.ToTable("ArticleCommentReports");
+                    b.ToTable("ArticleCommentReports", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleCommentVote", b =>
@@ -210,7 +210,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("ArticleCommentId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ArticleCommentVotes");
+                    b.ToTable("ArticleCommentVotes", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticlePhoto", b =>
@@ -232,7 +232,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("ArticleId");
 
-                    b.ToTable("ArticlePhotos");
+                    b.ToTable("ArticlePhotos", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleStatistics", b =>
@@ -257,7 +257,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("ArticleId")
                         .IsUnique();
 
-                    b.ToTable("ArticleStatistics");
+                    b.ToTable("ArticleStatistics", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Category", b =>
@@ -284,7 +284,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Favorite", b =>
@@ -311,7 +311,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("UserId", "ArticleId")
                         .IsUnique();
 
-                    b.ToTable("Favorites");
+                    b.ToTable("Favorites", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.NewsReport", b =>
@@ -353,7 +353,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NewsReports");
+                    b.ToTable("NewsReports", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.NewsReportFile", b =>
@@ -386,7 +386,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("NewsReportId");
 
-                    b.ToTable("NewsReportFiles");
+                    b.ToTable("NewsReportFiles", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.PasswordResetToken", b =>
@@ -420,7 +420,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens");
+                    b.ToTable("PasswordResetTokens", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Role", b =>
@@ -443,7 +443,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Roles");
+                    b.ToTable("Roles", (string)null);
 
                     b.HasData(
                         new
@@ -485,7 +485,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Subcategories");
+                    b.ToTable("Subcategories", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.User", b =>
@@ -549,7 +549,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.UserArticleView", b =>
@@ -576,7 +576,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("UserId", "ArticleId")
                         .IsUnique();
 
-                    b.ToTable("UserArticleViews");
+                    b.ToTable("UserArticleViews", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.UserCategoryPreference", b =>
@@ -612,7 +612,7 @@ namespace NovinskiPortal.Services.Migrations
                         .IsUnique()
                         .HasFilter("[SubcategoryId] IS NOT NULL");
 
-                    b.ToTable("UserCategoryPreferences");
+                    b.ToTable("UserCategoryPreferences", (string)null);
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Article", b =>

@@ -21,6 +21,7 @@ namespace NovinskiPortal.Services.Database
         public DbSet<ArticleStatistics> ArticleStatistics { get; set; } = default!;
         public DbSet<UserCategoryPreference> UserCategoryPreferences { get; set; } = default!;
         public DbSet<UserArticleView> UserArticleViews { get; set; } = default!;
+        public DbSet<AdminReportExport> AdminReportExports { get; set; } = default!;
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

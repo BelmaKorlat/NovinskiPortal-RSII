@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:novinskiportal_desktop/models/news_report_models.dart';
 import 'package:novinskiportal_desktop/providers/admin_comment_detail_provider.dart';
 import 'package:novinskiportal_desktop/providers/admin_comment_provider.dart';
+import 'package:novinskiportal_desktop/providers/admin_dashboard_provider.dart';
 import 'package:novinskiportal_desktop/providers/admin_user_provider.dart';
 import 'package:novinskiportal_desktop/providers/article_provider.dart';
 import 'package:novinskiportal_desktop/providers/category_provider.dart';
@@ -17,6 +18,7 @@ import 'package:novinskiportal_desktop/screens/article/article_create_page.dart'
 import 'package:novinskiportal_desktop/screens/article/article_edit_page.dart';
 import 'package:novinskiportal_desktop/screens/article/article_list_page.dart';
 import 'package:novinskiportal_desktop/screens/category/category_list_page.dart';
+import 'package:novinskiportal_desktop/screens/dashboard/admin_dashboard_page.dart';
 import 'package:novinskiportal_desktop/screens/news_report/news_report_detail_page.dart';
 import 'package:novinskiportal_desktop/screens/news_report/news_report_list_page.dart';
 import 'package:novinskiportal_desktop/screens/subcategory/subcategory_edit_page.dart';
@@ -61,6 +63,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => NewsReportProvider()),
         ChangeNotifierProvider(create: (_) => AdminCommentProvider()),
         ChangeNotifierProvider(create: (_) => AdminCommentDetailProvider()),
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider()),
       ],
       child: const App(),
     ),
@@ -81,10 +84,8 @@ class App extends StatelessWidget {
       home: const LoginPage(),
       routes: {
         '/login': (_) => const LoginPage(),
-        '/admin': (_) => const AdminLayout(
-          currentIndex: 0,
-          child: Center(child: Text('Početna')),
-        ),
+        '/admin': (_) =>
+            const AdminLayout(currentIndex: 0, child: DashboardPage()),
 
         '/categories': (_) =>
             const AdminLayout(currentIndex: 1, child: CategoryListPage()),

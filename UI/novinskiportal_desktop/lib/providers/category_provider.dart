@@ -26,20 +26,6 @@ class CategoryProvider extends PagedProvider<CategoryDto, CategorySearch>
     return _service.getPage(s);
   }
 
-  // Future<void> create(CreateCategoryRequest r) async {
-  //   try {
-  //     await _service.create(r);
-  //     await load();
-  //     NotificationService.success('Notifikacija', 'Uspješno dodano!');
-  //   } on ApiException catch (ex) {
-  //     NotificationService.error('Greška', ex.message);
-  //     rethrow;
-  //   } catch (_) {
-  //     NotificationService.error('Greška', 'Greška pri dodavanju kategorije.');
-  //     rethrow;
-  //   }
-  // }
-
   Future<void> create(CreateCategoryRequest r) async {
     await runCrud(
       () => _service.create(r),

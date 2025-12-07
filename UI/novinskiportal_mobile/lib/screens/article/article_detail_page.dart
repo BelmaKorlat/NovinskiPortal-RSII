@@ -38,7 +38,6 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     if (!_loadedRecommendations) {
       _loadedRecommendations = true;
 
-      // Sačuvaj referencu da ne zoveš read iz callbacka direktno
       final rec = context.read<RecommendationProvider>();
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -441,9 +440,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                           ArticleDetailPage(article: detail),
                                     ),
                                   );
-                                } catch (_) {
-                                  // možeš dodati snackbar ako želiš
-                                }
+                                } catch (_) {}
                               },
                             );
                           },

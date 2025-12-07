@@ -14,6 +14,7 @@ using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.Implementations;
 using NovinskiPortal.Services.Messaging;
 using NovinskiPortal.Services.Services.AdminCommentService;
+using NovinskiPortal.Services.Services.AdminDashboardService;
 using NovinskiPortal.Services.Services.AdminService;
 using NovinskiPortal.Services.Services.ArticleCommentReportService;
 using NovinskiPortal.Services.Services.ArticleCommentService;
@@ -30,6 +31,7 @@ using NovinskiPortal.Services.Services.NewsReportService;
 using NovinskiPortal.Services.Services.RecommendationService;
 using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
+using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -105,6 +107,7 @@ builder.Services.AddRazorPages();
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("Smtp"));
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection("RabbitMq"));
+QuestPDF.Settings.License = LicenseType.Community;
 
 builder.Services.AddSingleton(TypeAdapterConfig.GlobalSettings);
 builder.Services.AddSingleton<IEventPublisher, RabbitMqEventPublisher>();
@@ -262,6 +265,7 @@ builder.Services.AddScoped<IArticleCommentReportService, ArticleCommentReportSer
 builder.Services.AddScoped<IAdminCommentService, AdminCommentService>();
 builder.Services.AddScoped<IArticleReadService, ArticleReadService>();
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
+builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 var app = builder.Build();
 
