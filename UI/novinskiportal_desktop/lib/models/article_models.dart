@@ -236,6 +236,7 @@ class UpdateArticleRequest {
   final int? userId;
   final PhotoUpload? mainPhoto;
   final List<PhotoUpload>? additionalPhotos;
+  final List<String>? existingAdditionalPhotoPaths;
 
   UpdateArticleRequest({
     this.headline,
@@ -252,6 +253,7 @@ class UpdateArticleRequest {
     this.userId,
     this.mainPhoto,
     this.additionalPhotos,
+    this.existingAdditionalPhotoPaths,
   });
 
   FormData toFormData() {
@@ -288,6 +290,17 @@ class UpdateArticleRequest {
       map['additionalPhotos'] = additionalPhotos!
           .map((p) => MultipartFile.fromBytes(p.bytes, filename: p.fileName))
           .toList();
+    }
+
+    if (existingAdditionalPhotoPaths != null) {
+      if (existingAdditionalPhotoPaths!.isEmpty) {
+        // korisnik je obrisao sve postojeće slike
+        // šaljemo jedan "dummy" element da lista na backendu ne bude null
+        map['ExistingAdditionalPhotoPaths'] = [''];
+      } else {
+        // ima bar jedna preostala slika
+        map['ExistingAdditionalPhotoPaths'] = existingAdditionalPhotoPaths!;
+      }
     }
 
     return FormData.fromMap(map);

@@ -13,6 +13,7 @@ using NovinskiPortal.Services.Database;
 using NovinskiPortal.Services.Database.Entities;
 using NovinskiPortal.Services.Implementations;
 using NovinskiPortal.Services.Messaging;
+using NovinskiPortal.Services.Seeding;
 using NovinskiPortal.Services.Services.AdminCommentService;
 using NovinskiPortal.Services.Services.AdminDashboardService;
 using NovinskiPortal.Services.Services.AdminService;
@@ -33,6 +34,7 @@ using NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService;
 using NovinskiPortal.Services.Services.UserService;
 using QuestPDF.Infrastructure;
 using System.Text.Json.Serialization;
+using Microsoft.Data.SqlClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +46,6 @@ var expiresInHours = int.Parse(jwtSection["ExpiresInHours"] ?? "2");
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<NovinskiPortalDbContext>(options => options.UseSqlServer(connectionString));
-
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -269,12 +270,13 @@ builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+await EnsureDatabaseReadyAsync(app);
+
+
+app.UseDeveloperExceptionPage();
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // app.UseHttpsRedirection();
 
@@ -285,5 +287,31 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapRazorPages();
+
+static async Task EnsureDatabaseReadyAsync(WebApplication app)
+{
+    var retries = 0;
+    const int maxRetries = 10;
+
+    while (true)
+    {
+        try
+        {
+            await DbSeeder.SeedAsync(app.Services);
+            break;
+        }
+        catch (SqlException ex)
+        {
+            retries++;
+
+            if (retries >= maxRetries)
+            {
+                throw;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}
 
 app.Run();

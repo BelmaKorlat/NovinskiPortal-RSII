@@ -22,6 +22,8 @@ namespace NovinskiPortal.Services.Database
         public DbSet<UserCategoryPreference> UserCategoryPreferences { get; set; } = default!;
         public DbSet<UserArticleView> UserArticleViews { get; set; } = default!;
         public DbSet<AdminReportExport> AdminReportExports { get; set; } = default!;
+        public DbSet<ArticleViewLog> ArticleViewLogs { get; set; } = default!;
+
         public NovinskiPortalDbContext(DbContextOptions<NovinskiPortalDbContext> options) : base(options) { }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -177,6 +179,24 @@ namespace NovinskiPortal.Services.Database
                       .WithMany()
                       .HasForeignKey(x => x.ArticleId)
                       .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ArticleViewLog>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+
+                entity.HasOne(x => x.Article)
+                      .WithMany() 
+                      .HasForeignKey(x => x.ArticleId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(x => x.User)
+                      .WithMany() 
+                      .HasForeignKey(x => x.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasIndex(x => x.ViewedAtUtc);
+                entity.HasIndex(x => new { x.ArticleId, x.ViewedAtUtc });
             });
 
 

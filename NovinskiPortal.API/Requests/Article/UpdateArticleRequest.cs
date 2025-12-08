@@ -16,5 +16,6 @@
         public int? UserId { get; set; }
         public IFormFile? MainPhoto { get; set; }
         public List<IFormFile>? AdditionalPhotos { get; set; } = default!;
+        public List<string>? ExistingAdditionalPhotoPaths { get; set; }
     }
 }

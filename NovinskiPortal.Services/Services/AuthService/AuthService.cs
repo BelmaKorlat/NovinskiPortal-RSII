@@ -62,8 +62,6 @@ namespace NovinskiPortal.Services.Services.AuthService
             var username = registerRequest.Username.Trim();
             var email = registerRequest.Email.Trim();
 
-            // Ako želiš zabraniti registraciju istog username/email čak i kad je korisnik soft-deleted,
-            // ova provjera je dovoljna. (Ako želiš dozvoliti – onda dodaj u where: && !u.IsDeleted)
             var existUser = await _context.Users
                 .AnyAsync(u => u.Username.ToLower() == username.ToLower() ||
                     u.Email.ToLower() == email.ToLower());

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_validation/form_validation.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
+import 'package:novinskiportal_mobile/screens/auth/forgot_password_page.dart';
 import 'package:provider/provider.dart';
 import '../../models/auth/auth_models.dart';
 import '../../providers/auth/auth_provider.dart';
@@ -36,9 +37,7 @@ class _LoginPageState extends State<LoginPage> {
       validators: [RequiredValidator(), MinLengthValidator(length: 3)],
     );
 
-    passwordValidator = Validator(
-      validators: [RequiredValidator(), MinLengthValidator(length: 6)],
-    );
+    passwordValidator = Validator(validators: [RequiredValidator()]);
   }
 
   @override
@@ -72,67 +71,6 @@ class _LoginPageState extends State<LoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text(ex.message)));
     }
-  }
-
-  Future<void> _showForgotPasswordDialog(BuildContext context) async {
-    return showDialog(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Zaboravljena lozinka'),
-          content: TextField(
-            controller: _forgotEmailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(labelText: 'Email'),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-              child: const Text('Otkaži'),
-            ),
-            TextButton(
-              onPressed: () async {
-                final email = _forgotEmailController.text.trim();
-
-                if (email.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Unesite email')),
-                  );
-                  return;
-                }
-
-                final messenger = ScaffoldMessenger.of(context);
-                final auth = context.read<AuthProvider>();
-
-                Navigator.of(ctx).pop();
-                try {
-                  await auth.forgotPassword(email);
-
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Ako postoji nalog s tim emailom, poslali smo upute za reset lozinke.',
-                      ),
-                    ),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-
-                  messenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Došlo je do greške pri slanju zahtjeva.'),
-                    ),
-                  );
-                }
-              },
-              child: const Text('Pošalji'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -259,7 +197,11 @@ class _LoginPageState extends State<LoginPage> {
                             alignment: Alignment.centerRight,
                             child: TextButton(
                               onPressed: () {
-                                _showForgotPasswordDialog(context);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const ForgotPasswordPage(),
+                                  ),
+                                );
                               },
                               child: Text(
                                 'Zaboravljena lozinka?',

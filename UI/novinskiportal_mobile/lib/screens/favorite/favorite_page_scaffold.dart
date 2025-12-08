@@ -56,15 +56,10 @@ class _FavoritePageScaffoldState extends State<FavoritePageScaffold> {
         ),
         actions: [
           if (!_selectionMode)
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'delete') {
-                  _startSelectionMode();
-                }
-              },
-              itemBuilder: (ctx) => const [
-                PopupMenuItem(value: 'delete', child: Text('Brisanje')),
-              ],
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Obriši',
+              onPressed: _startSelectionMode,
             ),
         ],
       ),

@@ -18,5 +18,6 @@ namespace NovinskiPortal.Model.Requests.Article
         public int? UserId { get; set; }
         public PhotoUpload? MainPhoto { get; set; }
         public List<PhotoUpload>? AdditionalPhotos { get; set; }
+        public List<string>? ExistingAdditionalPhotoPaths { get; set; }
     }
 }

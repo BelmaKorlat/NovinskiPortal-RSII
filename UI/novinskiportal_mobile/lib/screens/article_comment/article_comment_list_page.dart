@@ -378,28 +378,21 @@ class _CommentTile extends StatelessWidget {
                   ],
                   if (!comment.isOwner) ...[
                     const SizedBox(width: 4),
-                    PopupMenuButton<String>(
+                    IconButton(
                       icon: Icon(
-                        Icons.more_vert,
+                        Icons.report_outlined,
                         size: 18,
                         color: cs.onSurface.withValues(alpha: 0.6),
                       ),
-                      onSelected: (value) {
-                        if (value == 'report') {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ArticleCommentReportPage(comment: comment),
-                            ),
-                          );
-                        }
+                      tooltip: 'Prijavi komentar',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ArticleCommentReportPage(comment: comment),
+                          ),
+                        );
                       },
-                      itemBuilder: (ctx) => [
-                        const PopupMenuItem(
-                          value: 'report',
-                          child: Text('Prijavi komentar'),
-                        ),
-                      ],
                     ),
                   ],
                 ],

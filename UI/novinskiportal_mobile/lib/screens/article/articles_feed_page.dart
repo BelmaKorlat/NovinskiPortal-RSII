@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_error.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/screens/article/article_search_page.dart';
 import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/article_detail_page.dart';
 import 'package:novinskiportal_mobile/widgets/article/big_article_card.dart';
@@ -52,9 +53,14 @@ class _ArticlesFeedPageState extends State<ArticlesFeedPage> {
   }
 
   void onSearchTap() {
-    // za sada samo placeholder
-    // kasnije ovdje otvoriš search za članke
-    // npr. Navigator.of(context).push(...);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => ChangeNotifierProvider<ArticleProvider>(
+          create: (_) => ArticleProvider(),
+          child: const ArticleSearchPage(),
+        ),
+      ),
+    );
   }
 
   Future<void> _openArticleDetail(ArticleDto article) async {

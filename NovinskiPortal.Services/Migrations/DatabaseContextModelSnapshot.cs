@@ -22,6 +22,57 @@ namespace NovinskiPortal.Services.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.AdminReportExport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AdminUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CategoryStatsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("From")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModerationStatsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NewUsers")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("To")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TopArticlesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalArticles")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalComments")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalViews")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminUserId");
+
+                    b.ToTable("AdminReportExports");
+                });
+
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Article", b =>
                 {
                     b.Property<int>("Id")
@@ -85,7 +136,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Articles", (string)null);
+                    b.ToTable("Articles");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleComment", b =>
@@ -135,7 +186,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ArticleComments", (string)null);
+                    b.ToTable("ArticleComments");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleCommentReport", b =>
@@ -180,7 +231,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("ReporterUserId");
 
-                    b.ToTable("ArticleCommentReports", (string)null);
+                    b.ToTable("ArticleCommentReports");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleCommentVote", b =>
@@ -210,7 +261,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("ArticleCommentId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ArticleCommentVotes", (string)null);
+                    b.ToTable("ArticleCommentVotes");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticlePhoto", b =>
@@ -232,7 +283,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("ArticleId");
 
-                    b.ToTable("ArticlePhotos", (string)null);
+                    b.ToTable("ArticlePhotos");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleStatistics", b =>
@@ -257,7 +308,35 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("ArticleId")
                         .IsUnique();
 
-                    b.ToTable("ArticleStatistics", (string)null);
+                    b.ToTable("ArticleStatistics");
+                });
+
+            modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleViewLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ArticleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ViewedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ViewedAtUtc");
+
+                    b.HasIndex("ArticleId", "ViewedAtUtc");
+
+                    b.ToTable("ArticleViewLogs");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Category", b =>
@@ -284,7 +363,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Favorite", b =>
@@ -311,7 +390,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("UserId", "ArticleId")
                         .IsUnique();
 
-                    b.ToTable("Favorites", (string)null);
+                    b.ToTable("Favorites");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.NewsReport", b =>
@@ -353,7 +432,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("NewsReports", (string)null);
+                    b.ToTable("NewsReports");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.NewsReportFile", b =>
@@ -386,7 +465,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("NewsReportId");
 
-                    b.ToTable("NewsReportFiles", (string)null);
+                    b.ToTable("NewsReportFiles");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.PasswordResetToken", b =>
@@ -420,7 +499,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PasswordResetTokens", (string)null);
+                    b.ToTable("PasswordResetTokens");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Role", b =>
@@ -443,7 +522,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -485,7 +564,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Subcategories", (string)null);
+                    b.ToTable("Subcategories");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.User", b =>
@@ -549,7 +628,7 @@ namespace NovinskiPortal.Services.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.UserArticleView", b =>
@@ -576,7 +655,7 @@ namespace NovinskiPortal.Services.Migrations
                     b.HasIndex("UserId", "ArticleId")
                         .IsUnique();
 
-                    b.ToTable("UserArticleViews", (string)null);
+                    b.ToTable("UserArticleViews");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.UserCategoryPreference", b =>
@@ -612,7 +691,16 @@ namespace NovinskiPortal.Services.Migrations
                         .IsUnique()
                         .HasFilter("[SubcategoryId] IS NOT NULL");
 
-                    b.ToTable("UserCategoryPreferences", (string)null);
+                    b.ToTable("UserCategoryPreferences");
+                });
+
+            modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.AdminReportExport", b =>
+                {
+                    b.HasOne("NovinskiPortal.Services.Database.Entities.User", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId");
+
+                    b.Navigation("AdminUser");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Article", b =>
@@ -733,6 +821,24 @@ namespace NovinskiPortal.Services.Migrations
                         .IsRequired();
 
                     b.Navigation("Article");
+                });
+
+            modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.ArticleViewLog", b =>
+                {
+                    b.HasOne("NovinskiPortal.Services.Database.Entities.Article", "Article")
+                        .WithMany()
+                        .HasForeignKey("ArticleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NovinskiPortal.Services.Database.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Article");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NovinskiPortal.Services.Database.Entities.Favorite", b =>

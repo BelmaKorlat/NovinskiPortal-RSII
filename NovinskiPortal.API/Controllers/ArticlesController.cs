@@ -115,13 +115,20 @@ namespace NovinskiPortal.API.Controllers
             if (userId == null)
                 return Unauthorized();
 
+            DateTime? publishedUtc = null;
+            if (updateArticleRequest.PublishedAt.HasValue)
+            {
+                var local = DateTime.SpecifyKind(updateArticleRequest.PublishedAt.Value, DateTimeKind.Local);
+                publishedUtc = local.ToUniversalTime();
+            }
+
             var updatedArticle = new Model.Requests.Article.UpdateArticleRequest
             {
                 Headline = updateArticleRequest.Headline,
                 Subheadline = updateArticleRequest.Subheadline,
                 ShortText = updateArticleRequest.ShortText,
                 Text = updateArticleRequest.Text,
-                PublishedAt = updateArticleRequest.PublishedAt,
+                PublishedAt = publishedUtc,
                 Active = updateArticleRequest.Active,
                 HideFullName = updateArticleRequest.HideFullName,
                 BreakingNews = updateArticleRequest.BreakingNews,
@@ -134,7 +141,8 @@ namespace NovinskiPortal.API.Controllers
                 : null,
                 AdditionalPhotos = updateArticleRequest.AdditionalPhotos != null && updateArticleRequest.AdditionalPhotos.Count > 0
                 ? await FileHelpers.ToPhotoUploadsAsync(updateArticleRequest.AdditionalPhotos)
-                : null
+                : null,
+                ExistingAdditionalPhotoPaths = updateArticleRequest.ExistingAdditionalPhotoPaths
             };
 
             var updated = await _articleService.UpdateAsync(id, updatedArticle);

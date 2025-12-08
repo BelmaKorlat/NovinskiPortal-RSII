@@ -34,9 +34,7 @@ class _LoginPageState extends State<LoginPage> {
       validators: [RequiredValidator(), MinLengthValidator(length: 3)],
     );
 
-    passwordValidator = Validator(
-      validators: [RequiredValidator(), MinLengthValidator(length: 6)],
-    );
+    passwordValidator = Validator(validators: [RequiredValidator()]);
   }
 
   @override
@@ -55,7 +53,6 @@ class _LoginPageState extends State<LoginPage> {
       await auth.login(_userCtrl.text.trim(), _passCtrl.text);
       if (!mounted) return;
 
-      NotificationService.success('Notifikacija', 'Prijava uspješna');
       Navigator.pushNamedAndRemoveUntil(context, '/admin', (_) => false);
     } on ApiException catch (ex) {
       if (!mounted) return;

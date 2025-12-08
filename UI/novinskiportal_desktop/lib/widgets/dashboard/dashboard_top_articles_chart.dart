@@ -99,7 +99,7 @@ class _DashboardTopArticlesChartState extends State<DashboardTopArticlesChart> {
           children: [
             Expanded(
               child: DropdownButtonFormField<int?>(
-                value: _selectedCategoryId,
+                initialValue: _selectedCategoryId,
                 decoration: const InputDecoration(
                   labelText: 'Kategorija',
                   isDense: true,
@@ -155,7 +155,44 @@ class _DashboardTopArticlesChartState extends State<DashboardTopArticlesChart> {
               child: _DateFilterButton(label: 'Do', date: _to, onTap: _pickTo),
             ),
 
-            const Spacer(),
+            Tooltip(
+              message: 'Poništi filtere',
+              waitDuration: const Duration(milliseconds: 300),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: TextButton(
+                  style:
+                      TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        shape: const CircleBorder(),
+                      ).copyWith(
+                        overlayColor: WidgetStateProperty.resolveWith<Color?>((
+                          states,
+                        ) {
+                          if (states.contains(WidgetState.hovered) ||
+                              states.contains(WidgetState.pressed)) {
+                            return Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.15);
+                          }
+                          return null;
+                        }),
+                      ),
+                  onPressed: () async {
+                    setState(() {
+                      _selectedCategoryId = null;
+                      _from = null;
+                      _to = null;
+                    });
+                    await _reload();
+                  },
+                  child: const Text('X'),
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 8),
 
             TextButton.icon(
               onPressed: _exportReport,
@@ -259,6 +296,9 @@ class _TopArticlesBarChart extends StatelessWidget {
 
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final barColor = isDark ? const Color(0xFF4FC3F7) : cs.primary;
 
     final maxViews = top
         .map((e) => e.totalViews)
@@ -271,6 +311,7 @@ class _TopArticlesBarChart extends StatelessWidget {
       BarChartData(
         minY: 0,
         maxY: maxY,
+
         barTouchData: BarTouchData(
           enabled: true,
           touchTooltipData: BarTouchTooltipData(
@@ -290,28 +331,13 @@ class _TopArticlesBarChart extends StatelessWidget {
             },
           ),
         ),
-        gridData: FlGridData(
-          show: true,
-          drawVerticalLine: false,
-          horizontalInterval: interval,
-        ),
+
+        gridData: FlGridData(show: false),
         borderData: FlBorderData(show: false),
+
         titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              interval: interval,
-              reservedSize: 32,
-              getTitlesWidget: (value, meta) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 4),
-                  child: Text(
-                    value.toInt().toString(),
-                    style: textTheme.bodySmall,
-                  ),
-                );
-              },
-            ),
+          leftTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
           ),
           rightTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
@@ -319,10 +345,33 @@ class _TopArticlesBarChart extends StatelessWidget {
           topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
-          bottomTitles: const AxisTitles(
-            sideTitles: SideTitles(showTitles: false),
+
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 28,
+              getTitlesWidget: (value, meta) {
+                final index = value.toInt();
+                if (index < 0 || index >= top.length) {
+                  return const SizedBox.shrink();
+                }
+
+                final views = top[index].totalViews;
+
+                return SideTitleWidget(
+                  meta: meta,
+                  space: 4,
+                  child: Text(
+                    views.toString(),
+                    style: textTheme.bodySmall,
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              },
+            ),
           ),
         ),
+
         barGroups: List.generate(top.length, (index) {
           final item = top[index];
           return BarChartGroupData(
@@ -332,7 +381,7 @@ class _TopArticlesBarChart extends StatelessWidget {
                 toY: item.totalViews.toDouble(),
                 width: 14,
                 borderRadius: BorderRadius.circular(4),
-                color: cs.primary,
+                color: barColor,
               ),
             ],
           );
