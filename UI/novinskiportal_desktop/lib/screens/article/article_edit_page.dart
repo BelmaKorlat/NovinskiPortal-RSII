@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:form_validation/form_validation.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
+import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
 
 import '../../providers/article_provider.dart';
 import '../../models/article_models.dart';
@@ -32,7 +35,9 @@ class _EditArticlePageState extends State<EditArticlePage> {
   late final TextEditingController _headline;
   late final TextEditingController _subheadline;
   late final TextEditingController _shortText;
-  late final TextEditingController _text;
+  late final quill.QuillController _quillController;
+  final FocusNode _editorFocusNode = FocusNode();
+  final ScrollController _editorScrollController = ScrollController();
 
   DateTime _publishedAt = DateTime.now().toLocal();
 
@@ -60,9 +65,9 @@ class _EditArticlePageState extends State<EditArticlePage> {
   late final Validator _headlineValidator;
   late final Validator _subheadlineValidator;
   late final Validator _shortTextValidator;
-  late final Validator _textValidator;
 
   final _dateTimeFormat = DateFormat('d.M.yyyy. HH:mm');
+  bool _publishedAtManuallySet = false;
 
   @override
   void initState() {
@@ -71,7 +76,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _headline = TextEditingController();
     _subheadline = TextEditingController();
     _shortText = TextEditingController();
-    _text = TextEditingController();
 
     _headlineValidator = Validator(
       validators: [RequiredValidator(), MaxLengthValidator(length: 150)],
@@ -82,7 +86,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _shortTextValidator = Validator(
       validators: [RequiredValidator(), MaxLengthValidator(length: 1000)],
     );
-    _textValidator = Validator(validators: [RequiredValidator()]);
 
     _loadCategories();
   }
@@ -103,7 +106,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _headline.text = _art.headline;
     _subheadline.text = _art.subheadline;
     _shortText.text = _art.shortText;
-    _text.text = _art.text;
 
     _active = _art.active;
     _hideFullName = _art.hideFullName;
@@ -113,6 +115,15 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _existingMainPhotoPath = _art.mainPhotoPath;
     _existingAdditionalPhotos = List<String>.from(_art.additionalPhotos);
 
+    final delta = HtmlToDelta().convert(
+      _art.text,
+      transformTableAsEmbed: false,
+    );
+    _quillController = quill.QuillController(
+      document: quill.Document.fromDelta(delta),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
+
     _loadSubcategories(categoryIdFilter: _categoryId);
   }
 
@@ -121,7 +132,9 @@ class _EditArticlePageState extends State<EditArticlePage> {
     _headline.dispose();
     _subheadline.dispose();
     _shortText.dispose();
-    _text.dispose();
+    _quillController.dispose();
+    _editorFocusNode.dispose();
+    _editorScrollController.dispose();
 
     super.dispose();
   }
@@ -226,10 +239,13 @@ class _EditArticlePageState extends State<EditArticlePage> {
   }
 
   Future<void> _pickDateTime() async {
+    final now = DateTime.now().toLocal();
+    final today = DateTime(now.year, now.month, now.day);
+
     final d = await showDatePicker(
       context: context,
-      initialDate: _publishedAt,
-      firstDate: DateTime(2000),
+      initialDate: _publishedAt.isBefore(now) ? now : _publishedAt,
+      firstDate: today,
       lastDate: DateTime(2100),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
@@ -238,19 +254,228 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
     final t = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(_publishedAt),
+      initialTime: TimeOfDay.fromDateTime(now),
       initialEntryMode: TimePickerEntryMode.dialOnly,
     );
     if (t == null) return;
     if (!mounted) return;
 
+    final selected = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+
+    if (selected.isBefore(now)) {
+      NotificationService.error(
+        'Greška',
+        'Datum i vrijeme objave ne mogu biti u prošlosti.',
+      );
+      return;
+    }
+
     setState(() {
       _publishedAt = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+      _publishedAtManuallySet = true;
     });
+  }
+
+  Widget _buildGalleryImage(int index) {
+    if (index < _existingAdditionalPhotos.length) {
+      final url = ApiClient.resolveUrl(_existingAdditionalPhotos[index]);
+      return Image.network(url, fit: BoxFit.contain);
+    }
+
+    final localIndex = index - _existingAdditionalPhotos.length;
+    final p = _newAdditionalPhotos[localIndex];
+    return Image.memory(p.bytes, fit: BoxFit.contain);
+  }
+
+  Future<void> _showMainPhotoPreview() async {
+    if (_newMainPhoto == null && _existingMainPhotoPath == null) {
+      return;
+    }
+
+    final Widget image;
+    if (_newMainPhoto != null) {
+      image = Image.memory(_newMainPhoto!.bytes, fit: BoxFit.contain);
+    } else {
+      image = Image.network(
+        ApiClient.resolveUrl(_existingMainPhotoPath!),
+        fit: BoxFit.contain,
+      );
+    }
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Zatvori glavnu sliku',
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      pageBuilder: (ctx, _, __) {
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                FractionallySizedBox(
+                  widthFactor: 0.8,
+                  heightFactor: 0.8,
+                  child: InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 4,
+                    child: image,
+                  ),
+                ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showGalleryPreview(int initialIndex) async {
+    final totalCount =
+        _existingAdditionalPhotos.length + _newAdditionalPhotos.length;
+    if (totalCount == 0) return;
+
+    int currentIndex = initialIndex;
+    final controller = PageController(initialPage: initialIndex);
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Zatvori galeriju',
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      pageBuilder: (ctx, _, __) {
+        return StatefulBuilder(
+          builder: (ctx, setStateDialog) {
+            final canGoPrev = currentIndex > 0;
+            final canGoNext = currentIndex < totalCount - 1;
+
+            void goTo(int delta) {
+              final newIndex = (currentIndex + delta).clamp(0, totalCount - 1);
+              if (newIndex == currentIndex) return;
+
+              controller.animateToPage(
+                newIndex,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+              );
+
+              setStateDialog(() {
+                currentIndex = newIndex;
+              });
+            }
+
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PageView.builder(
+                      controller: controller,
+                      itemCount: totalCount,
+                      onPageChanged: (i) {
+                        setStateDialog(() {
+                          currentIndex = i;
+                        });
+                      },
+                      itemBuilder: (ctx, i) {
+                        return Center(
+                          child: FractionallySizedBox(
+                            widthFactor: 0.8,
+                            heightFactor: 0.8,
+                            child: InteractiveViewer(
+                              panEnabled: false,
+                              minScale: 1,
+                              maxScale: 4,
+                              child: _buildGalleryImage(i),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    Positioned(
+                      top: 24,
+                      left: 24,
+                      child: Text(
+                        '${currentIndex + 1} / $totalCount',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                    ),
+
+                    Positioned(
+                      left: 16,
+                      child: IconButton(
+                        iconSize: 40,
+                        onPressed: canGoPrev ? () => goTo(-1) : null,
+                        icon: Icon(
+                          Icons.chevron_left,
+                          color: canGoPrev
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: .3),
+                        ),
+                      ),
+                    ),
+
+                    Positioned(
+                      right: 16,
+                      child: IconButton(
+                        iconSize: 40,
+                        onPressed: canGoNext ? () => goTo(1) : null,
+                        icon: Icon(
+                          Icons.chevron_right,
+                          color: canGoNext
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+
+    final now = DateTime.now().toLocal();
+
+    if (!_publishedAtManuallySet) {
+      _publishedAt = now;
+    } else if (_publishedAt.isBefore(now)) {
+      NotificationService.error(
+        'Greška',
+        'Datum i vrijeme objave ne mogu biti u prošlosti.',
+      );
+      return;
+    }
 
     final auth = context.read<AuthProvider>();
     final userId = auth.userId;
@@ -271,13 +496,32 @@ class _EditArticlePageState extends State<EditArticlePage> {
       return;
     }
 
+    final plainText = _quillController.document.toPlainText().trim();
+    if (plainText.isEmpty) {
+      NotificationService.error('Greška', 'Sadržaj je obavezno polje.');
+      return;
+    }
+
+    final deltaJson = _quillController.document.toDelta().toJson();
+
+    final ops = List<Map<String, dynamic>>.from(deltaJson);
+
+    final converter = QuillDeltaToHtmlConverter(
+      ops,
+      ConverterOptions(
+        converterOptions: OpConverterOptions(inlineStylesFlag: true),
+      ),
+    );
+
+    final htmlText = converter.convert();
+
     setState(() => _saving = true);
     try {
       final req = UpdateArticleRequest(
         headline: _headline.text.trim(),
         subheadline: _subheadline.text.trim(),
         shortText: _shortText.text.trim(),
-        text: _text.text.trim(),
+        text: htmlText,
         publishedAt: _publishedAt.toLocal(),
         active: _active,
         hideFullName: _hideFullName,
@@ -290,6 +534,7 @@ class _EditArticlePageState extends State<EditArticlePage> {
         additionalPhotos: _newAdditionalPhotos.isNotEmpty
             ? _newAdditionalPhotos
             : null,
+        existingAdditionalPhotoPaths: _existingAdditionalPhotos,
       );
 
       await context.read<ArticleProvider>().update(_articleId, req);
@@ -485,18 +730,58 @@ class _EditArticlePageState extends State<EditArticlePage> {
 
                             const SizedBox(height: 12),
 
-                            TextFormField(
-                              controller: _text,
-                              minLines: 5,
-                              maxLines: 12,
-                              decoration: const InputDecoration(
-                                labelText: 'Sadržaj',
-                                alignLabelWithHint: true,
-                              ),
-                              validator: (v) => _textValidator.validate(
-                                label: 'Sadržaj',
-                                value: v,
-                              ),
+                            Text(
+                              'Sadržaj',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: 8),
+
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                quill.QuillSimpleToolbar(
+                                  controller: _quillController,
+                                  config: const quill.QuillSimpleToolbarConfig(
+                                    multiRowsDisplay: false,
+                                    showFontFamily: false,
+                                    showFontSize: true,
+                                    showBoldButton: true,
+                                    showItalicButton: true,
+                                    showUnderLineButton: true,
+                                    showStrikeThrough: true,
+                                    showListNumbers: true,
+                                    showListBullets: true,
+                                    showQuote: true,
+                                    showCodeBlock: false,
+                                    showLink: true,
+                                    showInlineCode: false,
+                                    showAlignmentButtons: true,
+                                    showColorButton: false,
+                                    showBackgroundColorButton: false,
+                                    showHeaderStyle: true,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Container(
+                                  height: 300,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                  child: quill.QuillEditor.basic(
+                                    controller: _quillController,
+                                    config: const quill.QuillEditorConfig(
+                                      padding: EdgeInsets.all(8),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 8),
 
@@ -559,53 +844,37 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ),
                             ),
 
+                            // prikaz glavne slike, bez X
                             if (_newMainPhoto != null) ...[
                               const SizedBox(height: 8),
-                              Stack(
-                                alignment: Alignment.topRight,
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.memory(
-                                      _newMainPhoto!.bytes,
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
+                              GestureDetector(
+                                onTap: _showMainPhotoPreview,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.memory(
+                                    _newMainPhoto!.bytes,
+                                    height: 100,
+                                    fit: BoxFit.cover,
                                   ),
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() => _newMainPhoto = null);
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        size: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ] else if (_existingMainPhotoPath != null) ...[
                               const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(6),
-                                child: Image.network(
-                                  //_existingMainPhotoPath!,
-                                  ApiClient.resolveUrl(_existingMainPhotoPath!),
-                                  height: 100,
-                                  fit: BoxFit.cover,
+                              GestureDetector(
+                                onTap: _showMainPhotoPreview,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Image.network(
+                                    ApiClient.resolveUrl(
+                                      _existingMainPhotoPath!,
+                                    ),
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ],
-
-                            const SizedBox(height: 16),
-
+                            const SizedBox(height: 8),
                             Text(
                               'Galerija slika',
                               style: Theme.of(context).textTheme.titleSmall,
@@ -632,60 +901,114 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: _existingAdditionalPhotos.map((url) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.network(
-                                      ApiClient.resolveUrl(url),
-                                      height: 100,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  );
-                                }).toList(),
+                                children: _existingAdditionalPhotos
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                      final index = entry.key;
+                                      final url = entry.value;
+
+                                      return Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () =>
+                                                _showGalleryPreview(index),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Image.network(
+                                                ApiClient.resolveUrl(url),
+                                                height: 100,
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            top: 4,
+                                            right: 4,
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.black54,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: InkWell(
+                                                onTap: () {
+                                                  setState(() {
+                                                    _existingAdditionalPhotos
+                                                        .removeAt(index);
+                                                  });
+                                                },
+                                                child: const Icon(
+                                                  Icons.close,
+                                                  size: 16,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ],
+
                             if (_newAdditionalPhotos.isNotEmpty) ...[
                               const SizedBox(height: 8),
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: _newAdditionalPhotos.map((p) {
-                                  return Stack(
-                                    alignment: Alignment.topRight,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Image.memory(
-                                          p.bytes,
-                                          height: 100,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.black54,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: InkWell(
-                                          onTap: () {
-                                            setState(
-                                              () => _newAdditionalPhotos.remove(
-                                                p,
+                                children: _newAdditionalPhotos
+                                    .asMap()
+                                    .entries
+                                    .map((entry) {
+                                      final index =
+                                          _existingAdditionalPhotos.length +
+                                          entry.key;
+                                      final p = entry.value;
+
+                                      return Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () =>
+                                                _showGalleryPreview(index),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              child: Image.memory(
+                                                p.bytes,
+                                                height: 100,
+                                                fit: BoxFit.cover,
                                               ),
-                                            );
-                                          },
-                                          child: const Icon(
-                                            Icons.close,
-                                            size: 16,
-                                            color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black54,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () {
+                                                setState(
+                                                  () => _newAdditionalPhotos
+                                                      .remove(p),
+                                                );
+                                              },
+                                              child: const Icon(
+                                                Icons.close,
+                                                size: 16,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    })
+                                    .toList(),
                               ),
                             ],
                           ],

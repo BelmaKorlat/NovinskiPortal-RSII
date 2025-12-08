@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: np-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=NovinskiPortal2025
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - np-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: np-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - np-net
+
+  api:
+    build:
+      context: .
+      dockerfile: NovinskiPortal.API/Dockerfile
+    container_name: np-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=db;Database=210053;User=sa;Password=NovinskiPortal2025;TrustServerCertificate=True
+      - Jwt__Key=OvoJeJakoDugacakSecretKeyZaJWTOvoJeJakoDugacakSecretKeyZaJWT
+      - Jwt__Issuer=NovinskiPortal
+      - Jwt__Audience=Clients
+      - Jwt__ExpiresInHours=2
+      - RabbitMq__HostName=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__UserName=guest
+      - RabbitMq__Password=guest
+      - RabbitMq__Exchange=novinskiportal.article
+      - RabbitMq__RoutingKeyArticleViewed=article.viewed
+      - Smtp__Host=smtp.gmail.com
+      - Smtp__Port=587
+      - Smtp__EnableSsl=true
+      - Smtp__From=novinskiportal.noreply@gmail.com
+      - Smtp__Username=novinskiportal.noreply@gmail.com
+      - Smtp__Password=glvxkvxveprewgrk
+    depends_on:
+      - db
+      - rabbitmq
+    ports:
+      - "5000:8080"
+    networks:
+      - np-net
+
+  worker:
+    build:
+      context: .
+      dockerfile: NovinskiPortal.Workers.Statistics/Dockerfile
+    container_name: np-worker-statistics
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=210053;User=sa;Password=NovinskiPortal2025;TrustServerCertificate=True
+      - RabbitMq__HostName=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__UserName=guest
+      - RabbitMq__Password=guest
+      - RabbitMq__Exchange=novinskiportal.article
+      - RabbitMq__RoutingKeyArticleViewed=article.viewed
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - np-net
+
+networks:
+  np-net:
+
+volumes:
+  sql_data:

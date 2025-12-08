@@ -35,6 +35,8 @@ import 'core/notification_service.dart';
 import 'package:form_validation/form_validation.dart';
 import 'screens/subcategory/subcategory_list_page.dart';
 import 'screens/subcategory/subcategory_create_page.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,6 +78,13 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        quill.FlutterQuillLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('bs')],
       debugShowCheckedModeBanner: false,
       theme: buildLightTheme(),
       darkTheme: buildDarkTheme(),

@@ -85,4 +85,9 @@ class AuthProvider extends ChangeNotifier {
   Future<void> forgotPassword(String email) async {
     await _service.forgotPassword(email);
   }
+
+  void setUserFromProfile(UserDto updated) {
+    _user = updated;
+    notifyListeners();
+  }
 }

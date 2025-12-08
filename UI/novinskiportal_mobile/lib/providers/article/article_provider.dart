@@ -34,4 +34,18 @@ class ArticleProvider extends PagedProvider<ArticleDto, ArticleSearch> {
 
     return await _service.getById(id);
   }
+
+  Future<void> search(String query) async {
+    fts = query.trim();
+    page = 0;
+    await load(append: false);
+  }
+
+  Future<void> loadMore() async {
+    if (isLoading) return;
+    if (page >= lastPage) return;
+
+    page++;
+    await load(append: true);
+  }
 }

@@ -5,11 +5,13 @@ import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
 import 'package:novinskiportal_mobile/providers/favorite/favorite_provider.dart';
 import 'package:novinskiportal_mobile/providers/recommendation/recommendation_provider.dart';
+import 'package:novinskiportal_mobile/screens/article/gallery_page.dart';
 import 'package:novinskiportal_mobile/screens/article_comment/article_comment_list_page.dart';
 import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 import 'package:novinskiportal_mobile/widgets/article/recommended_article_card.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 class ArticleDetailPage extends StatefulWidget {
   final ArticleDetailDto article;
@@ -328,12 +330,19 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
 
                 const SizedBox(height: 16),
 
-                Text(
-                  article.text,
-                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+                Html(
+                  data: article.text,
+                  style: {
+                    "body": Style(
+                      fontSize: FontSize(16.0),
+                      lineHeight: LineHeight(1.5),
+                      fontFamily: theme.textTheme.bodyMedium?.fontFamily,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                    "p": Style(margin: Margins.only(bottom: 12)),
+                    "img": Style(width: Width.auto(), height: Height.auto()),
+                  },
                 ),
-
-                const SizedBox(height: 24),
 
                 if (article.additionalPhotos.isNotEmpty)
                   Column(
@@ -354,29 +363,44 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                           itemCount: article.additionalPhotos.length,
                           separatorBuilder: (_, __) => const SizedBox(width: 8),
                           itemBuilder: (ctx, index) {
-                            final url = ApiClient.resolveUrl(
-                              article.additionalPhotos[index],
+                            final relativePhotos = article.additionalPhotos;
+
+                            final thumbUrl = ApiClient.resolveUrl(
+                              relativePhotos[index],
                             );
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: AspectRatio(
-                                aspectRatio: 4 / 3,
-                                child: Image.network(
-                                  url,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (ctx, error, stack) {
-                                    return Container(
-                                      width: 160,
-                                      color: cs.onSurface,
-                                      alignment: Alignment.center,
-                                      child: Icon(
-                                        Icons.broken_image_outlined,
-                                        color: cs.onSurface.withValues(
-                                          alpha: 0.4,
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => GalleryPage(
+                                      photos: relativePhotos,
+                                      initialIndex: index,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: AspectRatio(
+                                  aspectRatio: 4 / 3,
+                                  child: Image.network(
+                                    thumbUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (ctx, error, stack) {
+                                      return Container(
+                                        width: 160,
+                                        color: cs.onSurface,
+                                        alignment: Alignment.center,
+                                        child: Icon(
+                                          Icons.broken_image_outlined,
+                                          color: cs.onSurface.withValues(
+                                            alpha: 0.4,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
+                                      );
+                                    },
+                                  ),
                                 ),
                               ),
                             );
@@ -391,12 +415,10 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 Consumer<RecommendationProvider>(
                   builder: (context, rec, _) {
                     if (rec.isLoading) {
-                      // možeš vratiti SizedBox.shrink() ili mali loader
                       return const SizedBox.shrink();
                     }
 
                     if (rec.items.isEmpty) {
-                      // nema preporuka ili user nije prijavljen
                       return const SizedBox.shrink();
                     }
 
@@ -432,6 +454,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                                 try {
                                   final detail = await articleProvider
                                       .getDetail(a.id);
+
                                   if (!mounted) return;
 
                                   Navigator.of(context).push(

@@ -4,11 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:form_validation/form_validation.dart';
-
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:vsc_quill_delta_to_html/vsc_quill_delta_to_html.dart';
 import '../../providers/article_provider.dart';
 import '../../models/article_models.dart';
 import '../../core/notification_service.dart';
-
 import '../../services/category_service.dart';
 import '../../models/category_models.dart';
 import '../../services/subcategory_service.dart';
@@ -27,9 +27,12 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   final _headline = TextEditingController();
   final _subheadline = TextEditingController();
   final _shortText = TextEditingController();
-  final _text = TextEditingController();
+  late final quill.QuillController _quillController;
+  final FocusNode _editorFocusNode = FocusNode();
+  final ScrollController _editorScrollController = ScrollController();
 
   DateTime _publishedAt = DateTime.now().toLocal();
+  bool _publishedAtManuallySet = false;
 
   bool _active = true;
   bool _hideFullName = false;
@@ -51,13 +54,15 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   late final Validator _headlineValidator;
   late final Validator _subheadlineValidator;
   late final Validator _shortTextValidator;
-  late final Validator _textValidator;
 
   final _dateTimeFormat = DateFormat('d.M.yyyy. HH:mm');
 
   @override
   void initState() {
     super.initState();
+
+    _quillController = quill.QuillController.basic();
+
     _headlineValidator = Validator(
       validators: [RequiredValidator(), MaxLengthValidator(length: 150)],
     );
@@ -67,7 +72,6 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
     _shortTextValidator = Validator(
       validators: [RequiredValidator(), MaxLengthValidator(length: 1000)],
     );
-    _textValidator = Validator(validators: [RequiredValidator()]);
 
     _loadCategories();
     _loadSubcategories();
@@ -78,7 +82,9 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
     _headline.dispose();
     _subheadline.dispose();
     _shortText.dispose();
-    _text.dispose();
+    _quillController.dispose();
+    _editorFocusNode.dispose();
+    _editorScrollController.dispose();
 
     super.dispose();
   }
@@ -178,10 +184,13 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
   }
 
   Future<void> _pickDateTime() async {
+    final now = DateTime.now().toLocal();
+    final today = DateTime(now.year, now.month, now.day);
+
     final d = await showDatePicker(
       context: context,
-      initialDate: _publishedAt,
-      firstDate: DateTime(2000),
+      initialDate: _publishedAt.isBefore(now) ? now : _publishedAt,
+      firstDate: today,
       lastDate: DateTime(2100),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
     );
@@ -190,19 +199,215 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
 
     final t = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(_publishedAt),
+      initialTime: TimeOfDay.fromDateTime(now),
       initialEntryMode: TimePickerEntryMode.dialOnly,
     );
     if (t == null) return;
     if (!mounted) return;
 
+    final selected = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+
+    if (selected.isBefore(now)) {
+      NotificationService.error(
+        'Greška',
+        'Datum i vrijeme objave ne mogu biti u prošlosti.',
+      );
+      return;
+    }
+
     setState(() {
       _publishedAt = DateTime(d.year, d.month, d.day, t.hour, t.minute);
+      _publishedAtManuallySet = true;
     });
+  }
+
+  Future<void> _showMainPhotoPreview() async {
+    if (_mainPhoto == null) return;
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Zatvori glavnu sliku',
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      pageBuilder: (ctx, _, __) {
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 0.8,
+                    heightFactor: 0.8,
+                    child: InteractiveViewer(
+                      minScale: 1,
+                      maxScale: 4,
+                      child: Image.memory(
+                        _mainPhoto!.bytes,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ),
+
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Navigator.of(ctx).pop(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showGalleryPreview(int initialIndex) async {
+    if (_additionalPhotos.isEmpty) return;
+
+    int currentIndex = initialIndex;
+    final controller = PageController(initialPage: initialIndex);
+
+    await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Zatvori galeriju',
+      barrierColor: Colors.black.withValues(alpha: 0.9),
+      pageBuilder: (ctx, _, __) {
+        return StatefulBuilder(
+          builder: (ctx, setStateDialog) {
+            final canGoPrev = currentIndex > 0;
+            final canGoNext = currentIndex < _additionalPhotos.length - 1;
+
+            void goTo(int delta) {
+              final newIndex = (currentIndex + delta).clamp(
+                0,
+                _additionalPhotos.length - 1,
+              );
+              if (newIndex == currentIndex) return;
+
+              controller.animateToPage(
+                newIndex,
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeInOut,
+              );
+
+              setStateDialog(() {
+                currentIndex = newIndex;
+              });
+            }
+
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Center(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PageView.builder(
+                      controller: controller,
+                      itemCount: _additionalPhotos.length,
+                      onPageChanged: (i) {
+                        setStateDialog(() {
+                          currentIndex = i;
+                        });
+                      },
+                      itemBuilder: (ctx, i) {
+                        return Center(
+                          child: FractionallySizedBox(
+                            widthFactor: 0.8,
+                            heightFactor: 0.8,
+                            child: InteractiveViewer(
+                              panEnabled: false,
+                              minScale: 1,
+                              maxScale: 4,
+                              child: Image.memory(
+                                _additionalPhotos[i].bytes,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    Positioned(
+                      top: 24,
+                      left: 24,
+                      child: Text(
+                        '${currentIndex + 1} / ${_additionalPhotos.length}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.of(ctx).pop(),
+                      ),
+                    ),
+
+                    Positioned(
+                      left: 16,
+                      child: IconButton(
+                        iconSize: 40,
+                        onPressed: canGoPrev ? () => goTo(-1) : null,
+                        icon: Icon(
+                          Icons.chevron_left,
+                          color: canGoPrev
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: .3),
+                        ),
+                      ),
+                    ),
+
+                    Positioned(
+                      right: 16,
+                      child: IconButton(
+                        iconSize: 40,
+                        onPressed: canGoNext ? () => goTo(1) : null,
+                        icon: Icon(
+                          Icons.chevron_right,
+                          color: canGoNext
+                              ? Colors.white
+                              : Colors.white.withValues(alpha: 0.3),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+
+    final now = DateTime.now().toLocal();
+
+    if (!_publishedAtManuallySet) {
+      _publishedAt = now;
+    } else if (_publishedAt.isBefore(now)) {
+      NotificationService.error(
+        'Greška',
+        'Datum i vrijeme objave ne mogu biti u prošlosti.',
+      );
+      return;
+    }
 
     final auth = context.read<AuthProvider>();
     final userId = auth.userId;
@@ -228,13 +433,32 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
       return;
     }
 
+    final plainText = _quillController.document.toPlainText().trim();
+    if (plainText.isEmpty) {
+      NotificationService.error('Greška', 'Sadržaj je obavezno polje.');
+      return;
+    }
+
+    final deltaJson = _quillController.document.toDelta().toJson();
+
+    final ops = List<Map<String, dynamic>>.from(deltaJson);
+
+    final converter = QuillDeltaToHtmlConverter(
+      ops,
+      ConverterOptions(
+        converterOptions: OpConverterOptions(inlineStylesFlag: true),
+      ),
+    );
+
+    final htmlText = converter.convert();
+
     setState(() => _saving = true);
     try {
       final req = CreateArticleRequest(
         headline: _headline.text.trim(),
         subheadline: _subheadline.text.trim(),
         shortText: _shortText.text.trim(),
-        text: _text.text.trim(),
+        text: htmlText,
         publishedAt: _publishedAt.toLocal(),
         active: _active,
         hideFullName: _hideFullName,
@@ -428,22 +652,60 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                             ),
 
                             const SizedBox(height: 12),
-
-                            TextFormField(
-                              controller: _text,
-                              minLines: 5,
-                              maxLines: 12,
-                              decoration: const InputDecoration(
-                                labelText: 'Sadržaj',
-                                alignLabelWithHint: true,
-                              ),
-                              validator: (v) => _textValidator.validate(
-                                label: 'Sadržaj',
-                                value: v,
-                              ),
+                            Text(
+                              'Sadržaj',
+                              style: Theme.of(context).textTheme.titleSmall,
                             ),
                             const SizedBox(height: 8),
 
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                quill.QuillSimpleToolbar(
+                                  controller: _quillController,
+                                  config: const quill.QuillSimpleToolbarConfig(
+                                    multiRowsDisplay: false,
+                                    showFontFamily: false,
+                                    showFontSize: true,
+                                    showBoldButton: true,
+                                    showItalicButton: true,
+                                    showUnderLineButton: true,
+                                    showStrikeThrough: true,
+                                    showListNumbers: true,
+                                    showListBullets: true,
+                                    showQuote: true,
+                                    showCodeBlock: false,
+                                    showLink: true,
+                                    showInlineCode: false,
+                                    showAlignmentButtons: true,
+                                    showColorButton: false,
+                                    showBackgroundColorButton: false,
+                                    showHeaderStyle: true,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Container(
+                                  height: 300,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.outlineVariant,
+                                    ),
+                                  ),
+                                  child: quill.QuillEditor.basic(
+                                    controller: _quillController,
+                                    config: const quill.QuillEditorConfig(
+                                      padding: EdgeInsets.all(8),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
                             Wrap(
                               spacing: 16,
                               runSpacing: 8,
@@ -507,28 +769,34 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                               Stack(
                                 alignment: Alignment.topRight,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.memory(
-                                      _mainPhoto!.bytes,
-                                      height: 100,
-                                      fit: BoxFit.cover,
+                                  GestureDetector(
+                                    onTap: _showMainPhotoPreview,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(6),
+                                      child: Image.memory(
+                                        _mainPhoto!.bytes,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() => _mainPhoto = null);
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        size: 16,
-                                        color: Colors.white,
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: InkWell(
+                                        onTap: () {
+                                          setState(() => _mainPhoto = null);
+                                        },
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -565,41 +833,56 @@ class _CreateArticlePageState extends State<CreateArticlePage> {
                               Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: _additionalPhotos.map((p) {
-                                  return Stack(
-                                    alignment: Alignment.topRight,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(6),
-                                        child: Image.memory(
-                                          p.bytes,
-                                          height: 100,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: Colors.black54,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
+                                children: _additionalPhotos.asMap().entries.map(
+                                  (entry) {
+                                    final index = entry.key;
+                                    final p = entry.value;
+
+                                    return Stack(
+                                      alignment: Alignment.topRight,
+                                      children: [
+                                        GestureDetector(
+                                          onTap: () =>
+                                              _showGalleryPreview(index),
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                            child: Image.memory(
+                                              p.bytes,
+                                              height: 100,
+                                              fit: BoxFit.cover,
+                                            ),
                                           ),
                                         ),
-                                        child: InkWell(
-                                          onTap: () {
-                                            setState(
-                                              () => _additionalPhotos.remove(p),
-                                            );
-                                          },
-                                          child: const Icon(
-                                            Icons.close,
-                                            size: 16,
-                                            color: Colors.white,
+                                        Positioned(
+                                          top: 4,
+                                          right: 4,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black54,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: InkWell(
+                                              onTap: () {
+                                                setState(
+                                                  () => _additionalPhotos
+                                                      .remove(p),
+                                                );
+                                              },
+                                              child: const Icon(
+                                                Icons.close,
+                                                size: 16,
+                                                color: Colors.white,
+                                              ),
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                      ],
+                                    );
+                                  },
+                                ).toList(),
                               ),
                             ],
                           ],

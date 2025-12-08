@@ -26,7 +26,7 @@ namespace NovinskiPortal.API.Controllers
             return int.Parse(id!);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet()]
         public async Task<IActionResult> GetByIdAsync()
         {
             var me = await _userService.GetByIdAsync(GetUserId());
@@ -35,9 +35,12 @@ namespace NovinskiPortal.API.Controllers
             return Ok(me);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut()]
         public async Task<IActionResult> UpdateAsync([FromBody] UpdateProfileRequest updateProfileRequest)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var updated = await _userService.UpdateAsync(GetUserId(), updateProfileRequest);
 
             if (updated is null)
@@ -49,9 +52,18 @@ namespace NovinskiPortal.API.Controllers
         [HttpPut("password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest changePasswordRequest)
         {
+            /*  var updatedPassword = await _userService.ChangePasswordAsync(GetUserId(), changePasswordRequest);
+              if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return BadRequest();
+              if (!updatedPassword) return BadRequest();
+              return NoContent();*/
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var updatedPassword = await _userService.ChangePasswordAsync(GetUserId(), changePasswordRequest);
-            if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return BadRequest();
-            if (!updatedPassword) return BadRequest();
+
+            if (!updatedPassword)
+                return BadRequest();
+
             return NoContent();
         }
     }

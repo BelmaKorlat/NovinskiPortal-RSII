@@ -15,6 +15,17 @@ class DailyArticlesChart extends StatelessWidget {
 
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final lineColor = isDark ? const Color(0xFF4FC3F7) : cs.primary;
+
+    final areaColor = isDark
+        ? const Color(0x334FC3F7)
+        : cs.primary.withValues(alpha: 0.25);
+
+    final gridColor = isDark
+        ? const Color(0xFF37474F)
+        : cs.outlineVariant.withValues(alpha: 0.6);
 
     final data = [...items]..sort((a, b) => a.date.compareTo(b.date));
 
@@ -65,6 +76,8 @@ class DailyArticlesChart extends StatelessWidget {
           show: true,
           drawVerticalLine: false,
           horizontalInterval: interval,
+          getDrawingHorizontalLine: (value) =>
+              FlLine(color: gridColor, strokeWidth: 1),
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
@@ -120,14 +133,11 @@ class DailyArticlesChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: cs.primary,
+            color: lineColor,
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
-            belowBarData: BarAreaData(
-              show: true,
-              color: cs.primary.withValues(alpha: 0.12),
-            ),
+            belowBarData: BarAreaData(show: true, color: areaColor),
           ),
         ],
       ),

@@ -17,6 +17,7 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
         {
             _context = context;
         }
+
         public async Task<AdminDashboardSummaryResponse> GetSummaryAsync()
         {
             var now = DateTime.UtcNow;
@@ -24,11 +25,10 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
             var thirtyDaysAgo = now.AddDays(-30);
 
             var totalArticles = await _context.Articles.CountAsync();
-
             var totalUsers = await _context.Users.CountAsync();
 
-            var viewsLast7Days = await _context.UserArticleViews
-                .Where(x => x.ViewedAt >= sevenDaysAgo)
+            var viewsLast7Days = await _context.ArticleViewLogs
+                .Where(x => x.ViewedAtUtc >= sevenDaysAgo)
                 .CountAsync();
 
             var newArticlesLast7Days = await _context.Articles
@@ -41,8 +41,10 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
                 to: null,
                 take: 15);
 
+            var thirtyDaysAgoDate = thirtyDaysAgo.Date;
+
             var dailyArticlesRaw = await _context.Articles
-                .Where(a => a.PublishedAt >= thirtyDaysAgo)
+                .Where(a => a.PublishedAt >= thirtyDaysAgoDate)
                 .GroupBy(a => a.PublishedAt.Date)
                 .Select(g => new
                 {
@@ -52,7 +54,7 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
                 .ToListAsync();
 
             var dailyArticles = new List<DailyArticlesDashboardResponse>();
-            for (var date = thirtyDaysAgo.Date; date <= now.Date; date = date.AddDays(1))
+            for (var date = thirtyDaysAgoDate; date <= now.Date; date = date.AddDays(1))
             {
                 var match = dailyArticlesRaw.FirstOrDefault(x => x.Date == date);
                 dailyArticles.Add(new DailyArticlesDashboardResponse
@@ -62,10 +64,10 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
                 });
             }
 
-            var categoryViewsRaw = await _context.UserArticleViews
+            var categoryViewsRaw = await _context.ArticleViewLogs
                 .Include(v => v.Article)
-                .ThenInclude(a => a.Category)
-                .Where(v => v.ViewedAt >= thirtyDaysAgo)
+                    .ThenInclude(a => a.Category)
+                .Where(v => v.ViewedAtUtc >= thirtyDaysAgo)
                 .GroupBy(v => new
                 {
                     v.Article.CategoryId,
@@ -101,53 +103,106 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
             };
 
             return result;
+
+
         }
 
-        public async Task<List<TopArticleDashboardResponse>> GetTopArticlesAsync(int? categoryId, DateTime? from, DateTime? to, int take = 15)
+        /* public async Task<List<TopArticleDashboardResponse>> GetTopArticlesAsync(int? categoryId, DateTime? from, DateTime? to, int take = 15)
+         {
+             var hasDateFilter = from.HasValue || to.HasValue;
+
+             if (!hasDateFilter)
+             {
+                 var query = _context.ArticleStatistics
+                     .Include(s => s.Article)
+                         .ThenInclude(a => a.Category)
+                     .AsQueryable();
+
+                 if (categoryId.HasValue)
+                 {
+                     query = query.Where(s => s.Article.CategoryId == categoryId.Value);
+                 }
+
+                 return await query
+                     .OrderByDescending(s => s.TotalViews)
+                     .Take(take)
+                     .Select(s => new TopArticleDashboardResponse
+                     {
+                         ArticleId = s.ArticleId,
+                         Title = s.Article.Headline,
+                         CategoryId = s.Article.CategoryId,
+                         CategoryName = s.Article.Category.Name,
+                         TotalViews = s.TotalViews
+                     })
+                     .ToListAsync();
+             }
+
+             var viewsQuery = _context.UserArticleViews
+                 .Include(v => v.Article)
+                     .ThenInclude(a => a.Category)
+                 .AsQueryable();
+
+             if (from.HasValue)
+             {
+                 var fromDate = from.Value.Date;
+                 viewsQuery = viewsQuery.Where(v => v.ViewedAt >= fromDate);
+             }
+
+             if (to.HasValue)
+             {
+                 var toExclusive = to.Value.Date.AddDays(1);
+                 viewsQuery = viewsQuery.Where(v => v.ViewedAt < toExclusive);
+             }
+
+             if (categoryId.HasValue)
+             {
+                 viewsQuery = viewsQuery.Where(v => v.Article.CategoryId == categoryId.Value);
+             }
+
+             var list = await viewsQuery
+                 .GroupBy(v => new
+                 {
+                     v.ArticleId,
+                     v.Article.Headline,
+                     v.Article.CategoryId,
+                     CategoryName = v.Article.Category.Name
+                 })
+                 .Select(g => new TopArticleDashboardResponse
+                 {
+                     ArticleId = g.Key.ArticleId,
+                     Title = g.Key.Headline,
+                     CategoryId = g.Key.CategoryId,
+                     CategoryName = g.Key.CategoryName,
+                     TotalViews = g.Count()
+                 })
+                 .OrderByDescending(x => x.TotalViews)
+                 .Take(take)
+                 .ToListAsync();
+
+             return list;
+         }*/
+
+        public async Task<List<TopArticleDashboardResponse>> GetTopArticlesAsync(
+        int? categoryId,
+        DateTime? from,
+        DateTime? to,
+        int take = 15)
         {
-            var hasDateFilter = from.HasValue || to.HasValue;
-
-            if (!hasDateFilter)
-            {
-                var query = _context.ArticleStatistics
-                    .Include(s => s.Article)
-                        .ThenInclude(a => a.Category)
-                    .AsQueryable();
-
-                if (categoryId.HasValue)
-                {
-                    query = query.Where(s => s.Article.CategoryId == categoryId.Value);
-                }
-
-                return await query
-                    .OrderByDescending(s => s.TotalViews)
-                    .Take(take)
-                    .Select(s => new TopArticleDashboardResponse
-                    {
-                        ArticleId = s.ArticleId,
-                        Title = s.Article.Headline,
-                        CategoryId = s.Article.CategoryId,
-                        CategoryName = s.Article.Category.Name,
-                        TotalViews = s.TotalViews
-                    })
-                    .ToListAsync();
-            }
-
-            var viewsQuery = _context.UserArticleViews
-                .Include(v => v.Article)
-                    .ThenInclude(a => a.Category)
-                .AsQueryable();
+            var viewsQuery = _context.ArticleViewLogs
+            .Include(v => v.Article)
+            .ThenInclude(a => a.Category)
+            .AsQueryable();
 
             if (from.HasValue)
             {
                 var fromDate = from.Value.Date;
-                viewsQuery = viewsQuery.Where(v => v.ViewedAt >= fromDate);
+                viewsQuery = viewsQuery.Where(v => v.ViewedAtUtc >= fromDate);
             }
 
             if (to.HasValue)
             {
                 var toExclusive = to.Value.Date.AddDays(1);
-                viewsQuery = viewsQuery.Where(v => v.ViewedAt < toExclusive);
+                viewsQuery = viewsQuery.Where(v => v.ViewedAtUtc < toExclusive);
             }
 
             if (categoryId.HasValue)
@@ -177,7 +232,6 @@ namespace NovinskiPortal.Services.Services.AdminDashboardService
 
             return list;
         }
-
 
         public async Task<byte[]> GenerateTopArticlesPdfAsync(
            int? categoryId,

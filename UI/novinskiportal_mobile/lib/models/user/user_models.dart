@@ -28,3 +28,39 @@ class UserDto {
     roleName: (j['roleName'] ?? '') as String,
   );
 }
+
+class UpdateProfileRequest {
+  final String firstName;
+  final String lastName;
+  final String username;
+
+  const UpdateProfileRequest({
+    required this.firstName,
+    required this.lastName,
+    required this.username,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'firstName': firstName,
+    'lastName': lastName,
+    'username': username,
+  };
+}
+
+class ChangePasswordRequest {
+  final String currentPassword;
+  final String newPassword;
+  final String confirmNewPassword;
+
+  const ChangePasswordRequest({
+    required this.currentPassword,
+    required this.newPassword,
+    required this.confirmNewPassword,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'currentPassword': currentPassword,
+    'newPassword': newPassword,
+    'confirmNewPassword': confirmNewPassword,
+  };
+}

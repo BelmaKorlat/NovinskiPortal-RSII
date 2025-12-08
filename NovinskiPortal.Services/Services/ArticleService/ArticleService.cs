@@ -184,7 +184,32 @@ namespace NovinskiPortal.Services.Services.ArticleService
             return Task.CompletedTask;
         }
 
-        protected override Task BeforeUpdate(Article entity, UpdateArticleRequest request)
+        /* protected override Task BeforeUpdate(Article entity, UpdateArticleRequest request)
+         {
+             var uploads = EnsureUploadsFolder();
+
+             if (request.MainPhoto != null)
+             {
+                 DeleteIfExists(entity.MainPhotoPath);
+                 entity.MainPhotoPath = SavePhoto(request.MainPhoto, uploads);
+             }
+
+             if (request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
+             {
+                 entity.ArticlePhotos = new List<ArticlePhoto>();
+                 foreach (var item in request.AdditionalPhotos)
+                 {
+                     var itemPhotoPath = SavePhoto(item, uploads);
+                     entity.ArticlePhotos.Add(new ArticlePhoto
+                     {
+                         PhotoPath = itemPhotoPath
+                     });
+                 }
+             }
+             return Task.CompletedTask;
+         }*/
+
+        protected override async Task BeforeUpdate(Article entity, UpdateArticleRequest request)
         {
             var uploads = EnsureUploadsFolder();
 
@@ -194,9 +219,26 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 entity.MainPhotoPath = SavePhoto(request.MainPhoto, uploads);
             }
 
+            await _context.Entry(entity)
+                .Collection(a => a.ArticlePhotos)
+                .LoadAsync();
+
+            if (request.ExistingAdditionalPhotoPaths != null)
+            {
+                var toDelete = entity.ArticlePhotos
+                    .Where(p => !request.ExistingAdditionalPhotoPaths.Contains(p.PhotoPath))
+                    .ToList();
+
+                foreach (var photo in toDelete)
+                {
+                    DeleteIfExists(photo.PhotoPath);
+                }
+
+                _context.ArticlePhotos.RemoveRange(toDelete);
+            }
+
             if (request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
             {
-                entity.ArticlePhotos = new List<ArticlePhoto>();
                 foreach (var item in request.AdditionalPhotos)
                 {
                     var itemPhotoPath = SavePhoto(item, uploads);
@@ -206,7 +248,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
                     });
                 }
             }
-            return Task.CompletedTask;
         }
 
         protected override async Task BeforeDelete(Article entity)
@@ -281,6 +322,14 @@ namespace NovinskiPortal.Services.Services.ArticleService
                 stat.TotalViews += 1;
                 stat.LastViewedAt = viewedAtUtc;
             }
+
+            var viewLog = new ArticleViewLog
+            {
+                ArticleId = articleId,
+                UserId = userId,
+                ViewedAtUtc = viewedAtUtc
+            };
+            _context.ArticleViewLogs.Add(viewLog);
 
             if (userId.HasValue)
             {

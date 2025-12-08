@@ -48,4 +48,11 @@ abstract class PagedProvider<T, S> extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clear() {
+    _items = [];
+    _totalCount = 0;
+    page = 0;
+    notifyListeners();
+  }
 }

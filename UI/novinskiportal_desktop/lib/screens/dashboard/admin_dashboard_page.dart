@@ -33,6 +33,12 @@ class _DashboardPageState extends State<DashboardPage> {
     final summary = provider.summary;
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final articleIconColor = isDark ? const Color(0xFF42A5F5) : cs.primary;
+    final usersIconColor = isDark ? const Color(0xFF66BB6A) : cs.secondary;
+    final viewsIconColor = isDark ? const Color(0xFFFFCA28) : cs.tertiary;
+    final newIconColor = isDark ? const Color(0xFFEF5350) : cs.error;
 
     if (provider.isLoading && summary == null) {
       return const Center(child: CircularProgressIndicator());
@@ -99,7 +105,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: _StatCard(
                     icon: Icons.article_outlined,
-                    iconColor: cs.primary,
+                    iconColor: articleIconColor,
                     label: 'Ukupan broj članaka',
                     value: summary.totalArticles.toString(),
                     subtitle: 'Sve objave na portalu',
@@ -109,7 +115,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: _StatCard(
                     icon: Icons.people_alt_outlined,
-                    iconColor: cs.secondary,
+                    iconColor: usersIconColor,
                     label: 'Ukupan broj korisnika',
                     value: summary.totalUsers.toString(),
                     subtitle: 'Registrovani korisnici',
@@ -119,7 +125,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: _StatCard(
                     icon: Icons.visibility_outlined,
-                    iconColor: cs.tertiary,
+                    iconColor: viewsIconColor,
                     label: 'Pregledi u zadnjih 7 dana',
                     value: summary.viewsLast7Days.toString(),
                     subtitle: 'Sve posjete u tom periodu',
@@ -129,7 +135,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 Expanded(
                   child: _StatCard(
                     icon: Icons.calendar_month_outlined,
-                    iconColor: cs.error,
+                    iconColor: newIconColor,
                     label: 'Novi članci u zadnjih 7 dana',
                     value: summary.newArticlesLast7Days.toString(),
                     subtitle: 'Objavljeno u zadnjih 7 dana',
@@ -194,7 +200,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: _DashboardPanel(
                     title: 'Čitanost po kategorijama (zadnjih 30 dana)',
                     action: TextButton.icon(
@@ -203,7 +209,7 @@ class _DashboardPageState extends State<DashboardPage> {
                             .read<AdminDashboardProvider>()
                             .exportCategoryViewsReport();
                       },
-                      icon: const Icon(Icons.picture_as_pdf),
+                      icon: const Icon(Icons.picture_as_pdf_outlined),
                       label: const Text('Izvještaj'),
                     ),
                     child: SizedBox(
@@ -237,7 +243,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           .read<AdminDashboardProvider>()
                           .exportCategoryViewsReport();
                     },
-                    icon: const Icon(Icons.picture_as_pdf),
+                    icon: const Icon(Icons.picture_as_pdf_outlined),
                     label: const Text('Izvještaj'),
                   ),
                   child: SizedBox(
@@ -285,6 +291,10 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final iconBgColor = isDark
+        ? iconColor.withValues(alpha: 0.25)
+        : iconColor.withValues(alpha: 0.12);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -309,7 +319,7 @@ class _StatCard extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.12),
+              color: iconBgColor,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: iconColor, size: 24),

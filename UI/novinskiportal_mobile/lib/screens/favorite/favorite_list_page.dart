@@ -235,83 +235,86 @@ class FavoriteListPageState extends State<FavoriteListPage> {
                 final ArticleDto article = fav.article;
                 final bool selected = _selectedIds.contains(article.id);
 
-                return Stack(
-                  children: [
-                    StandardArticleCard(
-                      article: article,
-                      onTap: () async {
-                        if (_selectionMode) {
-                          setState(() {
-                            if (selected) {
-                              _selectedIds.remove(article.id);
-                            } else {
-                              _selectedIds.add(article.id);
-                            }
-                          });
-                          return;
+                final card = StandardArticleCard(
+                  article: article,
+                  onTap: () async {
+                    if (_selectionMode) {
+                      setState(() {
+                        if (selected) {
+                          _selectedIds.remove(article.id);
+                        } else {
+                          _selectedIds.add(article.id);
                         }
+                      });
+                      return;
+                    }
 
-                        final articleProvider = context.read<ArticleProvider>();
-                        final navigator = Navigator.of(context);
-                        final messenger = ScaffoldMessenger.of(context);
+                    final articleProvider = context.read<ArticleProvider>();
+                    final navigator = Navigator.of(context);
+                    final messenger = ScaffoldMessenger.of(context);
 
-                        showDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          builder: (_) =>
-                              const Center(child: CircularProgressIndicator()),
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      final detail = await articleProvider.getDetail(
+                        article.id,
+                      );
+
+                      if (!mounted) return;
+                      navigator.pop();
+
+                      await navigator.push(
+                        MaterialPageRoute(
+                          builder: (_) => ArticleDetailPage(article: detail),
+                        ),
+                      );
+                    } on ApiException catch (ex) {
+                      if (!mounted) return;
+                      navigator.pop();
+                      if (ex.message.isNotEmpty) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(ex.message)),
                         );
+                      }
+                    } catch (_) {
+                      if (!mounted) return;
+                      navigator.pop();
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Greška pri učitavanju članka.'),
+                        ),
+                      );
+                    }
+                  },
+                );
 
-                        try {
-                          final detail = await articleProvider.getDetail(
-                            article.id,
-                          );
+                if (!_selectionMode) {
+                  return card;
+                }
 
-                          if (!mounted) return;
-                          navigator.pop();
-
-                          await navigator.push(
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ArticleDetailPage(article: detail),
-                            ),
-                          );
-                        } on ApiException catch (ex) {
-                          if (!mounted) return;
-                          navigator.pop();
-                          if (ex.message.isNotEmpty) {
-                            messenger.showSnackBar(
-                              SnackBar(content: Text(ex.message)),
-                            );
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: card),
+                    const SizedBox(width: 4),
+                    Checkbox(
+                      value: selected,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value == true) {
+                            _selectedIds.add(article.id);
+                          } else {
+                            _selectedIds.remove(article.id);
                           }
-                        } catch (_) {
-                          if (!mounted) return;
-                          navigator.pop();
-                          messenger.showSnackBar(
-                            const SnackBar(
-                              content: Text('Greška pri učitavanju članka.'),
-                            ),
-                          );
-                        }
+                        });
                       },
                     ),
-                    if (_selectionMode)
-                      Positioned(
-                        right: 24,
-                        top: 8,
-                        child: Checkbox(
-                          value: selected,
-                          onChanged: (value) {
-                            setState(() {
-                              if (value == true) {
-                                _selectedIds.add(article.id);
-                              } else {
-                                _selectedIds.remove(article.id);
-                              }
-                            });
-                          },
-                        ),
-                      ),
+                    const SizedBox(width: 8),
                   ],
                 );
               },

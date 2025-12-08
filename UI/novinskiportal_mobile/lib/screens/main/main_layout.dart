@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:novinskiportal_mobile/providers/article/article_provider.dart';
 import 'package:novinskiportal_mobile/providers/auth/auth_provider.dart';
+import 'package:novinskiportal_mobile/providers/user/user_profile_provider.dart';
 import 'package:novinskiportal_mobile/screens/user/user_page.dart';
 import 'package:novinskiportal_mobile/models/article/news_mode.dart';
 import 'package:novinskiportal_mobile/providers/article/news_provider.dart';
 import 'package:novinskiportal_mobile/screens/article/home_page.dart';
+import 'package:novinskiportal_mobile/screens/article/article_search_page.dart';
 import 'package:novinskiportal_mobile/screens/latest%20and%20most%20read/latest_news_page.dart';
 import 'package:novinskiportal_mobile/screens/latest%20and%20most%20read/mostread_news_page.dart';
 import 'package:novinskiportal_mobile/widgets/common/app_main_app_bar.dart';
@@ -75,7 +78,10 @@ class _MainLayoutState extends State<MainLayout> {
           child: MostReadNewsPage(onModeChanged: _handleNewsModeChanged),
         );
       case 3:
-        return const UserPage();
+        return ChangeNotifierProvider(
+          create: (_) => UserProfileProvider()..loadProfile(),
+          child: const UserPage(),
+        );
       default:
         return HomePage(
           key: const Key('home_default'),
@@ -93,10 +99,20 @@ class _MainLayoutState extends State<MainLayout> {
         onMenuTap: () {
           _scaffoldKey.currentState?.openDrawer();
         },
+
         onSearchTap: _currentIndex == 3
             ? null
             : () {
-                // ovdje kasnije ide search
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ChangeNotifierProvider<ArticleProvider>(
+                          create: (_) => ArticleProvider(),
+                          child: const ArticleSearchPage(),
+                        ),
+                  ),
+                );
               },
         actionIcon: Icons.search,
       ),

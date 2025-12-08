@@ -27,16 +27,27 @@ class CategoryViewsChart extends StatelessWidget {
 
     final total = nonEmpty.fold<int>(0, (sum, e) => sum + e.totalViews);
 
-    final colors = <Color>[
-      cs.primary,
-      cs.secondary,
-      cs.tertiary,
-      Colors.orange,
-      Colors.teal,
-      Colors.pink,
-      Colors.indigo,
-    ];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final colors = isDark
+        ? const [
+            Color(0xFF42A5F5),
+            Color(0xFFAB47BC),
+            Color(0xFFFFCA28),
+            Color(0xFF26A69A),
+            Color(0xFFEF5350),
+            Color(0xFF7E57C2),
+            Color(0xFFFF7043),
+          ]
+        : [
+            cs.primary,
+            cs.secondary,
+            cs.tertiary,
+            Colors.orange,
+            Colors.teal,
+            Colors.pink,
+            Colors.indigo,
+          ];
     final sections = <PieChartSectionData>[];
 
     for (var i = 0; i < nonEmpty.length; i++) {

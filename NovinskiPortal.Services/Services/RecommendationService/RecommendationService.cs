@@ -26,17 +26,7 @@ namespace NovinskiPortal.Services.Services.RecommendationService
 
             if (!topCategories.Any())
             {
-                var fallback = await _context.Articles
-                    .Include(a => a.Category)
-                    .Include(a => a.Subcategory)
-                    .Include(a => a.User)
-                    .Include(a => a.Statistics)
-                    .Where(a => a.Active)
-                    .OrderByDescending(a => a.PublishedAt)
-                    .Take(take)
-                    .ToListAsync();
-
-                return _mapper.Map<List<ArticleResponse>>(fallback);
+                return new List<ArticleResponse>();
             }
 
             var viewedArticleIds = await _context.UserArticleViews
@@ -64,7 +54,24 @@ namespace NovinskiPortal.Services.Services.RecommendationService
                 .Take(take)
                 .ToListAsync();
 
-            return _mapper.Map<List<ArticleResponse>>(articles);
+            if (articles.Any())
+            {
+                return _mapper.Map<List<ArticleResponse>>(articles);
+            }
+
+            var mostReadInTopCategories = await _context.Articles
+                .Include(a => a.Category)
+                .Include(a => a.Subcategory)
+                .Include(a => a.User)
+                .Include(a => a.Statistics)
+                .Where(a => a.Active)
+                .Where(a => topCategories.Contains(a.CategoryId))
+                .OrderByDescending(a => a.Statistics != null ? a.Statistics.TotalViews : 0)
+                .ThenByDescending(a => a.PublishedAt)
+                .Take(take)
+                .ToListAsync();
+
+            return _mapper.Map<List<ArticleResponse>>(mostReadInTopCategories);
         }
     }
 }
