@@ -8,6 +8,7 @@ using NovinskiPortal.Common.Messaging;
 using NovinskiPortal.Common.Settings;
 using NovinskiPortal.Services.Services.ArticleService;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Exceptions;
 
 namespace NovinskiPortal.Workers.Statistics
 {
@@ -43,38 +44,60 @@ namespace NovinskiPortal.Workers.Statistics
                 ClientProvidedName = "novinskiportal-statistics-worker"
             };
 
-            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            var retries = 0;
+            const int maxRetries = 10;
 
-            _channel = await _connection.CreateChannelAsync(
-                options: null,
-                cancellationToken: cancellationToken);
+            while (true)
+            {
+                try
+                {
+                    _connection = await factory.CreateConnectionAsync(cancellationToken);
+                    _channel = await _connection.CreateChannelAsync(
+                        options: null,
+                        cancellationToken: cancellationToken);
 
-            await _channel.ExchangeDeclareAsync(
-                exchange: _settings.Exchange,
-                type: ExchangeType.Topic,
-                durable: true,
-                autoDelete: false,
-                arguments: null,
-                cancellationToken: cancellationToken);
 
-            await _channel.QueueDeclareAsync(
-                queue: QueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null,
-                cancellationToken: cancellationToken);
+                    await _channel.ExchangeDeclareAsync(
+                          exchange: _settings.Exchange,
+                          type: ExchangeType.Topic,
+                          durable: true,
+                          autoDelete: false,
+                          arguments: null,
+                          cancellationToken: cancellationToken);
 
-            await _channel.QueueBindAsync(
-                queue: QueueName,
-                exchange: _settings.Exchange,
-                routingKey: _settings.RoutingKeyArticleViewed,
-                arguments: null,
-                cancellationToken: cancellationToken);
+                    await _channel.QueueDeclareAsync(
+                        queue: QueueName,
+                        durable: true,
+                        exclusive: false,
+                        autoDelete: false,
+                        arguments: null,
+                        cancellationToken: cancellationToken);
 
-            _logger.LogInformation("ArticleViewedWorker started");
+                    await _channel.QueueBindAsync(
+                        queue: QueueName,
+                        exchange: _settings.Exchange,
+                        routingKey: _settings.RoutingKeyArticleViewed,
+                        arguments: null,
+                        cancellationToken: cancellationToken);
 
-            await base.StartAsync(cancellationToken);
+                    _logger.LogInformation("ArticleViewedWorker started");
+
+                    await base.StartAsync(cancellationToken);
+
+                    break;
+                }
+                catch (BrokerUnreachableException ex)
+                {
+                    retries++;
+
+                    if (retries >= maxRetries)
+                    {
+                        throw;
+                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+                }
+            }
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)

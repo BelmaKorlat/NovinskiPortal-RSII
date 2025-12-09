@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Reporting.NETCore;
 using NovinskiPortal.Model.Responses;
-using NovinskiPortal.Reports;
 using NovinskiPortal.Services.Services.AdminDashboardService;
 using System.Data;
 
