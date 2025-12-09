@@ -37,13 +37,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
             if (search.UserId.HasValue)
                 query = query.Where(a => a.UserId == search.UserId.Value);
 
-            // ako je mod "live", filtriraj samo live članke
-            /*if (!string.IsNullOrWhiteSpace(search.Mode) &&
-                search.Mode.Equals("live", StringComparison.OrdinalIgnoreCase))
-            {
-                query = query.Where(a => a.Live);
-            }*/
-
             if (!search.IncludeFuture)
             {
                 query = query.Where(a => a.PublishedAt <= DateTime.UtcNow && a.Active);
@@ -63,9 +56,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
 
                     case "mostread":
                         return query.OrderByDescending(a => a.Statistics != null ? a.Statistics.TotalViews: 0);
-                   /* case "live":
-                        // live članci, opet sortirani po datumu objave
-                        return query.OrderByDescending(a => a.Live);*/
                 }
             }
             return query.OrderByDescending(a => a.PublishedAt);

@@ -62,6 +62,7 @@ services:
       dockerfile: NovinskiPortal.Workers.Statistics/Dockerfile
     container_name: np-worker-statistics
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Server=db;Database=210053;User=sa;Password=NovinskiPortal2025;TrustServerCertificate=True
       - RabbitMq__HostName=rabbitmq
       - RabbitMq__Port=5672
@@ -72,6 +73,7 @@ services:
     depends_on:
       - db
       - rabbitmq
+    restart: always
     networks:
       - np-net
 
