@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 import 'package:novinskiportal_mobile/models/article/article_models.dart';
+import 'package:novinskiportal_mobile/utils/color_utils.dart';
 import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 
 class MediumArticleCard extends StatelessWidget {
   final ArticleDto article;
-  final Color categoryColor;
   final VoidCallback? onTap;
 
-  const MediumArticleCard({
-    super.key,
-    required this.article,
-    required this.categoryColor,
-    this.onTap,
-  });
+  const MediumArticleCard({super.key, required this.article, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+
+    final categoryColor = tryParseHexColor(article.color) ?? cs.primary;
 
     final commentsCount = article.commentsCount;
 

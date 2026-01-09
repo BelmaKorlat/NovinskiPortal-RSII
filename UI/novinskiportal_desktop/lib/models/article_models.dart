@@ -294,11 +294,8 @@ class UpdateArticleRequest {
 
     if (existingAdditionalPhotoPaths != null) {
       if (existingAdditionalPhotoPaths!.isEmpty) {
-        // korisnik je obrisao sve postojeće slike
-        // šaljemo jedan "dummy" element da lista na backendu ne bude null
         map['ExistingAdditionalPhotoPaths'] = [''];
       } else {
-        // ima bar jedna preostala slika
         map['ExistingAdditionalPhotoPaths'] = existingAdditionalPhotoPaths!;
       }
     }

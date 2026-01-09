@@ -18,6 +18,10 @@ namespace NovinskiPortal.Services.Services.FavoriteService
         {
             var query = _context.Favorites
                 .Where(f => f.UserId == userId)
+                .Where( f => f.Article.Active &&
+                    f.Article.PublishedAt <= DateTime.UtcNow && 
+                    f.Article.Category.Active &&
+                    f.Article.Subcategory.Active)
                 .OrderByDescending(f => f.CreatedAt)
                 .ProjectToType<FavoriteResponse>();
 

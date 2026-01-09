@@ -37,6 +37,8 @@ namespace NovinskiPortal.Services.Services.ArticleService
             if (search.UserId.HasValue)
                 query = query.Where(a => a.UserId == search.UserId.Value);
 
+            query = query.Where(a => a.Category.Active && a.Subcategory.Active);
+
             if (!search.IncludeFuture)
             {
                 query = query.Where(a => a.PublishedAt <= DateTime.UtcNow && a.Active);
@@ -92,7 +94,8 @@ namespace NovinskiPortal.Services.Services.ArticleService
                     Articles = _context.Articles
                         .Where(a => a.Active &&
                                     a.CategoryId == c.Id &&
-                                    a.PublishedAt <= DateTime.UtcNow)
+                                    a.PublishedAt <= DateTime.UtcNow &&
+                                    a.Subcategory.Active)
                         .OrderByDescending(a => a.PublishedAt)
                         .Take(perCategory)
                         .Select(a => new ArticleResponse
@@ -173,31 +176,6 @@ namespace NovinskiPortal.Services.Services.ArticleService
 
             return Task.CompletedTask;
         }
-
-        /* protected override Task BeforeUpdate(Article entity, UpdateArticleRequest request)
-         {
-             var uploads = EnsureUploadsFolder();
-
-             if (request.MainPhoto != null)
-             {
-                 DeleteIfExists(entity.MainPhotoPath);
-                 entity.MainPhotoPath = SavePhoto(request.MainPhoto, uploads);
-             }
-
-             if (request.AdditionalPhotos != null && request.AdditionalPhotos.Count > 0)
-             {
-                 entity.ArticlePhotos = new List<ArticlePhoto>();
-                 foreach (var item in request.AdditionalPhotos)
-                 {
-                     var itemPhotoPath = SavePhoto(item, uploads);
-                     entity.ArticlePhotos.Add(new ArticlePhoto
-                     {
-                         PhotoPath = itemPhotoPath
-                     });
-                 }
-             }
-             return Task.CompletedTask;
-         }*/
 
         protected override async Task BeforeUpdate(Article entity, UpdateArticleRequest request)
         {

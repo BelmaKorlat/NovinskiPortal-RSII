@@ -844,7 +844,6 @@ class _EditArticlePageState extends State<EditArticlePage> {
                               ),
                             ),
 
-                            // prikaz glavne slike, bez X
                             if (_newMainPhoto != null) ...[
                               const SizedBox(height: 8),
                               GestureDetector(

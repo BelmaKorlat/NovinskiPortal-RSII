@@ -19,13 +19,17 @@ namespace NovinskiPortal.Services.Services.SubcategoryService.SubcategoryService
         }
         public async Task<SubcategoryResponse?> ToggleSubcategoryStatusAsync(int id)
         {
-            var subcategory = await _context.Subcategories.FindAsync(id);
+            var subcategory = await _context.Subcategories
+                             .Include(s => s.Category)
+                             .FirstOrDefaultAsync(s => s.Id == id);
+
             if (subcategory is null)
                 return null;
 
             subcategory.Active = !subcategory.Active;
 
             await _context.SaveChangesAsync();
+
             return _mapper.Map<SubcategoryResponse>(subcategory);
         }
 

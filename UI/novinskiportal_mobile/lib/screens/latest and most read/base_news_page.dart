@@ -143,11 +143,7 @@ abstract class BaseNewsPageState<T extends BaseNewsPage> extends State<T>
 
       if (i == 0) {
         widgets.add(
-          MediumArticleCard(
-            article: a,
-            categoryColor: Theme.of(context).colorScheme.primary,
-            onTap: () => _openArticleDetail(a),
-          ),
+          MediumArticleCard(article: a, onTap: () => _openArticleDetail(a)),
         );
       } else {
         widgets.add(

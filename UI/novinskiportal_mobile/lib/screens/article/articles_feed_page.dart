@@ -204,7 +204,6 @@ class _ArticlesFeedPageState extends State<ArticlesFeedPage> {
                         final article = provider.items[index];
                         return BigArticleCard(
                           article: article,
-                          categoryColor: widget.accentColor,
                           onTap: () => _openArticleDetail(article),
                         );
                       },

@@ -68,7 +68,6 @@ Future<bool> showDestructiveConfirmDialog({
       titlePadding: EdgeInsets.zero,
       contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
 
-      // Header
       title: Container(
         padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
         decoration: BoxDecoration(
@@ -87,7 +86,6 @@ Future<bool> showDestructiveConfirmDialog({
         ),
       ),
 
-      // Text
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -103,7 +101,6 @@ Future<bool> showDestructiveConfirmDialog({
         ],
       ),
 
-      // Buttons
       actionsAlignment: MainAxisAlignment.end,
       actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       actions: [

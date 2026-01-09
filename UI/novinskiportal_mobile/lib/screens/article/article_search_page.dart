@@ -16,17 +16,14 @@ class ArticleSearchPage extends StatefulWidget {
 class _ArticleSearchPageState extends State<ArticleSearchPage> {
   final TextEditingController _controller = TextEditingController();
   bool _submitted = false;
-  bool _initialLoaded = false; // da znamo da je prvi load gotov
-
+  bool _initialLoaded = false;
   @override
   void initState() {
     super.initState();
 
-    // nakon prvog frame-a učitaj default članke
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<ArticleProvider>();
 
-      // bez FTS, to će ti po tvom API-ju biti "standardna" lista
       await provider.load();
 
       if (!mounted) return;
@@ -82,7 +79,6 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
     final query = value.trim();
 
     if (query.isEmpty) {
-      // ako obrišeš tekst, vrati se na default listu
       provider.clear();
       await provider.load();
       setState(() {
@@ -109,7 +105,6 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
         backgroundColor: cs.surface,
         iconTheme: IconThemeData(color: cs.onSurface),
         titleSpacing: 0,
-        // makni globalni border sa TextFielda
         title: Theme(
           data: Theme.of(context).copyWith(
             inputDecorationTheme: const InputDecorationTheme(
@@ -130,22 +125,18 @@ class _ArticleSearchPageState extends State<ArticleSearchPage> {
       ),
       body: Builder(
         builder: (context) {
-          // prvi ulazak, čeka se default lista
           if (provider.isLoading && !_initialLoaded) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // pretraga je poslana, nema rezultata
           if (_submitted && items.isEmpty && !provider.isLoading) {
             return const Center(child: Text('Nema rezultata za zadani upit.'));
           }
 
-          // nema ni jednog članka ni nakon loada
           if (!_submitted && items.isEmpty && !provider.isLoading) {
             return const Center(child: Text('Trenutno nema članaka.'));
           }
 
-          // lista rezultata (default ili pretraga)
           return NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification.metrics.pixels >=

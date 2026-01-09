@@ -12,6 +12,7 @@ import 'package:novinskiportal_mobile/utils/datetime_utils.dart';
 import 'package:novinskiportal_mobile/widgets/article/recommended_article_card.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'dart:convert';
 
 class ArticleDetailPage extends StatefulWidget {
   final ArticleDetailDto article;
@@ -74,6 +75,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
     final categoryColor = tryParseHexColor(article.color) ?? cs.primary;
 
     final commentsCount = article.commentsCount;
+
+    final htmlBody = plainTextToHtml(article.text);
 
     return Scaffold(
       appBar: AppBar(
@@ -331,7 +334,7 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                 const SizedBox(height: 16),
 
                 Html(
-                  data: article.text,
+                  data: htmlBody,
                   style: {
                     "body": Style(
                       fontSize: FontSize(16.0),
@@ -340,7 +343,8 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
                       color: theme.colorScheme.onSurface,
                     ),
                     "p": Style(margin: Margins.only(bottom: 12)),
-                    "img": Style(width: Width.auto(), height: Height.auto()),
+                    "ul": Style(margin: Margins.only(left: 18, bottom: 12)),
+                    "li": Style(margin: Margins.only(bottom: 6)),
                   },
                 ),
 
@@ -479,4 +483,39 @@ class _ArticleDetailPageState extends State<ArticleDetailPage> {
       ),
     );
   }
+}
+
+String plainTextToHtml(String? input) {
+  if (input == null || input.trim().isEmpty) return '';
+
+  final normalized = input.replaceAll('\r\n', '\n').trim();
+
+  final blocks = normalized.split(RegExp(r'\n\s*\n'));
+
+  final out = StringBuffer();
+
+  for (final block in blocks) {
+    final lines = block
+        .split('\n')
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
+    if (lines.isEmpty) continue;
+
+    final isBulletBlock = lines.every((l) => l.startsWith('•'));
+
+    if (isBulletBlock) {
+      out.write('<ul>');
+      for (final l in lines) {
+        final item = l.replaceFirst(RegExp(r'^•\s*'), '');
+        out.write('<li>${htmlEscape.convert(item)}</li>');
+      }
+      out.write('</ul>');
+    } else {
+      final safe = lines.map((l) => htmlEscape.convert(l)).join('<br/>');
+      out.write('<p>$safe</p>');
+    }
+  }
+
+  return out.toString();
 }

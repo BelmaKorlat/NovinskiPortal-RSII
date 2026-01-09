@@ -537,7 +537,7 @@ class _AdminCommentDetailPageState extends State<AdminCommentDetailPage> {
     if (!hasReason && !hasUntil) return null;
 
     final untilStr = hasUntil
-        ? DateFormat('d.M.yyyy').format(d.authorCommentBanUntil!)
+        ? DateFormat('d.M.yyyy, HH:mm').format(d.authorCommentBanUntil!)
         : null;
 
     if (untilStr != null && hasReason) {

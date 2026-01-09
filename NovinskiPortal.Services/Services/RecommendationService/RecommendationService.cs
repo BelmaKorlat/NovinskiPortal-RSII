@@ -22,7 +22,10 @@ namespace NovinskiPortal.Services.Services.RecommendationService
                 .Include(a => a.Subcategory)
                 .Include(a => a.User)
                 .Include(a => a.Statistics)
-                .Where(a => a.Active)
+                .Where(a => a.Active &&
+                    a.PublishedAt <= DateTime.UtcNow &&
+                    a.Category.Active &&
+                    a.Subcategory.Active)
                 .OrderByDescending(a => a.PublishedAt)
                 .ThenByDescending(a => a.Statistics != null ? a.Statistics.TotalViews : 0)
                 .Take(500)
@@ -137,8 +140,6 @@ namespace NovinskiPortal.Services.Services.RecommendationService
 
             return _mapper.Map<List<ArticleResponse>>(result);
         }
-
-
     }
 }
 

@@ -26,13 +26,10 @@ List<T> mapListResponse<T>(
   dynamic data,
   T Function(Map<String, dynamic>) fromJson,
 ) {
-  // 1) Odgovor je čista lista: [ {..}, {..}, ... ]
   if (data is List) {
     return data.whereType<Map<String, dynamic>>().map(fromJson).toList();
   }
 
-  // 2) Odgovor je objekt koji sadrži listu pod nekim ključem:
-  //    items, data, result ili records
   if (data is Map<String, dynamic>) {
     final raw =
         data['items'] ?? data['data'] ?? data['result'] ?? data['records'];
@@ -41,11 +38,9 @@ List<T> mapListResponse<T>(
       return raw.whereType<Map<String, dynamic>>().map(fromJson).toList();
     }
 
-    // Ako je map prazan, vrati praznu listu umjesto greške
     if (data.isEmpty) return <T>[];
   }
 
-  // 3) Sve ostalo smatra se nevažećim formatom
   throw ApiException(message: 'Neočekivan oblik odgovora.');
 }
 
@@ -53,7 +48,6 @@ PagedResult<T> mapPagedResponse<T>(
   dynamic data,
   T Function(Map<String, dynamic>) fromJson,
 ) {
-  // Iskoristi postojeći readItems + readTotalCount
   final list = readItems(data);
   final items = list.whereType<Map<String, dynamic>>().map(fromJson).toList();
 

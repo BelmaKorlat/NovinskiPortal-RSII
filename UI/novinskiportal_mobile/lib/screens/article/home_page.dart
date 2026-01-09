@@ -201,20 +201,13 @@ class HomeCategorySection extends StatelessWidget {
   List<Widget> _buildArticles(BuildContext context) {
     final widgets = <Widget>[];
     final articles = category.articles;
-    final categoryColor =
-        tryParseHexColor(category.color) ??
-        Theme.of(context).colorScheme.primary;
 
     for (var i = 0; i < articles.length; i++) {
       final a = articles[i];
 
       if (i == 0) {
         widgets.add(
-          MediumArticleCard(
-            article: a,
-            categoryColor: categoryColor,
-            onTap: () => onArticleTap(a),
-          ),
+          MediumArticleCard(article: a, onTap: () => onArticleTap(a)),
         );
       } else if (i == 1 || i == 2) {
         widgets.add(

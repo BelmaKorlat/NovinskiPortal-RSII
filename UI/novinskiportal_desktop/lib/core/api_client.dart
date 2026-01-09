@@ -47,7 +47,6 @@ class ApiClient {
           int? status;
           final req = err.requestOptions;
 
-          // mreža
           if (err.type == DioExceptionType.connectionTimeout ||
               err.type == DioExceptionType.sendTimeout ||
               err.type == DioExceptionType.receiveTimeout) {
@@ -56,7 +55,6 @@ class ApiClient {
               err.error is SocketException) {
             message = 'Nema veze sa serverom. Provjerite internet.';
           } else {
-            // HTTP
             final resp = err.response;
             status = resp?.statusCode;
             final data = resp?.data;

@@ -13,7 +13,6 @@ class PaginationBar extends StatelessWidget {
 
   final List<int> pageSizeOptions;
 
-  ///  (1 = ... 4 [5] 6 ...)
   final int window;
 
   const PaginationBar({

@@ -10,12 +10,6 @@ class ApiClient {
 
   late final Dio dio;
 
-  //static const String baseUrl = 'https://localhost:7060';
-  //static const String baseUrl = 'https://10.0.2.2:7060';
-  // Ako koristiš fizički telefon na istoj WiFi mreži, onda umjesto 10.0.2.2 stavi IP svog računara,
-  //static const String baseUrl = 'http://192.168.0.27:5182';
-  // static const String baseUrl = 'http://192.168.128.1:5182';
-
   ApiClient._internal() {
     dio = Dio(
       BaseOptions(

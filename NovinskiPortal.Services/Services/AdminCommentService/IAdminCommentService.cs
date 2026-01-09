@@ -12,7 +12,7 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
 
         Task<bool> SoftDeleteAsync(int id, int adminUserId);
         Task<bool> RejectPendingReportsAsync(int commentId, int adminUserId, string? adminNote);
-        Task<bool> BanAuthorAsync(int commentId, BanCommentAuthorRequest request);
+        Task<bool> BanAuthorAsync(int commentId, BanCommentAuthorRequest request, int adminId);
         Task<int> GetPendingCountAsync();
 
     }

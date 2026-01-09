@@ -190,7 +190,7 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
             return true;
         }
 
-        public async Task<bool> BanAuthorAsync(int commentId, BanCommentAuthorRequest request)
+        public async Task<bool> BanAuthorAsync(int commentId, BanCommentAuthorRequest request, int adminId)
         {
             var comment = await _context.ArticleComments
                 .Include(c => c.User)
@@ -201,12 +201,10 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
 
             var user = comment.User;
             if (user == null || user.IsDeleted)
-                return false;  
+                return false;
 
             if (request.BanUntil <= DateTime.UtcNow)
-            {
                 return false;
-            }
 
             var utcBanUntil = request.BanUntil.Kind == DateTimeKind.Utc
                 ? request.BanUntil
@@ -217,10 +215,23 @@ namespace NovinskiPortal.Services.Services.AdminCommentService
                 ? null
                 : request.Reason.Trim();
 
+            var pendingReports = await _context.ArticleCommentReports
+                .Where(r => r.ArticleCommentId == commentId &&
+                            r.Status == ArticleCommentReportStatus.Pending)
+                .ToListAsync();
+
+            var now = DateTime.UtcNow;
+
+            foreach (var report in pendingReports)
+            {
+                report.Status = ArticleCommentReportStatus.Approved;
+                report.ProcessedAt = now;
+                report.ProcessedByAdminId = adminId;
+            }
+
             await _context.SaveChangesAsync();
             return true;
         }
-
 
         public async Task<int> GetPendingCountAsync()
         {

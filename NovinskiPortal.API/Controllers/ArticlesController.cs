@@ -54,8 +54,6 @@ namespace NovinskiPortal.API.Controllers
             return Ok(result);
         }
 
-
-
        [HttpPost]
        public async Task<IActionResult> CreateArticleAsync([FromForm] Requests.Article.CreateArticleRequest createArticleRequest)
         {

@@ -57,8 +57,8 @@ namespace NovinskiPortal.API.Controllers
             if (adminId == null)
                 return Unauthorized();
 
-            var ok = await _adminCommentService.HideAsync(id, adminId.Value);
-            if (!ok)
+            var isHidden = await _adminCommentService.HideAsync(id, adminId.Value);
+            if (!isHidden)
                 return NotFound();
 
             return NoContent();
@@ -71,8 +71,8 @@ namespace NovinskiPortal.API.Controllers
             if (adminId == null)
                 return Unauthorized();
 
-            var ok = await _adminCommentService.SoftDeleteAsync(id, adminId.Value);
-            if (!ok)
+            var isDeleted = await _adminCommentService.SoftDeleteAsync(id, adminId.Value);
+            if (!isDeleted)
                 return NotFound();
 
             return NoContent();
@@ -85,9 +85,9 @@ namespace NovinskiPortal.API.Controllers
             if (adminId == null)
                 return Unauthorized();
 
-            var ok = await _adminCommentService.RejectPendingReportsAsync(id, adminId.Value, request.AdminNote);
+            var isRejected = await _adminCommentService.RejectPendingReportsAsync(id, adminId.Value, request.AdminNote);
 
-            if (!ok)
+            if (!isRejected)
                 return NotFound();
 
             return NoContent();
@@ -100,8 +100,8 @@ namespace NovinskiPortal.API.Controllers
             if (adminId == null)
                 return Unauthorized();
 
-            var ok = await _adminCommentService.BanAuthorAsync(id, request);
-            if (!ok)
+            var isBanned = await _adminCommentService.BanAuthorAsync(id, request, adminId.Value);
+            if (!isBanned)
                 return NotFound(); 
 
             return NoContent();

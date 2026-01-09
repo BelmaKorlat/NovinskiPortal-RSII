@@ -13,7 +13,6 @@ ThemeData buildLightTheme() {
       filled: false,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
 
-      // Label i hint
       labelStyle: TextStyle(
         fontSize: 13,
         color: base.colorScheme.onSurfaceVariant,
@@ -23,7 +22,6 @@ ThemeData buildLightTheme() {
         color: base.colorScheme.onSurfaceVariant.withValues(alpha: 0.9),
       ),
 
-      // Borderi
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
@@ -44,11 +42,10 @@ ThemeData buildLightTheme() {
       ),
     ),
 
-    // Manji default font u formama (po želji)
     textTheme: base.textTheme.copyWith(
       bodyMedium: base.textTheme.bodyMedium?.copyWith(fontSize: 15),
     ),
-    // Uniformni izgled dugmadi
+
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(100, 40),
@@ -69,7 +66,6 @@ ThemeData buildLightTheme() {
       ),
     ),
 
-    // Tabela (naslovi, visina redova, razmak kolona…)
     dataTableTheme: const DataTableThemeData(
       headingRowHeight: 44,
       dataRowMinHeight: 44,
@@ -129,7 +125,6 @@ ThemeData buildDarkTheme() {
     textTheme: base.textTheme.copyWith(
       bodyMedium: base.textTheme.bodyMedium?.copyWith(fontSize: 15),
     ),
-    // Uniformni izgled dugmadi
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         minimumSize: const Size(100, 40),
@@ -150,7 +145,6 @@ ThemeData buildDarkTheme() {
       ),
     ),
 
-    // Tabela (naslovi, visina redova, razmak kolona…)
     dataTableTheme: const DataTableThemeData(
       headingRowHeight: 44,
       dataRowMinHeight: 44,

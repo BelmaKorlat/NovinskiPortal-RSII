@@ -52,10 +52,6 @@ namespace NovinskiPortal.API.Controllers
         [HttpPut("password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest changePasswordRequest)
         {
-            /*  var updatedPassword = await _userService.ChangePasswordAsync(GetUserId(), changePasswordRequest);
-              if (changePasswordRequest.NewPassword != changePasswordRequest.ConfirmNewPassword) return BadRequest();
-              if (!updatedPassword) return BadRequest();
-              return NoContent();*/
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 

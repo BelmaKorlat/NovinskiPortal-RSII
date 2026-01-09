@@ -17,11 +17,13 @@ namespace NovinskiPortal.Services.Services.EmailService
 
         public async Task SendAsync(string to, string subject, string body)
         {
+            var finalBody = body + (_settings.SignatureHtml ?? "");
+
             using var message = new MailMessage();
             message.From = new MailAddress(_settings.From);
             message.To.Add(to);
             message.Subject = subject;
-            message.Body = body;
+            message.Body = finalBody;
             message.IsBodyHtml = true; 
 
             using var client = new SmtpClient(_settings.Host, _settings.Port);

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:novinskiportal_mobile/core/api_client.dart';
 
 class GalleryPage extends StatefulWidget {
-  final List<String> photos; // relativne putanje iz baze
-  final int initialIndex; // na koju sliku da se otvori
+  final List<String> photos;
+  final int initialIndex;
 
   const GalleryPage({
     super.key,

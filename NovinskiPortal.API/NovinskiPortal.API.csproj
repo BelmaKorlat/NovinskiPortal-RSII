@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\NovinskiPortal.Common\NovinskiPortal.Common.csproj" />
-    <ProjectReference Include="..\NovinskiPortal.Reports\NovinskiPortal.Reports.csproj" />
     <ProjectReference Include="..\NovinskiPortal.Services\NovinskiPortal.Services.csproj" />
   </ItemGroup>
 
