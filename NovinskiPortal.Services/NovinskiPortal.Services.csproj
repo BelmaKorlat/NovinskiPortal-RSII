@@ -39,8 +39,4 @@
     <ProjectReference Include="..\NovinskiPortal.Model\NovinskiPortal.Model.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\ActivityReportService\" />
-  </ItemGroup>
-
 </Project>
