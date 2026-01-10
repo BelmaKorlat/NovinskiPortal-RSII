@@ -6,16 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="Assets\logo.png" />
-    <None Remove="Assets\novinskiportal_logo_transparent.png" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Assets\logo.png" />
-    <EmbeddedResource Include="Assets\novinskiportal_logo_transparent.png" />
-  </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
