@@ -150,7 +150,7 @@ namespace NovinskiPortal.Services.Services.AuthService
             _context.PasswordResetTokens.Add(token);
             await _context.SaveChangesAsync();
 
-            var resetLink = $"https://localhost:7060/reset-password?token={tokenValue}";
+            var resetLink = $"http://localhost:5000/reset-password?token={tokenValue}";
 
             var subject = "Reset lozinke - Novinski portal";
             var body = $@"
