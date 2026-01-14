@@ -138,6 +138,11 @@ Sistem koristi RabbitMQ i odvojeni worker servis za asinhrone zadatke:
   - upisuje statistiku čitanosti u bazu (ArticleStatistics, logovi pregleda)
   - omogućava generisanje dashboarda i izvještaja
     (najčitaniji članci, pregledi po kategorijama itd.)
+    
+- **Napomena:**
+   - Da bi se pojavili podaci u izvještajima, potrebno je otvoriti nekoliko članaka u mobilnoj aplikaciji.
+   - Nakon pregleda, **NovinskiPortal.Workers.Statistics** upisuje podatke u bazu, pa se dashboard popunjava.
+
 
 Na ovaj način ispunjen je zahtjev mikroservisne arhitekture:
 - glavni API servis
