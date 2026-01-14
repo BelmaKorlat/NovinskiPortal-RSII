@@ -112,6 +112,19 @@ Konkretni korisnici i njihove role definisani su u seed podacima (`DbSeeder.Seed
 
 ---
 
+## Reset (zaboravljena lozinka)
+
+Funkcionalnost resetovanja lozinke zahtijeva ispravnu email adresu.
+
+Za testiranje:
+
+1. Registrovati korisnika sa pravom email adresom kojoj imate pristup.
+2. Na ekranu `Zaboravljena lozinka` unijeti istu tu email adresu.
+3. Sistem šalje email sa linkom za reset lozinke na unesenu adresu.
+4. Otvoriti email i kliknuti na link, zatim postaviti novu lozinku.
+
+---
+
 ## Mikroservisne funkcionalnosti
 
 Sistem koristi RabbitMQ i odvojeni worker servis za asinhrone zadatke:
