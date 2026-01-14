@@ -197,7 +197,7 @@ class CreateArticleRequest {
       'subheadline': subheadline,
       'shortText': shortText,
       'text': text,
-      'publishedAt': publishedAt.toIso8601String(),
+      'publishedAt': publishedAt.toUtc().toIso8601String(),
       'active': active,
       'hideFullName': hideFullName,
       'breakingNews': breakingNews,
@@ -269,7 +269,7 @@ class UpdateArticleRequest {
     put('shortText', shortText);
     put('text', text);
     if (publishedAt != null) {
-      map['publishedAt'] = publishedAt!.toIso8601String();
+      map['publishedAt'] = publishedAt!.toUtc().toIso8601String();
     }
     put('active', active);
     put('hideFullName', hideFullName);

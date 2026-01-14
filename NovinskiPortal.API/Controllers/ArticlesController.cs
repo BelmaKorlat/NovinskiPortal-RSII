@@ -60,7 +60,7 @@ namespace NovinskiPortal.API.Controllers
             var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return Unauthorized();
-            var publishedLocal = DateTime.SpecifyKind(createArticleRequest.PublishedAt, DateTimeKind.Local);
+            var publishedUtc = DateTime.SpecifyKind(createArticleRequest.PublishedAt, DateTimeKind.Utc);
 
             var newArticle = new Model.Requests.Article.CreateArticleRequest
             {
@@ -68,7 +68,7 @@ namespace NovinskiPortal.API.Controllers
                 Subheadline = createArticleRequest.Subheadline,
                 ShortText = createArticleRequest.ShortText,
                 Text = createArticleRequest.Text,
-                PublishedAt = publishedLocal.ToUniversalTime(),
+                PublishedAt = publishedUtc,
                 Active = createArticleRequest.Active,
                 HideFullName = createArticleRequest.HideFullName,
                 BreakingNews = createArticleRequest.BreakingNews,
@@ -116,8 +116,7 @@ namespace NovinskiPortal.API.Controllers
             DateTime? publishedUtc = null;
             if (updateArticleRequest.PublishedAt.HasValue)
             {
-                var local = DateTime.SpecifyKind(updateArticleRequest.PublishedAt.Value, DateTimeKind.Local);
-                publishedUtc = local.ToUniversalTime();
+                publishedUtc = DateTime.SpecifyKind(updateArticleRequest.PublishedAt.Value, DateTimeKind.Utc);
             }
 
             var updatedArticle = new Model.Requests.Article.UpdateArticleRequest
